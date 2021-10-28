@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2019-2021, Intel Corporation */
 
 #include "mover.h"
-#include "libpmem2/async/future.h"
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2019-2021, Intel Corporation */
 
 /*
  * main.c -- main of async implementation example
@@ -18,8 +18,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "mover.h"
-#include "runtime.h"
+#include "libuasync.h"
 
 struct async_print_data {
 	void *value;
