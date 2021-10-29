@@ -10,7 +10,7 @@ env:
     # use GitHub Container Registry as a repository of docker images
     GH_CR_ADDR:  ghcr.io
     DOCKER_REPO: ghcr.io/wlemkows/libuasync
-    
+
     # use org's Private Access Token to log in to GitHub Container Registry
     GH_CR_USER:  ${{ secrets.GH_CR_USER }}
     GH_CR_PAT:   ${{ secrets.GH_CR_PAT }}
@@ -24,10 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        CONFIG: ["N=1 OS=ubuntu OS_VER=21.04 TYPE=normal CC=gcc   COVERAGE=1",
-                 "N=2 OS=ubuntu OS_VER=21.04 TYPE=normal CC=clang PUSH_IMAGE=1",
+        CONFIG: ["N=2 OS=ubuntu OS_VER=21.04 TYPE=normal CC=clang PUSH_IMAGE=1",
                  "N=3 OS=fedora OS_VER=34    TYPE=normal CC=gcc   PUSH_IMAGE=1",
                  "N=4 OS=fedora OS_VER=34    TYPE=normal CC=clang AUTO_DOC_UPDATE=1"]
+                 #"N=1 OS=ubuntu OS_VER=21.04 TYPE=normal CC=gcc   COVERAGE=1",
     steps:
        - name: Clone the git repo
          uses: actions/checkout@v1
