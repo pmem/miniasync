@@ -25,8 +25,8 @@ jobs:
     strategy:
       matrix:
         CONFIG: ["N=2 OS=ubuntu OS_VER=21.04 TYPE=normal CC=clang PUSH_IMAGE=1",
-                 "N=3 OS=fedora OS_VER=34    TYPE=normal CC=gcc   PUSH_IMAGE=1",
-                 "N=4 OS=fedora OS_VER=34    TYPE=normal CC=clang AUTO_DOC_UPDATE=1"]
+                 "N=3 OS=fedora OS_VER=34    TYPE=normal CC=gcc   PUSH_IMAGE=1"]
+                 #"N=4 OS=fedora OS_VER=34    TYPE=normal CC=clang AUTO_DOC_UPDATE=1"]
                  #"N=1 OS=ubuntu OS_VER=21.04 TYPE=normal CC=gcc   COVERAGE=1",
     steps:
        - name: Clone the git repo
