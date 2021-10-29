@@ -129,17 +129,17 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-CC=$CC \
-cmake .. -DCMAKE_BUILD_TYPE=Debug \
-	-DTEST_DIR=$TEST_DIR \
-	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1 \
-	-DUSE_ASAN=${CI_SANITS} \
-	-DUSE_UBSAN=${CI_SANITS}
+#CC=$CC \
+#cmake .. -DCMAKE_BUILD_TYPE=Debug \
+#	-DTEST_DIR=$TEST_DIR \
+#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+#	-DDEVELOPER_MODE=1 \
+#	-DUSE_ASAN=${CI_SANITS} \
+#	-DUSE_UBSAN=${CI_SANITS}
 
-make -j$(nproc)
-ctest --output-on-failure
-run_pytest
+#make -j$(nproc)
+#ctest --output-on-failure
+#run_pytest
 
 cd $WORKDIR
 rm -rf $WORKDIR/build
@@ -152,17 +152,17 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-CC=$CC \
-cmake .. -DCMAKE_BUILD_TYPE=Debug \
-	-DTEST_DIR=$TEST_DIR \
-	-DCMAKE_INSTALL_PREFIX=$PREFIX \
-	-DCOVERAGE=$COVERAGE \
-	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1
+#CC=$CC \
+#cmake .. -DCMAKE_BUILD_TYPE=Debug \
+#	-DTEST_DIR=$TEST_DIR \
+#	-DCMAKE_INSTALL_PREFIX=$PREFIX \
+#	-DCOVERAGE=$COVERAGE \
+#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+#	-DDEVELOPER_MODE=1
 
-make -j$(nproc)
-ctest --output-on-failure
-sudo_password -S make -j$(nproc) install
+#make -j$(nproc)
+#ctest --output-on-failure
+#sudo_password -S make -j$(nproc) install
 
 if [ "$COVERAGE" == "1" ]; then
 	upload_codecov tests
@@ -174,11 +174,11 @@ if [ "$AUTO_DOC_UPDATE" == "1" ]; then
 	../utils/docker/run-doc-update.sh
 fi
 
-test_compile_all_examples_standalone
+#test_compile_all_examples_standalone
 
 # Uninstall libraries
 cd $WORKDIR/build
-sudo_password -S make uninstall
+#sudo_password -S make uninstall
 
 cd $WORKDIR
 rm -rf $WORKDIR/build
@@ -191,66 +191,66 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-CC=$CC \
-cmake .. -DCMAKE_BUILD_TYPE=Release \
-	-DTEST_DIR=$TEST_DIR \
-	-DCMAKE_INSTALL_PREFIX=$PREFIX \
-	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
-	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1
+#CC=$CC \
+#cmake .. -DCMAKE_BUILD_TYPE=Release \
+#	-DTEST_DIR=$TEST_DIR \
+#	-DCMAKE_INSTALL_PREFIX=$PREFIX \
+#	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
+#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+#	-DDEVELOPER_MODE=1
 
-make -j$(nproc)
-ctest --output-on-failure
+#make -j$(nproc)
+#ctest --output-on-failure
 
-if [ "$PACKAGE_MANAGER" = "" ]; then
+#if [ "$PACKAGE_MANAGER" = "" ]; then
 	# install the library from sources
-	sudo_password -S make -j$(nproc) install
-else
+#	sudo_password -S make -j$(nproc) install
+#else
 	# Do not install the library from sources here,
 	# because it will be installed from the packages below.
 
-	echo "##############################################################"
-	echo "### Making and testing packages (RELEASE version) ..."
-	echo "##############################################################"
+#	echo "##############################################################"
+#	echo "### Making and testing packages (RELEASE version) ..."
+#	echo "##############################################################"
 
-	make -j$(nproc) package
-	find . -iname "libuasync*.$PACKAGE_MANAGER"
-fi
+#	make -j$(nproc) package
+#	find . -iname "libuasync*.$PACKAGE_MANAGER"
+#fi
 
-if [ $PACKAGE_MANAGER = "deb" ]; then
-	echo "$ dpkg-deb --info ./libuasync*.deb"
-	dpkg-deb --info ./libuasync*.deb
+#if [ $PACKAGE_MANAGER = "deb" ]; then
+#	echo "$ dpkg-deb --info ./libuasync*.deb"
+#	dpkg-deb --info ./libuasync*.deb
 
-	echo "$ dpkg-deb -c ./libuasync*.deb"
-	dpkg-deb -c ./libuasync*.deb
+#	echo "$ dpkg-deb -c ./libuasync*.deb"
+#	dpkg-deb -c ./libuasync*.deb
 
-	echo "$ sudo -S dpkg -i ./libuasync*.deb"
-	echo $USERPASS | sudo -S dpkg -i ./libuasync*.deb
+#	echo "$ sudo -S dpkg -i ./libuasync*.deb"
+#	echo $USERPASS | sudo -S dpkg -i ./libuasync*.deb
 
-elif [ $PACKAGE_MANAGER = "rpm" ]; then
-	echo "$ rpm -q --info ./libuasync*.rpm"
-	rpm -q --info ./libuasync*.rpm && true
+#elif [ $PACKAGE_MANAGER = "rpm" ]; then
+#	echo "$ rpm -q --info ./libuasync*.rpm"
+#	rpm -q --info ./libuasync*.rpm && true
 
-	echo "$ rpm -q --list ./libuasync*.rpm"
-	rpm -q --list ./libuasync*.rpm && true
+#	echo "$ rpm -q --list ./libuasync*.rpm"
+#	rpm -q --list ./libuasync*.rpm && true
 
-	echo "$ sudo -S rpm -ivh --force *.rpm"
-	echo $USERPASS | sudo -S rpm -ivh --force *.rpm
-fi
+#	echo "$ sudo -S rpm -ivh --force *.rpm"
+#	echo $USERPASS | sudo -S rpm -ivh --force *.rpm
+#fi
 
-test_compile_all_examples_standalone
+#test_compile_all_examples_standalone
 
-if [ "$PACKAGE_MANAGER" = "" ]; then
+#if [ "$PACKAGE_MANAGER" = "" ]; then
 	# uninstall the library, since it was installed from sources
-	cd $WORKDIR/build
-	sudo_password -S make uninstall
-elif [ $PACKAGE_MANAGER = "deb" ]; then
-	echo "sudo -S dpkg --remove libuasync-dev"
-	echo $USERPASS | sudo -S dpkg --remove libuasync-dev
-elif [ $PACKAGE_MANAGER = "rpm" ]; then
-	echo "$ sudo -S rpm --erase libuasync-devel"
-	echo $USERPASS | sudo -S rpm --erase libuasync-devel
-fi
+#	cd $WORKDIR/build
+#	sudo_password -S make uninstall
+#elif [ $PACKAGE_MANAGER = "deb" ]; then
+#	echo "sudo -S dpkg --remove libuasync-dev"
+#	echo $USERPASS | sudo -S dpkg --remove libuasync-dev
+#elif [ $PACKAGE_MANAGER = "rpm" ]; then
+#	echo "$ sudo -S rpm --erase libuasync-devel"
+#	echo $USERPASS | sudo -S rpm --erase libuasync-devel
+#fi
 
 cd $WORKDIR
 rm -rf $WORKDIR/build

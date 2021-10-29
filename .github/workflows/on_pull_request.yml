@@ -6,10 +6,11 @@ name: On_Pull_Request
 on: [push, pull_request]
 
 env:
-    GITHUB_REPO: pmem/libuasync
+    GITHUB_REPO: wlemkows/libuasync
     # use GitHub Container Registry as a repository of docker images
     GH_CR_ADDR:  ghcr.io
-    DOCKER_REPO: ghcr.io/pmem/libuasync
+    DOCKER_REPO: ghcr.io/wlemkows/libuasync
+    
     # use org's Private Access Token to log in to GitHub Container Registry
     GH_CR_USER:  ${{ secrets.GH_CR_USER }}
     GH_CR_PAT:   ${{ secrets.GH_CR_PAT }}
