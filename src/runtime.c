@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2019-2021, Intel Corporation */
 
 #include "runtime.h"
 #include <emmintrin.h>
@@ -65,7 +65,7 @@ runtime_sleep(struct runtime *runtime)
 
 void
 runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
-		      size_t nfuts)
+						size_t nfuts)
 {
 	struct runtime_waker_data waker_data;
 	waker_data.cond = &runtime->cond;

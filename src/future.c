@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2019-2021, Intel Corporation */
 
 #include "future.h"
 
@@ -47,8 +47,10 @@ async_chain_impl(struct future_context *ctx, struct future_waker waker)
 				    FUTURE_STATE_COMPLETE &&
 			    entry->map) {
 				entry->map(&entry->future.context,
-					   next ? &next->future.context : ctx,
-					   entry->arg);
+							next ?
+							&next->future.context
+							: ctx,
+							entry->arg);
 			} else {
 				return FUTURE_STATE_RUNNING;
 			}
