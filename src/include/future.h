@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* Copyright 2019-2021, Intel Corporation */
 
 #ifndef FUTURE_H
 #define FUTURE_H 1
@@ -36,7 +36,7 @@ size_t future_context_get_size(struct future_context *context);
 ((_wakerp)->wake((_wakerp)->data))
 
 typedef enum future_state (*future_task_fn)(struct future_context *context,
-				     struct future_waker waker);
+			struct future_waker waker);
 
 struct future {
 	future_task_fn task;

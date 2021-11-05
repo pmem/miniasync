@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* Copyright 2019-2021, Intel Corporation */
 
 #ifndef RUNTIME_H
 #define RUNTIME_H 1

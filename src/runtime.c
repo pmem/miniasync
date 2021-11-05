@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2021, Intel Corporation */
 
 #include "runtime.h"
 #include <emmintrin.h>
@@ -55,9 +55,9 @@ runtime_sleep(struct runtime *runtime)
 	clock_gettime(CLOCK_REALTIME, &ts);
 	static const size_t nsec_in_sec = 1000000000ULL;
 	ts.tv_nsec += runtime->cond_wait_time.tv_nsec;
-	uint64_t secs = ts.tv_nsec / nsec_in_sec;
-	ts.tv_nsec -= secs * nsec_in_sec;
-	ts.tv_sec += runtime->cond_wait_time.tv_sec + secs;
+	uint64_t secs = (uint64_t)ts.tv_nsec / nsec_in_sec;
+	ts.tv_nsec -= (long)(secs * nsec_in_sec);
+	ts.tv_sec += (long)(runtime->cond_wait_time.tv_sec + (long)secs);
 
 	pthread_cond_timedwait(&runtime->cond, &runtime->lock, &ts);
 	pthread_mutex_unlock(&runtime->lock);
@@ -65,7 +65,7 @@ runtime_sleep(struct runtime *runtime)
 
 void
 runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
-		      size_t nfuts)
+						size_t nfuts)
 {
 	struct runtime_waker_data waker_data;
 	waker_data.cond = &runtime->cond;

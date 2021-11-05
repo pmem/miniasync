@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2020, Intel Corporation */
+/* Copyright 2019-2021, Intel Corporation */
 
 #include "mover.h"
-#include "libpmem2/async/future.h"
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdlib.h>
@@ -71,7 +70,7 @@ memcpy_sync(void *runner, struct future_context *context)
 	data->mover_cb(context);
 }
 
-struct mover_runner synchronous_runner = {
+static struct mover_runner synchronous_runner = {
 	.runner_data = NULL,
 	.memcpy = memcpy_sync,
 };
@@ -97,7 +96,7 @@ memcpy_pthreads(void *runner, struct future_context *context)
 	pthread_create(&thread, NULL, async_memcpy_pthread, context);
 }
 
-struct mover_runner pthreads_runner = {
+static struct mover_runner pthreads_runner = {
 	.runner_data = NULL,
 	.memcpy = memcpy_pthreads,
 };

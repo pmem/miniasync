@@ -129,17 +129,16 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-#CC=$CC \
-#cmake .. -DCMAKE_BUILD_TYPE=Debug \
-#	-DTEST_DIR=$TEST_DIR \
-#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-#	-DDEVELOPER_MODE=1 \
-#	-DUSE_ASAN=${CI_SANITS} \
-#	-DUSE_UBSAN=${CI_SANITS}
+CC=$CC \
+cmake .. -DCMAKE_BUILD_TYPE=Debug \
+	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+	-DDEVELOPER_MODE=1 \
+	-DUSE_ASAN=${CI_SANITS} \
+	-DUSE_UBSAN=${CI_SANITS}
 
-#make -j$(nproc)
+#-DTEST_DIR=$TEST_DIR \
+make -j$(nproc)
 #ctest --output-on-failure
-#run_pytest
 
 cd $WORKDIR
 rm -rf $WORKDIR/build
@@ -152,15 +151,15 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-#CC=$CC \
-#cmake .. -DCMAKE_BUILD_TYPE=Debug \
-#	-DTEST_DIR=$TEST_DIR \
-#	-DCMAKE_INSTALL_PREFIX=$PREFIX \
-#	-DCOVERAGE=$COVERAGE \
-#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-#	-DDEVELOPER_MODE=1
+CC=$CC \
+cmake .. -DCMAKE_BUILD_TYPE=Debug \
+	-DCMAKE_INSTALL_PREFIX=$PREFIX \
+	-DCOVERAGE=$COVERAGE \
+	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+	-DDEVELOPER_MODE=1
 
-#make -j$(nproc)
+#-DTEST_DIR=$TEST_DIR \
+make -j$(nproc)
 #ctest --output-on-failure
 #sudo_password -S make -j$(nproc) install
 
@@ -191,15 +190,15 @@ echo "##################################################################"
 mkdir -p $WORKDIR/build
 cd $WORKDIR/build
 
-#CC=$CC \
-#cmake .. -DCMAKE_BUILD_TYPE=Release \
-#	-DTEST_DIR=$TEST_DIR \
-#	-DCMAKE_INSTALL_PREFIX=$PREFIX \
-#	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
-#	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-#	-DDEVELOPER_MODE=1
+CC=$CC \
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=$PREFIX \
+	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
+	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
+	-DDEVELOPER_MODE=1
 
-#make -j$(nproc)
+#-DTEST_DIR=$TEST_DIR \
+make -j$(nproc)
 #ctest --output-on-failure
 
 #if [ "$PACKAGE_MANAGER" = "" ]; then
