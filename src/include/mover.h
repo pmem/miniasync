@@ -1,5 +1,23 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2019-2021, Intel Corporation */
+/* Copyright 2021, Intel Corporation */
+
+/*
+ * mover.h - public definitions for an abstract data mover type.
+ *
+ * A mover is an abstract type that software can use to generically perform
+ * asynchronous memory operations. Libraries can use this to avoid a hard
+ * dependency on any specific implementation of hardware offload for
+ * memory operations.
+ *
+ * Data movers implementations can use DMA engines like
+ * Intel DSA (Data Streaming Accelerator), plain threads,
+ * or synchronous operations in the current working thread.
+ *
+ * Data movers need to implement the runner interface, and applications can use
+ * such implementations to create a concrete mover. Software can then use movers
+ * to create more complex generic concurrent futures that use asynchronous
+ * memory operations.
+ */
 
 #ifndef MOVER_H
 #define MOVER_H 1

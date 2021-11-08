@@ -1,5 +1,65 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2019-2021, Intel Corporation */
+/* Copyright 2021, Intel Corporation */
+
+/*
+ * future.h - oublic definitions for the future type, its associated state and
+ * related functionality.
+ *
+ * A future is an abstract type representing a task, or a collection of tasks,
+ * that can be executed incrementally by polling until the operation
+ * is complete. Futures are typically meant to be implemented by library
+ * developers and then used by applications to concurrently run multiple,
+ * possibly unrelated, tasks.
+ *
+ * A future contains the following context:
+ * - current state of execution for the future
+ * - a function pointer for the task
+ * - structure for data which is the required state needed to perform the task
+ * - structure for output to store the result of the task
+ * - the size of the data and output structures (both can be 0)
+ *
+ * A future definition must begin an instance of the `struct future` type, which
+ * contains all common metadata for all futures, followed by the structures for
+ * data and output. The library provides convenience macros to simplify
+ * the definition of user-defined future types.
+ *
+ * Applications must call the `future_poll` method to make progress on the task
+ * associated with the future. This function will perform
+ * an implementation-defined operation towards completing the task and return
+ * the future's current state. Futures are generally safe to poll until they
+ * are complete. Unless the documentation for a specific future implementation
+ * indicates otherwise, futures can be moved in memory and don't always have
+ * to be polled by the same thread.
+ *
+ * TODO: Any future with an inline value that is updated externally,
+ * like in DSA or io_uring, is not safe to move in memory.
+ *
+ * Optionally, future implementations can accept wakers for use in polling.
+ * A future can use a waker to signal the caller that some progress can be made
+ * and the future should be polled again. This is useful to avoid busy polling
+ * when the future is waiting for some asynchronous operation to finish
+ * or for some resource to become available.
+ *
+ * A waker is a tuple composed of a function pointer and a data context pointer.
+ * If a waker is supplied and consumed by a future, it will call the provided
+ * function with its data pointer. The caller needs to make sure that the waker
+ * is safe to call until the future is complete or until it supplies a different
+ * waker to the poll method.
+ * The waker implementation needs to be thread-safe.
+ *
+ * TODO: wakers are not optional right now. And are kind of limited. Futures
+ * should have a way of indicating to the caller that it was consumed.
+ * Maybe a pointer to a tagged union?
+ *
+ * To facilitate the composition of futures, the library provides a generic
+ * "chain" future implementation that applications can use to compose
+ * two or more futures into a chain on sequentially executed tasks. The futures
+ * that make up a chain are executed in the order in which they are stored
+ * in memory. To share state between the futures, each chain entry contains
+ * a `map` function to map the state of the just-completed future onto the next
+ * future state. Applications can use the map function of the last future in
+ * a chain to map its output to the output of the entire chain.
+ */
 
 #ifndef FUTURE_H
 #define FUTURE_H 1
