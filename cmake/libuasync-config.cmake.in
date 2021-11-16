@@ -1,0 +1,14 @@
+#
+# SPDX-License-Identifier: BSD-3-Clause
+# Copyright 2021, Intel Corporation
+#
+
+@PACKAGE_INIT@
+
+find_path(LIBUASYNC_INCLUDE_DIR libuasync.h)
+find_library(LIBUASYNC_LIBRARY NAMES uasync libuasync)
+
+set_and_check(LIBUASYNC_INCLUDE "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+set(LIBUASYNC_LIBRARIES ${LIBUASYNC_LIBRARY})
+set(LIBUASYNC_INCLUDE_DIRS ${LIBUASYNC_INCLUDE_DIR})
