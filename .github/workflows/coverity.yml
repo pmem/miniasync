@@ -10,7 +10,7 @@ on:
 env:
   REPO:           libuasync
   GITHUB_REPO:    wlemkows/libuasync
-  CONTAINER_REG:  ghcr.io/wlemkows/libuasync
+  DOCKER_REPO:    ghcr.io/wlemkows/libuasync
   HOST_WORKDIR:   ${{ github.workspace }}
   WORKDIR:        utils/docker
   IMG_VER:        latest
