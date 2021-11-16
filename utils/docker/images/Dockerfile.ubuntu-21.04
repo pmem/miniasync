@@ -44,8 +44,8 @@ ENV PYTHON_DEPS "\
 	matplotlib \
 	pandas"
 
-# RPMA deps
-ENV RPMA_DEPS "\
+# UASYNC deps
+ENV UASYNC_DEPS "\
 	cmake \
 	curl \
 	gawk \
@@ -58,7 +58,7 @@ RUN apt-get install -y --no-install-recommends \
 	$BASE_DEPS \
 	$TOOLS_DEPS \
 	$TESTS_DEPS \
-	$RPMA_DEPS \
+	$UASYNC_DEPS \
 && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip
