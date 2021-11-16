@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2021, Intel Corporation
 #
 
 #
 # run-build.sh - is called inside a Docker container,
-#                starts libuasync build with tests.
+#                starts libminiasync build with tests.
 #
 
 set -e
@@ -14,8 +14,8 @@ set -e
 PREFIX=/usr
 CC=${CC:-gcc}
 CHECK_CSTYLE=${CHECK_CSTYLE:-ON}
-TEST_DIR=${RPMA_TEST_DIR:-${DEFAULT_TEST_DIR}}
-EXAMPLE_TEST_DIR="/tmp/libuasync_example_build"
+TEST_DIR=${LIBMINIASYNC_TEST_DIR:-${DEFAULT_TEST_DIR}}
+EXAMPLE_TEST_DIR="/tmp/libminiasync_example_build"
 
 # turn off sanitizers only if (CI_SANITS == OFF)
 [ "$CI_SANITS" != "OFF" ] && CI_SANITS=ON
@@ -26,7 +26,7 @@ if [ "$WORKDIR" == "" ]; then
 fi
 
 if [ "$TEST_DIR" == "" ]; then
-	echo "Error: LIBUASYNC_TEST_DIR is not set"
+	echo "Error: LIBMINIASYNC_TEST_DIR is not set"
 	exit 1
 fi
 
@@ -201,55 +201,56 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 make -j$(nproc)
 #ctest --output-on-failure
 
-#if [ "$PACKAGE_MANAGER" = "" ]; then
+if [ "$PACKAGE_MANAGER" = "" ]; then
 	# install the library from sources
-#	sudo_password -S make -j$(nproc) install
-#else
+	sudo_password -S make -j$(nproc) install
+else
 	# Do not install the library from sources here,
 	# because it will be installed from the packages below.
 
-#	echo "##############################################################"
-#	echo "### Making and testing packages (RELEASE version) ..."
-#	echo "##############################################################"
+	echo "##############################################################"
+	echo "### Making and testing packages (RELEASE version) ..."
+	echo "##############################################################"
 
-#	make -j$(nproc) package
-#	find . -iname "libuasync*.$PACKAGE_MANAGER"
-#fi
+	make -j$(nproc) package
+	find . -iname "libminiasync*.$PACKAGE_MANAGER"
+fi
 
-#if [ $PACKAGE_MANAGER = "deb" ]; then
-#	echo "$ dpkg-deb --info ./libuasync*.deb"
-#	dpkg-deb --info ./libuasync*.deb
+if [ $PACKAGE_MANAGER = "deb" ]; then
+	echo "$ dpkg-deb --info ./libminiasync*.deb"
+	dpkg-deb --info ./libminiasync*.deb
 
-#	echo "$ dpkg-deb -c ./libuasync*.deb"
-#	dpkg-deb -c ./libuasync*.deb
+	echo "$ dpkg-deb -c ./libminiasync*.deb"
+	dpkg-deb -c ./libminiasync*.deb
 
-#	echo "$ sudo -S dpkg -i ./libuasync*.deb"
-#	echo $USERPASS | sudo -S dpkg -i ./libuasync*.deb
+	echo "$ sudo -S dpkg -i ./libminiasync*.deb"
+	echo $USERPASS | sudo -S dpkg -i ./libminiasync*.deb
 
-#elif [ $PACKAGE_MANAGER = "rpm" ]; then
-#	echo "$ rpm -q --info ./libuasync*.rpm"
-#	rpm -q --info ./libuasync*.rpm && true
+elif [ $PACKAGE_MANAGER = "rpm" ]; then
+	echo "$ rpm -q --info ./libminiasync*.rpm"
+	rpm -q --info ./libminiasync*.rpm && true
 
-#	echo "$ rpm -q --list ./libuasync*.rpm"
-#	rpm -q --list ./libuasync*.rpm && true
+	echo "$ rpm -q --list ./libminiasync*.rpm"
+	rpm -q --list ./libminiasync*.rpm && true
 
-#	echo "$ sudo -S rpm -ivh --force *.rpm"
-#	echo $USERPASS | sudo -S rpm -ivh --force *.rpm
-#fi
+	echo "$ sudo -S rpm -ivh --force *.rpm"
+	echo $USERPASS | sudo -S rpm -ivh --force *.rpm
+fi
 
 #test_compile_all_examples_standalone
 
-#if [ "$PACKAGE_MANAGER" = "" ]; then
+if [ "$PACKAGE_MANAGER" = "" ]; then
+	:
 	# uninstall the library, since it was installed from sources
-#	cd $WORKDIR/build
-#	sudo_password -S make uninstall
-#elif [ $PACKAGE_MANAGER = "deb" ]; then
-#	echo "sudo -S dpkg --remove libuasync-dev"
-#	echo $USERPASS | sudo -S dpkg --remove libuasync-dev
-#elif [ $PACKAGE_MANAGER = "rpm" ]; then
-#	echo "$ sudo -S rpm --erase libuasync-devel"
-#	echo $USERPASS | sudo -S rpm --erase libuasync-devel
-#fi
+	# cd $WORKDIR/build
+	# sudo_password -S make uninstall
+elif [ $PACKAGE_MANAGER = "deb" ]; then
+	echo "sudo -S dpkg --remove libminiasync-dev"
+	echo $USERPASS | sudo -S dpkg --remove libminiasync-dev
+elif [ $PACKAGE_MANAGER = "rpm" ]; then
+	echo "$ sudo -S rpm --erase libminiasync-devel"
+	echo $USERPASS | sudo -S rpm --erase libminiasync-devel
+fi
 
 cd $WORKDIR
 rm -rf $WORKDIR/build

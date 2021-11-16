@@ -22,5 +22,10 @@ add_library(miniasync SHARED ${SOURCES})
 target_include_directories(miniasync PRIVATE . include)
 
 set_target_properties(miniasync PROPERTIES
-	PUBLIC_HEADER ${MINIASYNC_INCLUDE_DIR}/miniasync.h
+	PUBLIC_HEADER ${MINIASYNC_INCLUDE_DIR}/libminiasync.h
 )
+
+install(TARGETS miniasync
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

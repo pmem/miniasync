@@ -39,8 +39,8 @@ ENV PYTHON_DEPS "\
 	matplotlib \
 	pandas"
 
-# RPMA deps
-ENV RPMA_DEPS "\
+# MINIASYNC deps
+ENV MINIASYNC_DEPS "\
 	cmake \
 	file \
 	gawk \
@@ -57,7 +57,7 @@ RUN dnf install -y \
 	$BASE_DEPS \
 	$TOOLS_DEPS \
 	$TESTS_DEPS \
-	$RPMA_DEPS \
+	$MINIASYNC_DEPS \
 	$DOC_UPDATE_DEPS \
 && dnf clean all
 
