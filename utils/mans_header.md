@@ -1,7 +1,7 @@
 ---
 layout: manual
 Content-Style: 'text/css'
-title: LIBUASYNC
+title: MINIASYNC
 collection: miniasync
 date: miniasync API version 0.1.0
 ...
