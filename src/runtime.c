@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include "runtime.h"
+#include "libminiasync/runtime.h"
 #include <emmintrin.h>
 #include <stdlib.h>
 #include <pthread.h>
