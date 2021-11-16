@@ -7,6 +7,11 @@ cmake_minimum_required(VERSION 3.3)
 
 project(libuasync C)
 
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
+set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+
 set(LIBUASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/)
 set(LIBUASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include/)
 
@@ -96,3 +101,22 @@ add_check_whitespace(cmake-helpers ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
 
 # add CMakeLists.txt from the src directory
 add_subdirectory(src)
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake/libuasync.pc.in
+	${CMAKE_CURRENT_BINARY_DIR}/libuasync.pc @ONLY)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libuasync.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/libuasync-config.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/libuasync-config.cmake
+	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/libuasync/cmake
+	PATH_VARS CMAKE_INSTALL_LIBDIR CMAKE_INSTALL_INCLUDEDIR)
+
+write_basic_package_version_file(libuasync-config-version.cmake
+				VERSION ${VERSION}
+				COMPATIBILITY AnyNewerVersion)
+
+if(NOT "${CPACK_GENERATOR}" STREQUAL "")
+	include(${CMAKE_SOURCE_DIR}/cmake/packages.cmake)
+endif()
