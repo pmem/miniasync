@@ -7,10 +7,19 @@
 # functions.cmake - helper functions for CMakeLists.txt
 #
 
-# Checks whether flag is supported by current C compiler and appends
-# it to the relevant cmake variable.
-# 1st argument is a flag
-# 2nd (optional) argument is a build type (debug, release)
+# prepend-- function prepends prefix to list of strings.
+function(prepend var prefix)
+	set(listVar "")
+	foreach(f ${ARGN})
+		list(APPEND listVar "${prefix}/${f}")
+	endforeach(f)
+	set(${var} "${listVar}" PARENT_SCOPE)
+endfunction()
+
+# add_flag-- macro checks whether flag is supported by current C compiler
+#		and appends it to the relevant cmake variable.
+#		1st argument is a flag.
+#		2nd (optional) argument is a build type (debug, release).
 macro(add_flag flag)
 	string(REPLACE - _ flag2 ${flag})
 	string(REPLACE " " _ flag2 ${flag2})
@@ -49,12 +58,12 @@ macro(add_sanitizer_flag flag)
 	set(CMAKE_REQUIRED_LIBRARIES ${SAVED_CMAKE_REQUIRED_LIBRARIES})
 endmacro()
 
-# Generates cstyle-$name target and attaches it
-# as a dependency of global "cstyle" target.
-# cstyle-$name target verifies C style of files in current source dir.
-# If more arguments are used, they are used as files to be checked
-# instead.
-# ${name} must be unique.
+# add_cstyle-- function generates cstyle-$name target and attaches it
+#		as a dependency of global "cstyle" target.
+#		cstyle-$name target verifies C style of files in current source dir.
+#		If more arguments are used, they are used as files to be checked
+#		instead.
+#		${name} must be unique.
 function(add_cstyle name)
 	if(${ARGC} EQUAL 1)
 		add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/cstyle-${name}-status
@@ -81,9 +90,9 @@ function(add_cstyle name)
 	add_dependencies(cstyle cstyle-${name})
 endfunction()
 
-# Generates check-whitespace-$name target and attaches it as a dependency
-# of global "check-whitespace" target.
-# ${name} must be unique.
+# add_check_whitespace-- function generates check-whitespace-$name target
+#		and attaches it as a dependency of global "check-whitespace" target.
+#		${name} must be unique.
 function(add_check_whitespace name)
 	if(${ARGC} EQUAL 1)
 		add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/check-whitespace-${name}-status

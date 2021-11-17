@@ -134,11 +134,10 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
 	-DDEVELOPER_MODE=1 \
 	-DUSE_ASAN=${CI_SANITS} \
-	-DUSE_UBSAN=${CI_SANITS}
-
-#-DTEST_DIR=$TEST_DIR \
+	-DUSE_UBSAN=${CI_SANITS} \
+	-DTEST_DIR=$TEST_DIR 
 make -j$(nproc)
-#ctest --output-on-failure
+ctest --output-on-failure
 
 cd $WORKDIR
 rm -rf $WORKDIR/build
@@ -156,11 +155,11 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DCMAKE_INSTALL_PREFIX=$PREFIX \
 	-DCOVERAGE=$COVERAGE \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1
+	-DDEVELOPER_MODE=1 \
+	-DTEST_DIR=$TEST_DIR 
 
-#-DTEST_DIR=$TEST_DIR \
 make -j$(nproc)
-#ctest --output-on-failure
+ctest --output-on-failure
 #sudo_password -S make -j$(nproc) install
 
 if [ "$COVERAGE" == "1" ]; then
@@ -195,11 +194,11 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=$PREFIX \
 	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
-	-DDEVELOPER_MODE=1
+	-DDEVELOPER_MODE=1 \
+	-DTEST_DIR=$TEST_DIR 
 
-#-DTEST_DIR=$TEST_DIR \
 make -j$(nproc)
-#ctest --output-on-failure
+ctest --output-on-failure
 
 if [ "$PACKAGE_MANAGER" = "" ]; then
 	# install the library from sources

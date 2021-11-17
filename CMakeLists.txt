@@ -18,8 +18,21 @@ set(MINIASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include)
 option(COVERAGE "run coverage test" OFF)
 option(DEVELOPER_MODE "enable developer checks" OFF)
 option(CHECK_CSTYLE "check code style of C sources" OFF)
+option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)
+
+set(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples/)
+
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+option(BUILD_EXAMPLES "build examples" ON)
+option(BUILD_TESTS "build tests" ON)
+
+option(TESTS_USE_VALGRIND "enable tests with valgrind (if found)" ON)
+
+set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
+	CACHE STRING "working directory for tests")
 
 include(FindPerl)
 include(FindThreads)
@@ -99,6 +112,9 @@ endif()
 add_check_whitespace(cmake-main ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 add_check_whitespace(cmake-helpers ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
 
+# look for and enable valgrind
+pkg_check_modules(VALGRIND valgrind)
+
 configure_file(${CMAKE_SOURCE_DIR}/cmake/libminiasync.pc.in
 	${CMAKE_CURRENT_BINARY_DIR}/libminiasync.pc @ONLY)
 
@@ -117,8 +133,32 @@ write_basic_package_version_file(libminiasync-config-version.cmake
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libminiasync-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/libminiasync-config-version.cmake
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/libminiasync/cmake)
 
+if(VALGRIND_FOUND)
+	add_flag(-DVG_MEMCHECK_ENABLED=1)
+	add_flag(-DVG_DRD_ENABLED=1)
+	add_flag(-DVG_HELGRIND_ENABLED=1)
+
+	include_directories(${VALGRIND_INCLUDE_DIRS})
+endif()
+
 # add CMakeLists.txt from the src directory
 add_subdirectory(src)
+
+# add CMakeLists.txt from the tests directory
+if(BUILD_TESTS)
+	if(TEST_DIR)
+		enable_testing()
+	else()
+		message(WARNING "TEST_DIR is empty - 'make test' will not work")
+	endif()
+
+	add_subdirectory(tests)
+endif()
+
+# add CMakeLists.txt from the examples directory
+if(BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
 
 if(NOT "${CPACK_GENERATOR}" STREQUAL "")
 	include(${CMAKE_SOURCE_DIR}/cmake/packages.cmake)
