@@ -9,7 +9,8 @@ add_cstyle(src
 
 add_check_whitespace(src
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
-	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 
 set(SOURCES
     future.c
