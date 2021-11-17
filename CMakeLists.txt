@@ -5,16 +5,29 @@
 
 cmake_minimum_required(VERSION 3.3)
 
-project(libuasync C)
+project(miniasync C)
 
-set(LIBUASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/)
-set(LIBUASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include/)
+set(MINIASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/)
+set(MINIASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include/)
+
+set(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples/)
+
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+option(BUILD_EXAMPLES "build examples" ON)
+option(BUILD_TESTS "build tests" ON)
 
 option(COVERAGE "run coverage test" OFF)
 option(DEVELOPER_MODE "enable developer checks" OFF)
 option(CHECK_CSTYLE "check code style of C sources" OFF)
+option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)
+
+option(TESTS_USE_VALGRIND "enable tests with valgrind (if found)" ON)
+
+set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
+	CACHE STRING "working directory for tests")
 
 include(FindPerl)
 include(FindThreads)
@@ -94,5 +107,32 @@ endif()
 add_check_whitespace(cmake-main ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 add_check_whitespace(cmake-helpers ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
 
+# look for and enable valgrind
+pkg_check_modules(VALGRIND valgrind)
+
+if(VALGRIND_FOUND)
+	add_flag(-DVG_MEMCHECK_ENABLED=1)
+	add_flag(-DVG_DRD_ENABLED=1)
+	add_flag(-DVG_HELGRIND_ENABLED=1)
+
+	include_directories(${VALGRIND_INCLUDE_DIRS})
+endif()
+
 # add CMakeLists.txt from the src directory
 add_subdirectory(src)
+
+# add CMakeLists.txt from the tests directory
+if(BUILD_TESTS)
+	if(TEST_DIR)
+		enable_testing()
+	else()
+		message(WARNING "TEST_DIR is empty - 'make test' will not work")
+	endif()
+
+	add_subdirectory(tests)
+endif()
+
+# add CMakeLists.txt from the examples directory
+if(BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
