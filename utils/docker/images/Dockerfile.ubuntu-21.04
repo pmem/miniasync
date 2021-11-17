@@ -37,6 +37,7 @@ ENV TOOLS_DEPS "\
 ENV TESTS_DEPS "\
 	pylint3 \
 	python3-pip \
+	valgrind \
 	python3-pytest"
 
 ENV PYTHON_DEPS "\
