@@ -19,7 +19,6 @@
 #include <unistd.h>
 
 #include "libminiasync.h"
-#include "vdm.h"
 
 struct async_print_data {
 	void *value;
@@ -59,7 +58,7 @@ struct async_memcpy_print_output {
 };
 
 FUTURE(async_memcpy_print_fut, struct async_memcpy_print_data,
-       struct async_memcpy_print_output);
+		struct async_memcpy_print_output);
 
 static void
 memcpy_to_print_map(struct future_context *memcpy_ctx,
