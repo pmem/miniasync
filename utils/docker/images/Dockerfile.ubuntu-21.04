@@ -29,8 +29,13 @@ ENV BASE_DEPS "\
 	git \
 	pkg-config \
 	sudo \
-	wget \
-	whois"
+	whois \
+	cmake \
+	curl \
+	gawk \
+	groff \
+	graphviz \
+	pandoc"
 
 ENV TOOLS_DEPS "\
 	python3-jinja2"
@@ -45,21 +50,15 @@ ENV PYTHON_DEPS "\
 	matplotlib \
 	pandas"
 
-# RPMA deps
-ENV RPMA_DEPS "\
-	cmake \
-	curl \
-	gawk \
-	groff \
-	graphviz \
-	pandoc"
+# Coverity
+ENV COVERITY_DEPS ruby gcc g++ wget
 
 # Install all required packages
 RUN apt-get install -y --no-install-recommends \
 	$BASE_DEPS \
 	$TOOLS_DEPS \
 	$TESTS_DEPS \
-	$RPMA_DEPS \
+	$COVERITY_DEPS \
 && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip
