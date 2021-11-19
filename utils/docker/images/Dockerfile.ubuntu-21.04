@@ -29,7 +29,6 @@ ENV BASE_DEPS "\
 	git \
 	pkg-config \
 	sudo \
-	wget \
 	whois \
 	cmake \
 	curl \
