@@ -35,6 +35,11 @@ async_chain_impl(struct future_context *ctx, struct future_waker waker)
 	struct future_chain_entry *entry = (struct future_chain_entry *)(data);
 	size_t used_data = 0;
 
+	/*
+	 * This will iterate to the first non-complete future in the chain
+	 * and then call poll it once.
+	 * Futures must be laid out sequentially in memory for this to work.
+	 */
 	while (entry != NULL) {
 		used_data += sizeof(struct future_chain_entry) +
 			future_context_get_size(&entry->future.context);
