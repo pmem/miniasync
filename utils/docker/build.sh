@@ -6,7 +6,7 @@
 
 #
 # build.sh - runs a Docker container from a Docker image with environment
-#            prepared for running libuasync build and tests.
+#            prepared for running miniasync build and tests.
 #
 #
 # Notes:
@@ -43,7 +43,7 @@ if [[ "$CI_BRANCH" == "coverity_scan" && "$TYPE" != "coverity" ]]; then
 fi
 
 imageName=${DOCKER_REPO}:${IMG_VER}-${OS}-${OS_VER}
-containerName=libuasync-${OS}-${OS_VER}
+containerName=miniasync-${OS}-${OS_VER}
 
 if [[ "$command" == "" ]]; then
 	case $TYPE in
@@ -67,7 +67,7 @@ if [[ -z "${CI_BRANCH}" || -z "${TARGET_BRANCHES[${CI_BRANCH}]}" || "$CI_EVENT_T
 	AUTO_DOC_UPDATE=0
 fi
 
-WORKDIR=/libuasync
+WORKDIR=/miniasync
 SCRIPTSDIR=$WORKDIR/utils/docker
 
 # check if we are running on a CI (Travis or GitHub Actions)

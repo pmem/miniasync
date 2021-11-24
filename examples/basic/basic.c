@@ -18,7 +18,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "libuasync.h"
+#include "libminiasync.h"
 
 struct async_print_data {
 	void *value;

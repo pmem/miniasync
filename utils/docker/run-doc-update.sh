@@ -10,7 +10,7 @@ source `dirname $0`/valid-branches.sh
 
 BOT_NAME="pmem-bot"
 USER_NAME="pmem"
-REPO_NAME="libuasync"
+REPO_NAME="miniasync"
 
 ORIGIN="https://${DOC_UPDATE_GITHUB_TOKEN}@github.com/${BOT_NAME}/${REPO_NAME}"
 UPSTREAM="https://github.com/pmem/${REPO_NAME}"
