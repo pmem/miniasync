@@ -6,7 +6,7 @@ name: On_Pull_Request
 on: [push, pull_request]
 
 env:
-    GITHUB_REPO: pmem/pmemasync
+    GITHUB_REPO: pmem/miniasync
     # use GitHub Container Registry as a repository of docker images
     GH_CR_ADDR:  ghcr.io
     DOCKER_REPO: ghcr.io/pmem/miniasync
