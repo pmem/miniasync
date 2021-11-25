@@ -17,10 +17,10 @@ set(SOURCES
     runtime.c
 )
 
-add_library(uasync SHARED ${SOURCES})
+add_library(miniasync SHARED ${SOURCES})
 
-target_include_directories(uasync PRIVATE . include)
+target_include_directories(miniasync PRIVATE . include)
 
-set_target_properties(uasync PROPERTIES
-	PUBLIC_HEADER ${LIBUASYNC_INCLUDE_DIR}/libuasync.h
+set_target_properties(miniasync PROPERTIES
+	PUBLIC_HEADER ${MINIASYNC_INCLUDE_DIR}/miniasync.h
 )

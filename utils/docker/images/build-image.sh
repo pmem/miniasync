@@ -6,7 +6,7 @@
 
 #
 # build-image.sh <OS-VER> - prepares a Docker image with <OS>-based
-#                           environment for testing libuasynca, according
+#                           environment for testing miniasync, according
 #                           to the Dockerfile.<OS-VER> file located
 #                           in the same directory.
 #

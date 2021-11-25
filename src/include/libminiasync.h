@@ -2,11 +2,11 @@
 /* Copyright 2021, Intel Corporation */
 
 /*
- * libuasync.h -- definition of libuasync
+ * libminiasync.h -- definition of libminiasync
  */
 
-#ifndef LIBUASYNC_H
-#define LIBUASYNC_H 1
+#ifndef LIBMINIASYNC_H
+#define LIBMINIASYNC_H 1
 
 #include <stddef.h>
 #include <stdio.h>
@@ -24,4 +24,4 @@ extern "C" {
 }
 #endif
 
-#endif /* LIBUASYNC_H */
+#endif /* LIBMINIASYNC_H */

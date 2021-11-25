@@ -5,10 +5,10 @@
 
 cmake_minimum_required(VERSION 3.3)
 
-project(libuasync C)
+project(miniasync C)
 
-set(LIBUASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/)
-set(LIBUASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include/)
+set(MINIASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/)
+set(MINIASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include/)
 
 option(COVERAGE "run coverage test" OFF)
 option(DEVELOPER_MODE "enable developer checks" OFF)

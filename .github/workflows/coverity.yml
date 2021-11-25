@@ -1,5 +1,5 @@
 
-name: libuasync-coverity
+name: miniasync-coverity
 # It runs static analysis build - Coverity. It requires special token (set in CI's secret).
 
 on:
@@ -8,9 +8,9 @@ on:
     - cron:  '0 0 * * *'
 
 env:
-  REPO:           libuasync
-  GITHUB_REPO:    wlemkows/libuasync
-  DOCKER_REPO:    ghcr.io/wlemkows/libuasync
+  REPO:           miniasync
+  GITHUB_REPO:    pmem/miniasync
+  DOCKER_REPO:    ghcr.io/pmem/miniasync
   HOST_WORKDIR:   ${{ github.workspace }}
   WORKDIR:        utils/docker
   IMG_VER:        latest

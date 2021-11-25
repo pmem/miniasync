@@ -34,7 +34,7 @@ case "$PACKAGE_MANAGER" in
 	"rpm"|"deb") # supported package managers
 		;;
 	"none") # no package manager, install the library from sources
-		echo "Notice: the libpma libuasyncrary will be installed from sources"
+		echo "Notice: the miniasync library will be installed from sources"
 		PACKAGE_MANAGER=""
 		;;
 	"")
@@ -109,9 +109,9 @@ function test_compile_all_examples_standalone() {
 		echo "###########################################################"
 		echo "### Testing standalone compilation of example: $e"
 		if [ "$PACKAGE_MANAGER" = "" ]; then
-			echo "### (with libuasync installed from RELEASE sources)"
+			echo "### (with miniasync installed from RELEASE sources)"
 		else
-			echo "### (with libuasync installed from RELEASE packages)"
+			echo "### (with miniasync installed from RELEASE packages)"
 		fi
 		echo "###########################################################"
 		compile_example_standalone $DIR

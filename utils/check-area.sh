@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2018-2020, Intel Corporation
+# Copyright 2018-2021, Intel Corporation
 
 #
 # Finds applicable area name for specified commit id.
@@ -37,7 +37,7 @@ function categorize() {
 echo
 echo "Areas computed basing on the list of modified files: (see utils/check-area.sh for full algorithm)"
 
-categorize uasync    -e "^src/"
+categorize masync    -e "^src/"
 categorize test      -e "^tests/"
 categorize tools     -e "^tools/"
 categorize examples  -e "^examples/"
