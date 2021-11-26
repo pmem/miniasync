@@ -13,10 +13,10 @@
  * Intel DSA (Data Streaming Accelerator), plain threads,
  * or synchronous operations in the current working thread.
  *
- * Data movers need to implement the runner interface, and applications can use
- * such implementations to create a concrete mover. Software can then use movers
- * to create more complex generic concurrent futures that use asynchronous
- * memory operations.
+ * Data movers need to implement the descriptor interface, and applications can
+ * use such implementations to create a concrete mover. Software can then use
+ * movers to create more complex generic concurrent futures that use
+ * asynchronous memory operations.
  */
 
 #ifndef VDM_H
@@ -30,8 +30,8 @@ typedef void (*vdm_cb_fn)(struct future_context *context);
 typedef void (*vdm_data_fn)(void **vdm_data);
 
 struct vdm_memcpy_data {
-	struct future_waker waker;
-	_Atomic int complete;
+	struct future_notifier notifier;
+	_Atomic uint64_t complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;
@@ -49,7 +49,8 @@ FUTURE(vdm_memcpy_future,
 struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm,
 	void *dest, void *src, size_t n);
 
-typedef void (*async_memcpy_fn)(void *runner, struct future_context *context);
+typedef void (*async_memcpy_fn)(void *descriptor,
+	struct future_notifier *notifier, struct future_context *context);
 
 struct vdm_descriptor {
 	vdm_data_fn vdm_data_init;
@@ -59,7 +60,7 @@ struct vdm_descriptor {
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
 struct vdm_descriptor *vdm_descriptor_pthreads(void);
-
+struct vdm_descriptor *vdm_descriptor_pthreads_polled(void);
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);
