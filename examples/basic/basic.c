@@ -30,7 +30,7 @@ struct async_print_output {
 FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
 
 static enum future_state
-async_print_impl(struct future_context *ctx, struct future_waker waker)
+async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
 	struct async_print_data *data = future_context_get_data(ctx);
 	printf("async print: %p\n", data->value);
@@ -96,7 +96,7 @@ main(int argc, char *argv[])
 	char *buf_b = strdup("otherbuf");
 	struct runtime *r = runtime_new();
 
-	struct vdm *pthread_mover = vdm_new(vdm_descriptor_pthreads());
+	struct vdm *pthread_mover = vdm_new(vdm_descriptor_pthreads_polled());
 	struct vdm_memcpy_future a_to_b =
 		vdm_memcpy(pthread_mover, buf_b, buf_a, testbuf_size);
 
