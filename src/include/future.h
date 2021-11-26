@@ -86,6 +86,22 @@ struct future_waker {
 	future_waker_wake_fn wake;
 };
 
+struct future_poller {
+	uint64_t *ptr_to_monitor;
+};
+
+enum future_notifier_type {
+	FUTURE_NOTIFIER_NONE,
+	FUTURE_NOTIFIER_WAKER,
+	FUTURE_NOTIFIER_POLLER,
+};
+
+struct future_notifier {
+	enum future_notifier_type notifier_used;
+	struct future_waker waker;
+	struct future_poller poller;
+};
+
 void *future_context_get_data(struct future_context *context);
 
 void *future_context_get_output(struct future_context *context);
@@ -96,7 +112,7 @@ size_t future_context_get_size(struct future_context *context);
 ((_wakerp)->wake((_wakerp)->data))
 
 typedef enum future_state (*future_task_fn)(struct future_context *context,
-			struct future_waker waker);
+			struct future_notifier *notifier);
 
 struct future {
 	future_task_fn task;
@@ -145,16 +161,19 @@ do {\
 	(_entry)->arg = _map_arg;\
 } while (0)
 
-struct future_waker future_noop_waker(void);
-
-enum future_state future_poll(struct future *fut, struct future_waker waker);
+/*
+ * TODO: Notifiers have to be copied into the state of the future, so we might
+ * consider just passing it by copy here... Needs to be evaluted for perfomance.
+ */
+enum future_state future_poll(struct future *fut,
+	struct future_notifier *notifier);
 
 #define FUTURE_BUSY_POLL(_futurep)\
-while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), future_noop_waker()) !=\
+while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
 	FUTURE_STATE_COMPLETE) {}
 
 enum future_state async_chain_impl(struct future_context *ctx,
-	struct future_waker waker);
+	struct future_notifier *notifier);
 
 #define FUTURE_CHAIN_INIT(_futurep)\
 FUTURE_INIT((_futurep), async_chain_impl)
