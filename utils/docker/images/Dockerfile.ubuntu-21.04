@@ -53,12 +53,22 @@ ENV PYTHON_DEPS "\
 # Coverity
 ENV COVERITY_DEPS ruby gcc g++ wget
 
+# MINIASYNC deps
+ENV MINIASYNC "\
+	cmake \
+	curl \
+	gawk \
+	groff \
+	graphviz \
+	pandoc"
+
 # Install all required packages
 RUN apt-get install -y --no-install-recommends \
 	$BASE_DEPS \
 	$TOOLS_DEPS \
 	$TESTS_DEPS \
 	$COVERITY_DEPS \
+	$MINIASYNC \
 && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip
