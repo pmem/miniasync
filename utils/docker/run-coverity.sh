@@ -24,6 +24,14 @@ export COVERITY_SCAN_PROJECT_NAME="$CI_REPO_SLUG"
 	|| export COVERITY_SCAN_BRANCH_PATTERN="coverity_scan"
 export COVERITY_SCAN_BUILD_COMMAND="make"
 
+# The 'travisci_build_coverity_scan.sh' script requires the following
+# environment variables to be set:
+# - TRAVIS_BRANCH - has to contain the name of the current branch
+# - TRAVIS_PULL_REQUEST - has to be set to 'true' in case of pull requests
+#
+export TRAVIS_BRANCH=${CI_BRANCH}
+[ "${CI_EVENT_TYPE}" == "pull_request" ] && export TRAVIS_PULL_REQUEST="true"
+
 # Run the Coverity scan
 
 # XXX: Patch the Coverity script.
