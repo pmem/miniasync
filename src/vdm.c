@@ -176,6 +176,8 @@ vdm_descriptor_pthreads(void)
 
 static struct vdm_descriptor pthreads_polled_descriptor = {
 	.memcpy = memcpy_pthreads_polled,
+	.vdm_data_init = NULL,
+	.vdm_data_fini = NULL,
 	.check = vdm_check,
 };
 
