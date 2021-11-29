@@ -18,7 +18,7 @@ set(SOURCES
     vdm.c
 )
 
-add_library(miniasync SHARED ${SOURCES})
+add_library(miniasync STATIC ${SOURCES})
 
 target_include_directories(miniasync PRIVATE . include)
 

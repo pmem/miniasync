@@ -36,6 +36,7 @@ struct vdm_memcpy_data {
 	void *src;
 	size_t n;
 	vdm_cb_fn vdm_cb;
+	void *extra;
 };
 
 struct vdm_memcpy_output {
