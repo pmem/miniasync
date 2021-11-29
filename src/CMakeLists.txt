@@ -13,7 +13,7 @@ add_check_whitespace(src
 
 set(SOURCES
     future.c
-    mover.c
+    vdm.c
     runtime.c
 )
 

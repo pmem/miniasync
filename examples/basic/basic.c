@@ -19,6 +19,7 @@
 #include <unistd.h>
 
 #include "libminiasync.h"
+#include "vdm.h"
 
 struct async_print_data {
 	void *value;
@@ -50,7 +51,7 @@ async_print(void *value)
 }
 
 struct async_memcpy_print_data {
-	FUTURE_CHAIN_ENTRY(struct mover_memcpy_future, memcpy);
+	FUTURE_CHAIN_ENTRY(struct vdm_memcpy_future, memcpy);
 	FUTURE_CHAIN_ENTRY(struct async_print_fut, print);
 };
 
@@ -64,7 +65,7 @@ static void
 memcpy_to_print_map(struct future_context *memcpy_ctx,
 		    struct future_context *print_ctx, void *arg)
 {
-	struct mover_memcpy_output *output =
+	struct vdm_memcpy_output *output =
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
@@ -73,11 +74,11 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 }
 
 static struct async_memcpy_print_fut
-async_memcpy_print(struct mover *mover, void *dest, void *src, size_t n)
+async_memcpy_print(struct vdm *vdm, void *dest, void *src, size_t n)
 {
 	struct async_memcpy_print_fut chain;
 	FUTURE_CHAIN_ENTRY_INIT(&chain.data.memcpy,
-				mover_memcpy(mover, dest, src, n),
+				vdm_memcpy(vdm, dest, src, n),
 				memcpy_to_print_map, (void *)0xd);
 	FUTURE_CHAIN_ENTRY_INIT(&chain.data.print, async_print(NULL), NULL,
 				NULL);
@@ -96,9 +97,9 @@ main(int argc, char *argv[])
 	char *buf_b = strdup("otherbuf");
 	struct runtime *r = runtime_new();
 
-	struct mover *pthread_mover = mover_new(mover_runner_pthreads());
-	struct mover_memcpy_future a_to_b =
-		mover_memcpy(pthread_mover, buf_b, buf_a, testbuf_size);
+	struct vdm *pthread_mover = vdm_new(vdm_descriptor_pthreads());
+	struct vdm_memcpy_future a_to_b =
+		vdm_memcpy(pthread_mover, buf_b, buf_a, testbuf_size);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
 
@@ -115,7 +116,7 @@ main(int argc, char *argv[])
 		async_memcpy_print(pthread_mover, buf_b, buf_a, testbuf_size);
 	FUTURE_BUSY_POLL(&memcpy_print_busy);
 
-	mover_delete(pthread_mover);
+	vdm_delete(pthread_mover);
 
 	printf("%s %s %d\n", buf_a, buf_b, memcmp(buf_a, buf_b, testbuf_size));
 
