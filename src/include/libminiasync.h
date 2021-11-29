@@ -11,9 +11,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "future.h"
-#include "vdm.h"
-#include "runtime.h"
+#include "libminiasync/future.h"
+#include "libminiasync/mover.h"
+#include "libminiasync/runtime.h"
 
 #ifdef __cplusplus
 extern "C" {
