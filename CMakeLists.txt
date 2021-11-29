@@ -21,6 +21,7 @@ option(CHECK_CSTYLE "check code style of C sources" OFF)
 option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)
+option(COMPILE_DML "compile miniasync dml implementation library" OFF)
 
 set(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples/)
 
@@ -162,4 +163,9 @@ endif()
 
 if(NOT "${CPACK_GENERATOR}" STREQUAL "")
 	include(${CMAKE_SOURCE_DIR}/cmake/packages.cmake)
+endif()
+
+# add CMakeLists.txt from the mover directory
+if (COMPILE_DML)
+	add_subdirectory(extras/dml)
 endif()
