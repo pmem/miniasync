@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include "libminiasync/future.h"
-#include "libminiasync/mover.h"
+#include "libminiasync/vdm.h"
 #include "libminiasync/runtime.h"
 
 #ifdef __cplusplus

@@ -19,7 +19,6 @@
 #include <unistd.h>
 
 #include "libminiasync.h"
-#include "vdm.h"
 
 struct async_print_data {
 	void *value;
