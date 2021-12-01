@@ -56,6 +56,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n)
 	future.data.src = src;
 	future.data.n = n;
 	future.data.complete = 0;
+	future.output = (struct vdm_memcpy_output){ NULL };
 	FUTURE_INIT(&future, vdm_memcpy_impl);
 
 	return future;
