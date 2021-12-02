@@ -70,9 +70,8 @@ vdm_memcpy_impl(struct future_context *context, struct future_notifier *n)
 			*n = data->notifier;
 		}
 	}
-	int complete;
-	util_atomic_load64(&data->complete, &complete);
-	return complete ? FUTURE_STATE_COMPLETE: FUTURE_STATE_RUNNING;
+
+	return data->vdm->descriptor->check(context);
 }
 
 struct vdm_memcpy_future
@@ -99,6 +98,16 @@ memcpy_impl(void *descriptor, struct future_context *context)
 	data->vdm_cb(context);
 }
 
+static enum future_state
+vdm_check(struct future_context *context)
+{
+	struct vdm_memcpy_data *data = future_context_get_data(context);
+
+	int complete;
+	util_atomic_load64(&data->complete, &complete);
+	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
+}
+
 static void
 memcpy_sync(void *descriptor, struct future_notifier *notifier,
 	struct future_context *context)
@@ -112,6 +121,7 @@ static struct vdm_descriptor synchronous_descriptor = {
 	.memcpy = memcpy_sync,
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
+	.check = vdm_check,
 };
 
 struct vdm_descriptor *
@@ -155,6 +165,7 @@ static struct vdm_descriptor pthreads_descriptor = {
 	.memcpy = memcpy_pthreads,
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
+	.check = vdm_check,
 };
 
 struct vdm_descriptor *
@@ -165,6 +176,7 @@ vdm_descriptor_pthreads(void)
 
 static struct vdm_descriptor pthreads_polled_descriptor = {
 	.memcpy = memcpy_pthreads_polled,
+	.check = vdm_check,
 };
 
 struct vdm_descriptor *
