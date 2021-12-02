@@ -52,10 +52,13 @@ struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm,
 typedef void (*async_memcpy_fn)(void *descriptor,
 	struct future_notifier *notifier, struct future_context *context);
 
+typedef enum future_state (*async_check_fn)(struct future_context *context);
+
 struct vdm_descriptor {
 	vdm_data_fn vdm_data_init;
 	vdm_data_fn vdm_data_fini;
 	async_memcpy_fn memcpy;
+	async_check_fn check;
 };
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
