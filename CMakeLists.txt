@@ -6,6 +6,7 @@
 cmake_minimum_required(VERSION 3.3)
 
 project(miniasync C)
+set(MINIASYNC_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
@@ -21,6 +22,7 @@ option(CHECK_CSTYLE "check code style of C sources" OFF)
 option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)
+option(BUILD_DOC "build documentation" ON)
 
 set(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples/)
 
@@ -158,6 +160,11 @@ endif()
 # add CMakeLists.txt from the examples directory
 if(BUILD_EXAMPLES)
 	add_subdirectory(examples)
+endif()
+
+# add CMakeLists.txt from the doc directory
+if(BUILD_DOC)
+	add_subdirectory(doc)
 endif()
 
 if(NOT "${CPACK_GENERATOR}" STREQUAL "")
