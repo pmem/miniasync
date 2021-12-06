@@ -34,7 +34,7 @@ typedef void (*vdm_cb_fn)(struct future_context *context);
 
 struct vdm_memcpy_data {
 	struct future_waker waker;
-	_Atomic int complete;
+	int complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;
