@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.3)
 
-project(miniasync C)
+project(miniasync C CXX)
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
