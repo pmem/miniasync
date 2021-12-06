@@ -27,8 +27,8 @@ add_cstyle(tests-all
 add_check_whitespace(tests-all
 		${CMAKE_CURRENT_SOURCE_DIR}/*/*.[ch]
 		${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
-		${CMAKE_CURRENT_SOURCE_DIR}/*/*.cmake
-		${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
+		"${CMAKE_CURRENT_SOURCE_DIR}/*/*[.cmake]"
+		"${CMAKE_CURRENT_SOURCE_DIR}/cmake/*[.cmake]")
 
 include_directories(
 		${MINIASYNC_SOURCE_DIR}

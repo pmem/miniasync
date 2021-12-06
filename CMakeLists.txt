@@ -8,6 +8,11 @@ cmake_minimum_required(VERSION 3.3)
 project(miniasync C)
 set(MINIASYNC_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+# needed for shared library to work on Windows
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out CACHE STRING "")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out CACHE STRING "")
+
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
 set(VERSION_PATCH 0)
@@ -21,6 +26,10 @@ set(CORE_SOURCE_DIR ${MINIASYNC_SOURCE_DIR}/core)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
 	CACHE STRING "working directory for tests")
+
+if(WIN32)
+	set(MINIASYNC_INCLUDE_DIR_WIN ${CMAKE_SOURCE_DIR}/src/windows/include/)
+endif()
 
 option(COVERAGE "run coverage test" OFF)
 option(DEVELOPER_MODE "enable developer checks" OFF)
@@ -42,7 +51,9 @@ include(GNUInstallDirs)
 include(${CMAKE_SOURCE_DIR}/cmake/functions.cmake)
 
 # look for pkg config (use it later for managing valgrind)
-find_package(PkgConfig REQUIRED)
+if(NOT WIN32)
+	find_package(PkgConfig REQUIRED)
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Debug")
@@ -110,7 +121,7 @@ endif()
 
 # add checkers for the root CMakeLists file and for cmake helper files
 add_check_whitespace(cmake-main ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
-add_check_whitespace(cmake-helpers ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
+add_check_whitespace(cmake-helpers "${CMAKE_CURRENT_SOURCE_DIR}/cmake/*[.cmake]")
 
 # add checkers for utils and subdirectories
 add_check_whitespace(utils-all
@@ -121,7 +132,9 @@ add_check_whitespace(utils-all
 		${CMAKE_CURRENT_SOURCE_DIR}/utils/md2man/*)
 
 # look for and enable valgrind
-pkg_check_modules(VALGRIND valgrind)
+if(NOT WIN32)
+	pkg_check_modules(VALGRIND valgrind)
+endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/cmake/libminiasync.pc.in
 	${CMAKE_CURRENT_BINARY_DIR}/libminiasync.pc @ONLY)
