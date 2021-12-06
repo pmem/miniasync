@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright 2021, Intel Corporation
 
-set(GLOBAL_TEST_ARGS -DPARENT_DIR=${TEST_DIR}/)
+set(GLOBAL_TEST_ARGS -DPARENT_DIR=${TEST_DIR})
 
 if(TRACE_TESTS)
 	set(GLOBAL_TEST_ARGS ${GLOBAL_TEST_ARGS} --trace-expand)
@@ -57,6 +57,7 @@ function(test name dir_name file tracer)
 		-DBIN_DIR=${CMAKE_CURRENT_BINARY_DIR}/${file}_${tracer}
 		-DCONFIG=$<CONFIG>
 		-DTRACER=${tracer}
+		-DBUILD=${CMAKE_BUILD_TYPE}
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/${dir_name}/${file}.cmake)
 
 	set_tests_properties(${name} PROPERTIES

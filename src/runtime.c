@@ -1,28 +1,30 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include "libminiasync/runtime.h"
 #include <emmintrin.h>
 #include <stdlib.h>
-#include <pthread.h>
+
+#include "libminiasync/runtime.h"
+#include "core/os.h"
+#include "core/os_thread.h"
 
 struct runtime_waker_data {
-	pthread_cond_t *cond;
-	pthread_mutex_t *lock;
+	os_cond_t *cond;
+	os_mutex_t *lock;
 };
 
 static void
 runtime_waker_wake(void *fdata)
 {
 	struct runtime_waker_data *data = fdata;
-	pthread_mutex_lock(data->lock);
-	pthread_cond_signal(data->cond);
-	pthread_mutex_unlock(data->lock);
+	os_mutex_lock(data->lock);
+	os_cond_signal(data->cond);
+	os_mutex_unlock(data->lock);
 }
 
 struct runtime {
-	pthread_cond_t cond;
-	pthread_mutex_t lock;
+	os_cond_t cond;
+	os_mutex_t lock;
 
 	uint64_t spins_before_sleep;
 	struct timespec cond_wait_time;
@@ -32,8 +34,8 @@ struct runtime *
 runtime_new(void)
 {
 	struct runtime *runtime = malloc(sizeof(struct runtime));
-	pthread_cond_init(&runtime->cond, NULL);
-	pthread_mutex_init(&runtime->lock, NULL);
+	os_cond_init(&runtime->cond);
+	os_mutex_init(&runtime->lock);
 
 	runtime->spins_before_sleep = 1000;
 	runtime->cond_wait_time = (struct timespec){0, 1000000};
@@ -50,17 +52,17 @@ runtime_delete(struct runtime *runtime)
 static void
 runtime_sleep(struct runtime *runtime)
 {
-	pthread_mutex_lock(&runtime->lock);
+	os_mutex_lock(&runtime->lock);
 	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
+	os_clock_gettime(CLOCK_REALTIME, &ts);
 	static const size_t nsec_in_sec = 1000000000ULL;
 	ts.tv_nsec += runtime->cond_wait_time.tv_nsec;
 	uint64_t secs = (uint64_t)ts.tv_nsec / nsec_in_sec;
 	ts.tv_nsec -= (long)(secs * nsec_in_sec);
 	ts.tv_sec += (long)(runtime->cond_wait_time.tv_sec + (long)secs);
 
-	pthread_cond_timedwait(&runtime->cond, &runtime->lock, &ts);
-	pthread_mutex_unlock(&runtime->lock);
+	os_cond_timedwait(&runtime->cond, &runtime->lock, &ts);
+	os_mutex_unlock(&runtime->lock);
 }
 
 void

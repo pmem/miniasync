@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "libminiasync/vdm.h"
+#include "core/os_thread.h"
 #include "core/util.h"
 
 struct vdm {
@@ -47,7 +47,7 @@ static void
 vdm_memcpy_cb(struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
-	util_atomic_store64(&data->complete, 1);
+	util_atomic_store32(&data->complete, 1);
 	if (data->notifier.notifier_used == FUTURE_NOTIFIER_WAKER)
 		FUTURE_WAKER_WAKE(&data->notifier.waker);
 }
@@ -105,7 +105,7 @@ vdm_check(struct future_context *context)
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 
 	int complete;
-	util_atomic_load64(&data->complete, &complete);
+	util_atomic_load32(&data->complete, &complete);
 	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
 }
 
@@ -145,8 +145,9 @@ memcpy_pthreads(void *descriptor, struct future_notifier *notifier,
 {
 	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, async_memcpy_pthread, context);
+	/* XXX it causes segmentation fault */
+	os_thread_t thread;
+	os_thread_create(&thread, NULL, async_memcpy_pthread, context);
 }
 
 static void
@@ -158,8 +159,9 @@ memcpy_pthreads_polled(void *descriptor, struct future_notifier *notifier,
 	notifier->notifier_used = FUTURE_NOTIFIER_POLLER;
 	notifier->poller.ptr_to_monitor = (uint64_t *)&data->complete;
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, async_memcpy_pthread, context);
+	/* XXX it causes segmentation fault */
+	os_thread_t thread;
+	os_thread_create(&thread, NULL, async_memcpy_pthread, context);
 }
 
 static struct vdm_descriptor pthreads_descriptor = {
