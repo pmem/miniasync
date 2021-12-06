@@ -43,3 +43,4 @@ endfunction()
 
 # add all the examples with a use of the add_example function defined above
 add_example(basic basic/basic.c)
+add_example(basic_cpp basic_cpp/basic.cpp)
