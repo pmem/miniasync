@@ -6,14 +6,20 @@
 cmake_minimum_required(VERSION 3.3)
 
 project(miniasync C)
+set(MINIASYNC_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(VERSION_MAJOR 0)
 set(VERSION_MINOR 1)
 set(VERSION_PATCH 0)
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
-set(MINIASYNC_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
-set(MINIASYNC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/include)
+set(MINIASYNC_SOURCE_DIR ${MINIASYNC_ROOT_DIR}/src)
+set(MINIASYNC_INCLUDE_DIR ${MINIASYNC_ROOT_DIR}/src/include)
+set(EXAMPLES_DIR ${MINIASYNC_ROOT_DIR}/examples/)
+
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
+	CACHE STRING "working directory for tests")
 
 option(COVERAGE "run coverage test" OFF)
 option(DEVELOPER_MODE "enable developer checks" OFF)
@@ -21,18 +27,10 @@ option(CHECK_CSTYLE "check code style of C sources" OFF)
 option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)
-
-set(EXAMPLES_DIR ${CMAKE_SOURCE_DIR}/examples/)
-
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
+option(BUILD_DOC "build documentation" ON)
 option(BUILD_EXAMPLES "build examples" ON)
 option(BUILD_TESTS "build tests" ON)
-
 option(TESTS_USE_VALGRIND "enable tests with valgrind (if found)" ON)
-
-set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
-	CACHE STRING "working directory for tests")
 
 include(FindPerl)
 include(FindThreads)
@@ -158,6 +156,11 @@ endif()
 # add CMakeLists.txt from the examples directory
 if(BUILD_EXAMPLES)
 	add_subdirectory(examples)
+endif()
+
+# add CMakeLists.txt from the doc directory
+if(BUILD_DOC)
+	add_subdirectory(doc)
 endif()
 
 if(NOT "${CPACK_GENERATOR}" STREQUAL "")
