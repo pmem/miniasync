@@ -34,7 +34,7 @@ typedef void (*vdm_cb_fn)(struct future_context *context);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
-	_Atomic uint64_t complete;
+	uint64_t complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;
