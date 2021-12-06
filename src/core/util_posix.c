@@ -188,7 +188,7 @@ util_getexecname(char *path, size_t pathlen)
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
-	int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
 
 	cc = (sysctl(mib, 4, path, &pathlen, NULL, 0) == -1) ?
 		-1 : (ssize_t)pathlen;

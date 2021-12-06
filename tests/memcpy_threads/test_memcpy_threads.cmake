@@ -5,7 +5,7 @@ include(${SRC_DIR}/cmake/test_helpers.cmake)
 
 setup()
 
-execute(0 ${TEST_DIR}/memcpy_threads)
-execute_assert_pass(${TEST_DIR}/memcpy_threads)
+execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/memcpy_threads)
+execute_assert_pass(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/memcpy_threads)
 
 cleanup()

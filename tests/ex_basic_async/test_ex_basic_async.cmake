@@ -7,6 +7,6 @@ include(${SRC_DIR}/cmake/test_helpers.cmake)
 
 setup()
 
-execute(0 ${EXAMPLES_DIR}/example-basic-async)
+execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/example-basic-async)
 
 cleanup()
