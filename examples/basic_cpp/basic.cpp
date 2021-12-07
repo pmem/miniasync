@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (c) Lewis Baker
+// Licensed under MIT license.
+///////////////////////////////////////////////////////////////////////////////
+
 /*
  * basic.cpp -- example showing miniasync integration with coroutines
  */
@@ -12,20 +17,45 @@
 
 #include "libminiasync.h"
 
-struct simple_future {
-	struct promise_type;
-	using handle_type = std::coroutine_handle<promise_type>;
+/* Similar to https://github.com/lewissbaker/cppcoro/blob/master/include/cppcoro/task.hpp */
+struct task {
+  struct promise_type {
+      struct final_awaitable
+      {
+          bool await_ready() const noexcept { return false; }
+          void await_resume() noexcept {}
 
-	simple_future(handle_type h): h(h) {}
-	~simple_future();
+          std::coroutine_handle<> await_suspend(std::coroutine_handle<task::promise_type> h) noexcept {
+              return h.promise().cont;
+          }
+      };
 
-	handle_type h;
 
-	void wait(struct runtime *r);
+    task get_return_object() { return task{std::coroutine_handle<task::promise_type>::from_promise(*this)}; }
+    std::suspend_always initial_suspend() { return {}; }
+    auto final_suspend() noexcept { return final_awaitable{}; }
+    void return_void() {}
+    void unhandled_exception() {}
+
+    std::coroutine_handle<> cont;
+  };
+
+  void wait() {
+      h.resume();
+  }
+
+  bool await_ready() { return !h || h.done();}
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> aw) {
+      h.promise().cont = aw;
+      return h;
+    }
+    void await_resume() {}
+
+  std::coroutine_handle<task::promise_type> h;
 };
 
 struct coroutine_data {
-	std::coroutine_handle<simple_future::promise_type> handle;
+	std::coroutine_handle<> handle;
 };
 
 struct coroutine_output {
@@ -44,28 +74,6 @@ struct async_memcpy_resume_output {
 FUTURE(async_memcpy_resume_fut, struct async_memcpy_resume_data,
 		struct async_memcpy_resume_output);
 
-struct simple_future::promise_type {
-	simple_future get_return_object() { return simple_future(handle_type::from_promise(*this)); }
-	std::suspend_never initial_suspend() { return {}; }
-	std::suspend_never final_suspend() noexcept { return {}; }
-	void return_void() {}
-	void unhandled_exception() {}
-
-	struct vdm *pthread_mover;
-	struct async_memcpy_resume_fut fut;
-};
-
-void simple_future::wait(struct runtime *r)
-{
-	runtime_wait(r, FUTURE_AS_RUNNABLE(&h.promise().fut));
-}
-
-simple_future::~simple_future() { 
-	if (h) { 
-		vdm_delete(h.promise().pthread_mover);
-	}
-}
-
 static enum future_state
 resume_impl(struct future_context *ctx, struct future_waker waker)
 {
@@ -78,7 +86,7 @@ resume_impl(struct future_context *ctx, struct future_waker waker)
 }
 
 static struct coroutine_future
-resume_coroutine(std::coroutine_handle<simple_future::promise_type> h)
+resume_coroutine(std::coroutine_handle<> h)
 {
 	struct coroutine_future fut;
 	fut.data.handle = h;
@@ -88,42 +96,42 @@ resume_coroutine(std::coroutine_handle<simple_future::promise_type> h)
 	return fut;
 }
 
-auto async_memcpy(void *dst, void *src, size_t n)
+struct memcpy_task
 {
-	struct awaitable {
-		awaitable(void *dst, void *src, size_t n): dst(dst), src(src), n(n)
-		{
-		}
+	memcpy_task(void *dst, void *src, size_t n, struct async_memcpy_resume_fut *fut): fut(fut) {
+		auto *pthread_mover = vdm_new(vdm_descriptor_pthreads()); // XXX - lifetime
+		FUTURE_CHAIN_ENTRY_INIT(&fut->data.memcpy,
+			vdm_memcpy(pthread_mover, dst, src, n),
+			NULL, NULL);
+	}
 
-		bool await_ready() { return false; /* always suspend (call await_suspend) */ }
-		void await_suspend(std::coroutine_handle<simple_future::promise_type> h) {
-			auto pthread_mover = vdm_new(vdm_descriptor_pthreads());
-			auto &chain = h.promise().fut;
+	bool await_ready()
+	{
+		return false;
+	}
 
-			h.promise().pthread_mover = pthread_mover;
+	void await_suspend(std::coroutine_handle<> h)
+	{
+		FUTURE_CHAIN_ENTRY_INIT(&fut->data.resume, resume_coroutine(h),
+			NULL, NULL);
+		FUTURE_CHAIN_INIT(fut);
+	}
 
-			FUTURE_CHAIN_ENTRY_INIT(&chain.data.memcpy,
-						vdm_memcpy(pthread_mover, dst, src, n),
-						NULL, NULL);
-			FUTURE_CHAIN_ENTRY_INIT(&chain.data.resume, resume_coroutine(h),
-						NULL, NULL);
+	void await_resume() {}
 
-			FUTURE_CHAIN_INIT(&chain);
-		}
+	struct async_memcpy_resume_fut *fut;
+};
 
-		void await_resume() {}
-
-		void *dst;
-		void *src;
-		size_t n;
-	};
-
-	return awaitable(dst, src, n);
+task async_mempcy(void *dst, void *src, size_t n, struct async_memcpy_resume_fut *fut)
+{
+	std::cout << "Before memcpy" << std::endl;
+	co_await memcpy_task{dst, src, n, fut};
+	std::cout << "After memcpy" << std::endl;
 }
 
-simple_future async_memcpy_print(std::string to_copy, char *buffer, const std::string &to_print)
+task async_memcpy_print(std::string to_copy, char *buffer, const std::string &to_print, struct async_memcpy_resume_fut *fut)
 {
-	co_await async_memcpy(reinterpret_cast<void*>(buffer), reinterpret_cast<void*>(to_copy.data()), to_copy.size());
+	co_await async_mempcy(reinterpret_cast<void*>(buffer), reinterpret_cast<void*>(to_copy.data()), to_copy.size(), fut);
 	std::cout << to_print << std::endl;
 }
 
@@ -141,12 +149,18 @@ main(int argc, char *argv[])
 		c = 0;
 
 	{
-		auto future = async_memcpy_print(to_copy, buffer, to_print);
+		struct async_memcpy_resume_fut fut;
+		auto future = async_memcpy_print(to_copy, buffer, to_print, &fut);
+		// auto future = async_mempcy(buffer, std::string(to_copy).data(), 4);
 
 		std::cout << "inside main" << std::endl;
 
 		// actually executes future on runtime r
-		future.wait(r);
+		// XXX - make it a single function
+		future.wait();
+		runtime_wait(r, FUTURE_AS_RUNNABLE(&fut));
+
+		std::cout << buffer << std::endl;
 	}
 
 	runtime_delete(r);
