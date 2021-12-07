@@ -14,8 +14,8 @@ set -e
 PREFIX=/usr
 CC=${CC:-gcc}
 CHECK_CSTYLE=${CHECK_CSTYLE:-ON}
-TEST_DIR=${LIBMINIASYNC_TEST_DIR:-${DEFAULT_TEST_DIR}}
-EXAMPLE_TEST_DIR="/tmp/libminiasync_example_build"
+TEST_DIR=${MINIASYNC_TEST_DIR:-${DEFAULT_TEST_DIR}}
+EXAMPLE_TEST_DIR="/tmp/miniasync_example_build"
 
 # turn off sanitizers only if (CI_SANITS == OFF)
 [ "$CI_SANITS" != "OFF" ] && CI_SANITS=ON
@@ -26,7 +26,7 @@ if [ "$WORKDIR" == "" ]; then
 fi
 
 if [ "$TEST_DIR" == "" ]; then
-	echo "Error: LIBMINIASYNC_TEST_DIR is not set"
+	echo "Error: MINIASYNC_TEST_DIR is not set"
 	exit 1
 fi
 
@@ -212,25 +212,25 @@ else
 	echo "##############################################################"
 
 	make -j$(nproc) package
-	find . -iname "libminiasync*.$PACKAGE_MANAGER"
+	find . -iname "miniasync*.$PACKAGE_MANAGER"
 fi
 
 if [ $PACKAGE_MANAGER = "deb" ]; then
-	echo "$ dpkg-deb --info ./libminiasync*.deb"
-	dpkg-deb --info ./libminiasync*.deb
+	echo "$ dpkg-deb --info ./miniasync*.deb"
+	dpkg-deb --info ./miniasync*.deb
 
-	echo "$ dpkg-deb -c ./libminiasync*.deb"
-	dpkg-deb -c ./libminiasync*.deb
+	echo "$ dpkg-deb -c ./miniasync*.deb"
+	dpkg-deb -c ./miniasync*.deb
 
-	echo "$ sudo -S dpkg -i ./libminiasync*.deb"
-	echo $USERPASS | sudo -S dpkg -i ./libminiasync*.deb
+	echo "$ sudo -S dpkg -i ./miniasync*.deb"
+	echo $USERPASS | sudo -S dpkg -i ./miniasync*.deb
 
 elif [ $PACKAGE_MANAGER = "rpm" ]; then
-	echo "$ rpm -q --info ./libminiasync*.rpm"
-	rpm -q --info ./libminiasync*.rpm && true
+	echo "$ rpm -q --info ./miniasync*.rpm"
+	rpm -q --info ./miniasync*.rpm && true
 
-	echo "$ rpm -q --list ./libminiasync*.rpm"
-	rpm -q --list ./libminiasync*.rpm && true
+	echo "$ rpm -q --list ./miniasync*.rpm"
+	rpm -q --list ./miniasync*.rpm && true
 
 	echo "$ sudo -S rpm -ivh --force *.rpm"
 	echo $USERPASS | sudo -S rpm -ivh --force *.rpm
@@ -244,11 +244,11 @@ if [ "$PACKAGE_MANAGER" = "" ]; then
 	# cd $WORKDIR/build
 	# sudo_password -S make uninstall
 elif [ $PACKAGE_MANAGER = "deb" ]; then
-	echo "sudo -S dpkg --remove libminiasync-dev"
-	echo $USERPASS | sudo -S dpkg --remove libminiasync-dev
+	echo "sudo -S dpkg --remove miniasync-dev"
+	echo $USERPASS | sudo -S dpkg --remove miniasync-dev
 elif [ $PACKAGE_MANAGER = "rpm" ]; then
-	echo "$ sudo -S rpm --erase libminiasync-devel"
-	echo $USERPASS | sudo -S rpm --erase libminiasync-devel
+	echo "$ sudo -S rpm --erase miniasync-devel"
+	echo $USERPASS | sudo -S rpm --erase miniasync-devel
 fi
 
 cd $WORKDIR
