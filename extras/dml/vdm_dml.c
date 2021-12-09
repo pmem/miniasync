@@ -8,10 +8,35 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "libminiasync-dml/vdm_dml.h"
+#include "libminiasync-dml.h"
+
+static uint64_t
+vdm_dml_translate_flags(uint64_t flags)
+{
+	assert((flags & ~MINIASYNC_DML_F_MEM_VALID_FLAGS) == 0);
+
+	uint64_t tflags = 0;
+	for (uint64_t iflag = 1; flags > 0; iflag = iflag << 1) {
+		if ((flags & iflag) == 0)
+			continue;
+
+		switch (iflag) {
+			case MINIASYNC_DML_F_MEM_DURABLE:
+				tflags |= DML_FLAG_DST1_DURABLE;
+				break;
+			default: /* shouldn't be possible */
+				assert(0);
+		}
+
+		/* remove translated flag from the flags to be translated */
+		flags = flags & (~iflag);
+	}
+
+	return tflags;
+}
 
 static dml_job_t *
-vdm_dml_memcpy_job_new(void *dest, void *src, size_t n)
+vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
 {
 	dml_status_t status;
 	uint32_t job_size;
@@ -30,7 +55,7 @@ vdm_dml_memcpy_job_new(void *dest, void *src, size_t n)
 	dml_job->destination_first_ptr = (uint8_t *)dest;
 	dml_job->source_length = n;
 	dml_job->destination_length = n;
-	dml_job->flags = DML_FLAG_COPY_ONLY;
+	dml_job->flags = DML_FLAG_COPY_ONLY | flags;
 
 	return dml_job;
 }
@@ -96,8 +121,9 @@ vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	struct vdm_memcpy_output *output = future_context_get_output(context);
 
+	uint64_t tflags = vdm_dml_translate_flags(data->flags);
 	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n);
+			data->n, tflags);
 	output->dest = vdm_dml_memcpy_job_execute(dml_job);
 	vdm_dml_memcpy_job_delete(&dml_job);
 	data->vdm_cb(context);
@@ -123,8 +149,9 @@ vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	struct vdm_memcpy_output *output = future_context_get_output(context);
 
+	uint64_t tflags = vdm_dml_translate_flags(data->flags);
 	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n);
+			data->n, tflags);
 	data->extra = dml_job;
 	output->dest = vdm_dml_memcpy_job_submit(dml_job);
 }
