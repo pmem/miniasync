@@ -75,7 +75,7 @@ vdm_memcpy_impl(struct future_context *context, struct future_notifier *n)
 }
 
 struct vdm_memcpy_future
-vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n)
+vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
 	struct vdm_memcpy_future future;
 	future.data.vdm = vdm;
@@ -84,6 +84,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n)
 	future.data.n = n;
 	future.data.complete = 0;
 	future.output = (struct vdm_memcpy_output){ NULL };
+	future.data.flags = flags;
 	FUTURE_INIT(&future, vdm_memcpy_impl);
 
 	return future;

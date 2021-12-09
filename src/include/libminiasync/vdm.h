@@ -37,6 +37,7 @@ struct vdm_memcpy_data {
 	void *src;
 	size_t n;
 	vdm_cb_fn vdm_cb;
+	uint64_t flags;
 	void *extra;
 };
 
@@ -47,8 +48,8 @@ struct vdm_memcpy_output {
 FUTURE(vdm_memcpy_future,
 	struct vdm_memcpy_data, struct vdm_memcpy_output);
 
-struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm,
-	void *dest, void *src, size_t n);
+struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src,
+		size_t n, uint64_t flags);
 
 typedef void (*async_memcpy_fn)(void *descriptor,
 	struct future_notifier *notifier, struct future_context *context);
