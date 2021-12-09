@@ -77,7 +77,7 @@ async_memcpy_print(struct vdm *vdm, void *dest, void *src, size_t n)
 {
 	struct async_memcpy_print_fut chain;
 	FUTURE_CHAIN_ENTRY_INIT(&chain.data.memcpy,
-				vdm_memcpy(vdm, dest, src, n),
+				vdm_memcpy(vdm, dest, src, n, 0),
 				memcpy_to_print_map, (void *)0xd);
 	FUTURE_CHAIN_ENTRY_INIT(&chain.data.print, async_print(NULL), NULL,
 				NULL);
@@ -98,7 +98,7 @@ main(int argc, char *argv[])
 
 	struct vdm *pthread_mover = vdm_new(vdm_descriptor_pthreads_polled());
 	struct vdm_memcpy_future a_to_b =
-		vdm_memcpy(pthread_mover, buf_b, buf_a, testbuf_size);
+		vdm_memcpy(pthread_mover, buf_b, buf_a, testbuf_size, 0);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
 
