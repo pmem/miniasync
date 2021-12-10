@@ -1,8 +1,6 @@
 #!/usr/bin/env perl
-#
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright 2015-2020, Intel Corporation
-#
 
 #
 # check_whitespace -- scrub source tree for whitespace errors
@@ -14,7 +12,7 @@ use warnings;
 use File::Basename;
 use File::Find;
 use Encode;
-use v5.10;
+use v5.16;
 
 my $Me = $0;
 $Me =~ s,.*/,,;
@@ -75,9 +73,20 @@ sub check_whitespace {
 	my $eol;
 	my $nf = 0;
 	my $fstr = decode_file_as_string($full, $file);
+	my $empty = 0;
+	my $is_python = $full =~ /\.py$/;
 
 	for (split /^/, $fstr) {
 		$line++;
+		if (!$is_python && /^$/) {
+			$empty++;
+			if ($empty > 1) {
+				err("$full:$line: ERROR duplicated empty line");
+			}
+		} else {
+			$empty = 0;
+		}
+
 		$eol = /[\n]/s;
 		if (/^\.nf$/) {
 			err("$full:$line: ERROR: nested .nf") if $nf;
@@ -99,9 +108,13 @@ sub check_whitespace_with_exc {
 	my ($full) = @_;
 
 	$_ = $full;
+
+	return 0 if /^[.\/]*src\/common\/queue\.h/;
+	return 0 if /^[.\/]*src\/core\/valgrind\/.*\.h/;
+
 	$_ = basename($full);
 
-	return 0 unless /^(README.*|LICENSE.*|CMakeLists.txt|.gitignore|check_whitespace|.*\.([chp13s]|cc|sh|map|cpp|hpp|inc|md|cmake))$/;
+	return 0 unless /^(README.*|LICENSE.*|Makefile.*|CMakeLists.txt|.gitignore|TEST.*|RUNTESTS|check_whitespace|.*\.([chp13s]|sh|map|cpp|hpp|inc|PS1|ps1|py|md|cmake))$/;
 	return 0 if -z;
 
 	check_whitespace($full, $_);
@@ -165,7 +178,11 @@ foreach my $arg (@ARGV) {
 			my $full = $File::Find::name;
 
 			if (!$force &&
-			   ($full eq './.git')) {
+			   ($full eq './.git' ||
+			    $full eq './src/debug' ||
+			    $full eq './src/nondebug' ||
+			    $full eq './rpmbuild' ||
+			    $full eq './dpkgbuild')) {
 				$File::Find::prune = 1;
 				return;
 			}
