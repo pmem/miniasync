@@ -26,7 +26,6 @@ add_check_whitespace(examples-all
 		${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
 		${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 
-
 # add_example-- function for adding an example.
 #		Afer the required name parameter, next parameters
 #		passed to this function are example's sources.

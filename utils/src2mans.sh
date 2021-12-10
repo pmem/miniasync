@@ -79,10 +79,10 @@ do
 			mv $f $f.tmp
 			head -n -2 $f.tmp > $f
 			rm $f.tmp
-			
+
 			# generate a md file
 			pandoc -s $f -o $f.tmp1 -f man -t markdown || break
-			# remove the header 
+			# remove the header
 			tail -n +6 $f.tmp1 > $f.tmp2
 			# fix the name issue '**a **-' -> '**a** -'
 			sed -i '5s/ \*\*-/\*\* -/' $f.tmp2
