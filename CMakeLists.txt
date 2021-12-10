@@ -64,8 +64,8 @@ add_custom_target(check-commits
 add_custom_target(check-whitespace-main
 	COMMAND ${PERL_EXECUTABLE}
 		${CMAKE_SOURCE_DIR}/utils/check_whitespace
-		${CMAKE_SOURCE_DIR}/utils/check_license/*
-		${CMAKE_SOURCE_DIR}/README.md)
+		${CMAKE_SOURCE_DIR}/README.md
+		${CMAKE_SOURCE_DIR}/LICENSE)
 
 add_dependencies(check-whitespace check-whitespace-main)
 
@@ -109,6 +109,14 @@ endif()
 # add checkers for the root CMakeLists file and for cmake helper files
 add_check_whitespace(cmake-main ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 add_check_whitespace(cmake-helpers ${CMAKE_CURRENT_SOURCE_DIR}/cmake/*.cmake)
+
+# add checkers for utils and subdirectories
+add_check_whitespace(utils-all
+		${CMAKE_CURRENT_SOURCE_DIR}/utils/*
+		${CMAKE_CURRENT_SOURCE_DIR}/utils/check_license/*
+		${CMAKE_CURRENT_SOURCE_DIR}/utils/docker/*
+		${CMAKE_CURRENT_SOURCE_DIR}/utils/docker/images/*
+		${CMAKE_CURRENT_SOURCE_DIR}/utils/md2man/*)
 
 # look for and enable valgrind
 pkg_check_modules(VALGRIND valgrind)
