@@ -24,6 +24,10 @@
 
 #include "future.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct vdm;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
@@ -70,4 +74,7 @@ struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);
 
+#ifdef __cplusplus
+}
 #endif
+#endif /* VDM_H */
