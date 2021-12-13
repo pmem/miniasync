@@ -159,7 +159,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 
 make -j$(nproc)
 ctest --output-on-failure
-#sudo_password -S make -j$(nproc) install
+sudo_password -S make -j$(nproc) install
 
 if [ "$COVERAGE" == "1" ]; then
 	upload_codecov tests
@@ -175,7 +175,7 @@ fi
 
 # Uninstall libraries
 cd $WORKDIR/build
-#sudo_password -S make uninstall
+sudo_password -S make uninstall
 
 cd $WORKDIR
 rm -rf $WORKDIR/build
@@ -240,8 +240,8 @@ fi
 if [ "$PACKAGE_MANAGER" = "" ]; then
 	:
 	# uninstall the library, since it was installed from sources
-	# cd $WORKDIR/build
-	# sudo_password -S make uninstall
+	cd $WORKDIR/build
+	sudo_password -S make uninstall
 elif [ $PACKAGE_MANAGER = "deb" ]; then
 	echo "sudo -S dpkg --remove libminiasync-dev"
 	echo $USERPASS | sudo -S dpkg --remove libminiasync-dev
