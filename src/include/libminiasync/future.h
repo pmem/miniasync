@@ -67,6 +67,10 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum future_state {
 	FUTURE_STATE_IDLE,
 	FUTURE_STATE_COMPLETE,
@@ -178,4 +182,7 @@ enum future_state async_chain_impl(struct future_context *ctx,
 #define FUTURE_CHAIN_INIT(_futurep)\
 FUTURE_INIT((_futurep), async_chain_impl)
 
+#ifdef __cplusplus
+}
 #endif
+#endif /* FUTURE_H */
