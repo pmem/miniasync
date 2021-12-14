@@ -127,6 +127,14 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/libminiasync.pc.in
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libminiasync.pc
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
+configure_file(
+	"${MINIASYNC_ROOT_DIR}/cmake/cmake_uninstall.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+	IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+	COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
 configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/libminiasync-config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/libminiasync-config.cmake
 	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/libminiasync/cmake
