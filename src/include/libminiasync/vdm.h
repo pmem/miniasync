@@ -27,6 +27,7 @@
 struct vdm;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
+typedef void (*vdm_data_fn)(void **vdm_data);
 
 struct vdm_memcpy_data {
 	struct future_waker waker;
@@ -51,7 +52,8 @@ struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm,
 typedef void (*async_memcpy_fn)(void *runner, struct future_context *context);
 
 struct vdm_descriptor {
-	void *vdm_data;
+	vdm_data_fn vdm_data_init;
+	vdm_data_fn vdm_data_fini;
 	async_memcpy_fn memcpy;
 };
 
