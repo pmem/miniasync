@@ -72,8 +72,9 @@ memcpy_sync(void *runner, struct future_context *context)
 }
 
 static struct vdm_descriptor synchronous_descriptor = {
-	.vdm_data = NULL,
 	.memcpy = memcpy_sync,
+	.vdm_data_init = NULL,
+	.vdm_data_fini = NULL,
 };
 
 struct vdm_descriptor *
@@ -98,8 +99,9 @@ memcpy_pthreads(void *runner, struct future_context *context)
 }
 
 static struct vdm_descriptor pthreads_descriptor = {
-	.vdm_data = NULL,
 	.memcpy = memcpy_pthreads,
+	.vdm_data_init = NULL,
+	.vdm_data_fini = NULL,
 };
 
 struct vdm_descriptor *
