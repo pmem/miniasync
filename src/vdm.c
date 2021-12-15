@@ -9,6 +9,7 @@
 
 struct vdm {
 	struct vdm_descriptor *descriptor;
+	void *data;
 };
 
 struct vdm *
@@ -16,6 +17,10 @@ vdm_new(struct vdm_descriptor *descriptor)
 {
 	struct vdm *vdm = malloc(sizeof(struct vdm));
 	vdm->descriptor = descriptor;
+	vdm->data = NULL;
+
+	if (descriptor->vdm_data_init)
+		descriptor->vdm_data_init(&vdm->data);
 
 	return vdm;
 }
@@ -23,7 +28,18 @@ vdm_new(struct vdm_descriptor *descriptor)
 void
 vdm_delete(struct vdm *vdm)
 {
+	struct vdm_descriptor *descriptor = vdm->descriptor;
+
+	if (descriptor->vdm_data_fini)
+		descriptor->vdm_data_fini(&vdm->data);
+
 	free(vdm);
+}
+
+void *
+vdm_get_data(struct vdm *vdm)
+{
+	return vdm->data;
 }
 
 static void
@@ -72,8 +88,9 @@ memcpy_sync(void *runner, struct future_context *context)
 }
 
 static struct vdm_descriptor synchronous_descriptor = {
-	.vdm_data = NULL,
 	.memcpy = memcpy_sync,
+	.vdm_data_init = NULL,
+	.vdm_data_fini = NULL,
 };
 
 struct vdm_descriptor *
@@ -98,8 +115,9 @@ memcpy_pthreads(void *runner, struct future_context *context)
 }
 
 static struct vdm_descriptor pthreads_descriptor = {
-	.vdm_data = NULL,
 	.memcpy = memcpy_pthreads,
+	.vdm_data_init = NULL,
+	.vdm_data_fini = NULL,
 };
 
 struct vdm_descriptor *
