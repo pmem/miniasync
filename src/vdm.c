@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2019-2021, Intel Corporation */
 
-#include "libminiasync/vdm.h"
 #include <pthread.h>
-#include <stdatomic.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "libminiasync/vdm.h"
+#include "core/util.h"
 
 struct vdm {
 	struct vdm_descriptor *descriptor;
@@ -46,7 +47,7 @@ static void
 vdm_memcpy_cb(struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
-	atomic_store(&data->complete, 1);
+	util_atomic_store64(&data->complete, 1);
 	FUTURE_WAKER_WAKE(&data->waker);
 }
 
@@ -59,8 +60,9 @@ vdm_memcpy_impl(struct future_context *context, struct future_waker waker)
 		data->vdm_cb = vdm_memcpy_cb;
 		data->vdm->descriptor->memcpy(data->vdm->descriptor, context);
 	}
-	return atomic_load(&data->complete) ? FUTURE_STATE_COMPLETE
-					    : FUTURE_STATE_RUNNING;
+	int complete;
+	util_atomic_load64(&data->complete, &complete);
+	return complete ? FUTURE_STATE_COMPLETE: FUTURE_STATE_RUNNING;
 }
 
 struct vdm_memcpy_future
