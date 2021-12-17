@@ -10,6 +10,9 @@
 
 #include "libminiasync-dml.h"
 
+/*
+ * vdm_dml_translate_flags -- translate miniasync-dml flags into dml flags
+ */
 static uint64_t
 vdm_dml_translate_flags(uint64_t flags)
 {
@@ -35,6 +38,9 @@ vdm_dml_translate_flags(uint64_t flags)
 	return tflags;
 }
 
+/*
+ * vdm_dml_memcpy_job_new -- create a new memcpy job struct
+ */
 static dml_job_t *
 vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
 {
@@ -60,6 +66,9 @@ vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
 	return dml_job;
 }
 
+/*
+ * vdm_dml_memcpy_job_delete -- delete job struct
+ */
 static void
 vdm_dml_memcpy_job_delete(dml_job_t **dml_job)
 {
@@ -67,6 +76,9 @@ vdm_dml_memcpy_job_delete(dml_job_t **dml_job)
 	free(*dml_job);
 }
 
+/*
+ * vdm_dml_memcpy_job_execute -- execute memcpy job (blocking)
+ */
 static void *
 vdm_dml_memcpy_job_execute(dml_job_t *dml_job)
 {
@@ -77,6 +89,9 @@ vdm_dml_memcpy_job_execute(dml_job_t *dml_job)
 	return dml_job->destination_first_ptr;
 }
 
+/*
+ * vdm_dml_memcpy_job_submit -- submit memcpy job (nonblocking)
+ */
 static void *
 vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 {
@@ -87,6 +102,9 @@ vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 	return dml_job->destination_first_ptr;
 }
 
+/*
+ * vdm_dml_check -- check status of memcpy job executed synchronously
+ */
 static enum future_state
 vdm_dml_check(struct future_context *context)
 {
@@ -96,6 +114,10 @@ vdm_dml_check(struct future_context *context)
 					    : FUTURE_STATE_RUNNING;
 }
 
+/*
+ * vdm_dml_check_delete_job -- check status of memcpy job executed
+ *                             asynchronously
+ */
 static enum future_state
 vdm_dml_check_delete_job(struct future_context *context)
 {
@@ -114,6 +136,9 @@ vdm_dml_check_delete_job(struct future_context *context)
 	return state;
 }
 
+/*
+ * vdm_dml_memcpy_sync -- execute dml synchronous memcpy operation
+ */
 static void
 vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
 	struct future_context *context)
@@ -129,6 +154,9 @@ vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
 	data->vdm_cb(context);
 }
 
+/*
+ * dml_synchronous_descriptor -- dml synchronous memcpy descriptor
+ */
 static struct vdm_descriptor dml_synchronous_descriptor = {
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
@@ -136,12 +164,18 @@ static struct vdm_descriptor dml_synchronous_descriptor = {
 	.check = vdm_dml_check,
 };
 
+/*
+ * vdm_descriptor_dml -- return dml synchronous memcpy descriptor
+ */
 struct vdm_descriptor *
 vdm_descriptor_dml(void)
 {
 	return &dml_synchronous_descriptor;
 }
 
+/*
+ * vdm_dml_memcpy_async -- execute dml asynchronous memcpy operation
+ */
 static void
 vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
 	struct future_context *context)
@@ -156,6 +190,9 @@ vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
 	output->dest = vdm_dml_memcpy_job_submit(dml_job);
 }
 
+/*
+ * dml_synchronous_descriptor -- dml asynchronous memcpy descriptor
+ */
 static struct vdm_descriptor dml_asynchronous_descriptor = {
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
@@ -163,6 +200,9 @@ static struct vdm_descriptor dml_asynchronous_descriptor = {
 	.check = vdm_dml_check_delete_job,
 };
 
+/*
+ * vdm_descriptor_dml -- return dml asynchronous memcpy descriptor
+ */
 struct vdm_descriptor *
 vdm_descriptor_dml_async(void)
 {
