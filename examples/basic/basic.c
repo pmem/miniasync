@@ -8,15 +8,11 @@
 #include <assert.h>
 #include <emmintrin.h>
 #include <fcntl.h>
-#include <pthread.h>
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 #include "libminiasync.h"
 
@@ -25,6 +21,8 @@ struct async_print_data {
 };
 
 struct async_print_output {
+	/* XXX dummy field to avoid empty struct */
+	uintptr_t foo;
 };
 
 FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
@@ -55,6 +53,8 @@ struct async_memcpy_print_data {
 };
 
 struct async_memcpy_print_output {
+	/* XXX dummy field to avoid empty struct */
+	uintptr_t foo;
 };
 
 FUTURE(async_memcpy_print_fut, struct async_memcpy_print_data,

@@ -31,7 +31,7 @@ typedef void (*vdm_data_fn)(void **vdm_data);
 
 struct vdm_memcpy_data {
 	struct future_waker waker;
-	_Atomic int complete;
+	int complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;
