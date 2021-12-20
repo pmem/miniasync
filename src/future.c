@@ -22,13 +22,13 @@ future_context_get_size(struct future_context *context)
 }
 
 enum future_state
-future_poll(struct future *fut, struct future_waker waker)
+future_poll(struct future *fut, struct future_notifier *notifier)
 {
-	return (fut->context.state = fut->task(&fut->context, waker));
+	return (fut->context.state = fut->task(&fut->context, notifier));
 }
 
 enum future_state
-async_chain_impl(struct future_context *ctx, struct future_waker waker)
+async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
 	uint8_t *data = future_context_get_data(ctx);
 
@@ -47,7 +47,7 @@ async_chain_impl(struct future_context *ctx, struct future_waker waker)
 			? (struct future_chain_entry *)(data + used_data)
 			: NULL;
 		if (entry->future.context.state != FUTURE_STATE_COMPLETE) {
-			future_poll(&entry->future, waker);
+			future_poll(&entry->future, notifier);
 			if (entry->future.context.state ==
 				    FUTURE_STATE_COMPLETE &&
 			    entry->map) {
@@ -72,8 +72,13 @@ future_wake_noop(void *data)
 
 }
 
-struct future_waker
-future_noop_waker(void)
+struct future_notifier
+future_noop_notifier(void)
 {
-	return (struct future_waker){NULL, future_wake_noop};
+	struct future_notifier notifier;
+	notifier.poller.ptr_to_monitor = NULL;
+	notifier.waker.wake = future_wake_noop;
+	notifier.waker.data = NULL;
+
+	return notifier;
 }
