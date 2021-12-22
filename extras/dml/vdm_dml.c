@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include <assert.h>
 #include <dml/dml.h>
 #include <libminiasync.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
 #include "libminiasync-dml.h"
+#include "core/out.h"
 #include "core/util.h"
 
 /*
@@ -16,7 +16,7 @@
 static uint64_t
 vdm_dml_translate_flags(uint64_t flags)
 {
-	assert((flags & ~MINIASYNC_DML_F_MEM_VALID_FLAGS) == 0);
+	ASSERTeq((flags & ~MINIASYNC_DML_F_MEM_VALID_FLAGS), 0);
 
 	uint64_t tflags = 0;
 	for (uint64_t iflag = 1; flags > 0; iflag = iflag << 1) {
@@ -28,7 +28,7 @@ vdm_dml_translate_flags(uint64_t flags)
 				tflags |= DML_FLAG_DST1_DURABLE;
 				break;
 			default: /* shouldn't be possible */
-				assert(0);
+				ASSERT(0);
 		}
 
 		/* remove translated flag from the flags to be translated */
@@ -49,12 +49,12 @@ vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
 	dml_job_t *dml_job = NULL;
 
 	status = dml_get_job_size(DML_PATH_HW, &job_size);
-	assert(status == DML_STATUS_OK);
+	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job = (dml_job_t *)malloc(job_size);
 
 	status = dml_init_job(DML_PATH_HW, dml_job);
-	assert(status == DML_STATUS_OK);
+	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job->operation = DML_OP_MEM_MOVE;
 	dml_job->source_first_ptr = (uint8_t *)src;
@@ -84,7 +84,7 @@ vdm_dml_memcpy_job_execute(dml_job_t *dml_job)
 {
 	dml_status_t status;
 	status = dml_execute_job(dml_job);
-	assert(status == DML_STATUS_OK);
+	ASSERTeq(status, DML_STATUS_OK);
 
 	return dml_job->destination_first_ptr;
 }
@@ -97,7 +97,7 @@ vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 {
 	dml_status_t status;
 	status = dml_submit_job(dml_job);
-	assert(status == DML_STATUS_OK);
+	ASSERTeq(status, DML_STATUS_OK);
 
 	return dml_job->destination_first_ptr;
 }
@@ -127,7 +127,7 @@ vdm_dml_check_delete_job(struct future_context *context)
 	dml_job_t *dml_job = (dml_job_t *)data->extra;
 
 	dml_status_t status = dml_check_job(dml_job);
-	assert(status != DML_STATUS_JOB_CORRUPTED);
+	ASSERTne(status, DML_STATUS_JOB_CORRUPTED);
 
 	enum future_state state = (status == DML_STATUS_OK) ?
 			FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
