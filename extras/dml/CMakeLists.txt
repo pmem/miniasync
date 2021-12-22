@@ -21,7 +21,10 @@ set(DML_SOURCES
 
 add_library(miniasync-dml STATIC ${DML_SOURCES})
 
-target_include_directories(miniasync-dml PRIVATE . ${MINIASYNC_DML_INCLUDE_DIR} ${MINIASYNC_INCLUDE_DIR})
+target_include_directories(miniasync-dml PRIVATE .
+	${MINIASYNC_DML_INCLUDE_DIR}
+	${MINIASYNC_INCLUDE_DIR}
+	${MINIASYNC_SOURCE_DIR})
 
 set_target_properties(miniasync-dml PROPERTIES
 	PUBLIC_HEADER ${MINIASYNC_DML_INCLUDE_DIR}/libminiasync-dml.h

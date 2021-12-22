@@ -134,7 +134,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DDEVELOPER_MODE=1 \
 	-DUSE_ASAN=${CI_SANITS} \
 	-DUSE_UBSAN=${CI_SANITS} \
-	-DTEST_DIR=$TEST_DIR
+	-DTEST_DIR=$TEST_DIR \
+	-DCOMPILE_DML=1
 make -j$(nproc)
 ctest --output-on-failure
 
@@ -155,7 +156,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug \
 	-DCOVERAGE=$COVERAGE \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
 	-DDEVELOPER_MODE=1 \
-	-DTEST_DIR=$TEST_DIR
+	-DTEST_DIR=$TEST_DIR \
+	-DCOMPILE_DML=1
 
 make -j$(nproc)
 ctest --output-on-failure
@@ -194,7 +196,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
 	-DCPACK_GENERATOR=$PACKAGE_MANAGER \
 	-DCHECK_CSTYLE=${CHECK_CSTYLE} \
 	-DDEVELOPER_MODE=1 \
-	-DTEST_DIR=$TEST_DIR
+	-DTEST_DIR=$TEST_DIR \
+	-DCOMPILE_DML=1
 
 make -j$(nproc)
 ctest --output-on-failure
