@@ -24,6 +24,10 @@
 
 #include "future.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct vdm;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
@@ -37,6 +41,8 @@ struct vdm_memcpy_data {
 	void *src;
 	size_t n;
 	vdm_cb_fn vdm_cb;
+	uint64_t flags;
+	void *extra;
 };
 
 struct vdm_memcpy_output {
@@ -46,16 +52,19 @@ struct vdm_memcpy_output {
 FUTURE(vdm_memcpy_future,
 	struct vdm_memcpy_data, struct vdm_memcpy_output);
 
-struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm,
-	void *dest, void *src, size_t n);
+struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src,
+		size_t n, uint64_t flags);
 
 typedef void (*async_memcpy_fn)(void *descriptor,
 	struct future_notifier *notifier, struct future_context *context);
+
+typedef enum future_state (*async_check_fn)(struct future_context *context);
 
 struct vdm_descriptor {
 	vdm_data_fn vdm_data_init;
 	vdm_data_fn vdm_data_fini;
 	async_memcpy_fn memcpy;
+	async_check_fn check;
 };
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
@@ -65,4 +74,7 @@ struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);
 
+#ifdef __cplusplus
+}
 #endif
+#endif /* VDM_H */

@@ -31,6 +31,7 @@ option(BUILD_DOC "build documentation" ON)
 option(BUILD_EXAMPLES "build examples" ON)
 option(BUILD_TESTS "build tests" ON)
 option(TESTS_USE_VALGRIND "enable tests with valgrind (if found)" ON)
+option(COMPILE_DML "compile miniasync dml implementation library" OFF)
 
 include(FindPerl)
 include(FindThreads)
@@ -181,4 +182,9 @@ endif()
 
 if(NOT "${CPACK_GENERATOR}" STREQUAL "")
 	include(${CMAKE_SOURCE_DIR}/cmake/packages.cmake)
+endif()
+
+# add CMakeLists.txt from the mover directory
+if (COMPILE_DML)
+	add_subdirectory(extras/dml)
 endif()
