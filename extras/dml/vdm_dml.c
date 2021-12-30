@@ -10,6 +10,12 @@
 #include "core/out.h"
 #include "core/util.h"
 
+#if DML_HW_PATH
+	static dml_path_t DPATH_TYPE = DML_PATH_HW;
+#else
+	static dml_path_t DPATH_TYPE = DML_PATH_SW; /* default path */
+#endif
+
 /*
  * vdm_dml_translate_flags -- translate miniasync-dml flags into dml flags
  */
@@ -48,12 +54,12 @@ vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
 	uint32_t job_size;
 	dml_job_t *dml_job = NULL;
 
-	status = dml_get_job_size(DML_PATH_HW, &job_size);
+	status = dml_get_job_size(DPATH_TYPE, &job_size);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job = (dml_job_t *)malloc(job_size);
 
-	status = dml_init_job(DML_PATH_HW, dml_job);
+	status = dml_init_job(DPATH_TYPE, dml_job);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job->operation = DML_OP_MEM_MOVE;
