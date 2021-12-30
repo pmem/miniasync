@@ -11,21 +11,25 @@
 #include "core/util.h"
 
 /*
- * vdm_dml_translate_flags -- translate miniasync-dml flags into dml flags
+ * vdm_dml_translate_flags -- translate miniasync-dml flags
  */
-static uint64_t
-vdm_dml_translate_flags(uint64_t flags)
+static void
+vdm_dml_translate_flags(uint64_t flags, uint64_t *dml_flags, dml_path_t *path)
 {
-	ASSERTeq((flags & ~MINIASYNC_DML_F_MEM_VALID_FLAGS), 0);
+	ASSERTeq((flags & ~MINIASYNC_DML_F_VALID_FLAGS), 0);
 
-	uint64_t tflags = 0;
+	*dml_flags = 0;
+	*path = DML_PATH_SW; /* default path */
 	for (uint64_t iflag = 1; flags > 0; iflag = iflag << 1) {
 		if ((flags & iflag) == 0)
 			continue;
 
 		switch (iflag) {
 			case MINIASYNC_DML_F_MEM_DURABLE:
-				tflags |= DML_FLAG_DST1_DURABLE;
+				*dml_flags |= DML_FLAG_DST1_DURABLE;
+				break;
+			case MINIASYNC_DML_F_PATH_HW:
+				*path = DML_PATH_HW;
 				break;
 			default: /* shouldn't be possible */
 				ASSERT(0);
@@ -34,26 +38,25 @@ vdm_dml_translate_flags(uint64_t flags)
 		/* remove translated flag from the flags to be translated */
 		flags = flags & (~iflag);
 	}
-
-	return tflags;
 }
 
 /*
  * vdm_dml_memcpy_job_new -- create a new memcpy job struct
  */
 static dml_job_t *
-vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
+vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags,
+		dml_path_t path)
 {
 	dml_status_t status;
 	uint32_t job_size;
 	dml_job_t *dml_job = NULL;
 
-	status = dml_get_job_size(DML_PATH_HW, &job_size);
+	status = dml_get_job_size(path, &job_size);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job = (dml_job_t *)malloc(job_size);
 
-	status = dml_init_job(DML_PATH_HW, dml_job);
+	status = dml_init_job(path, dml_job);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job->operation = DML_OP_MEM_MOVE;
@@ -148,9 +151,11 @@ vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	struct vdm_memcpy_output *output = future_context_get_output(context);
 
-	uint64_t tflags = vdm_dml_translate_flags(data->flags);
+	uint64_t tflags = 0;
+	dml_path_t path = 0;
+	vdm_dml_translate_flags(data->flags, &tflags, &path);
 	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags);
+			data->n, tflags, path);
 	output->dest = vdm_dml_memcpy_job_execute(dml_job);
 	vdm_dml_memcpy_job_delete(&dml_job);
 	data->vdm_cb(context);
@@ -185,9 +190,11 @@ vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	struct vdm_memcpy_output *output = future_context_get_output(context);
 
-	uint64_t tflags = vdm_dml_translate_flags(data->flags);
+	uint64_t tflags = 0;
+	dml_path_t path = 0;
+	vdm_dml_translate_flags(data->flags, &tflags, &path);
 	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags);
+			data->n, tflags, path);
 	data->extra = dml_job;
 	output->dest = vdm_dml_memcpy_job_submit(dml_job);
 }
