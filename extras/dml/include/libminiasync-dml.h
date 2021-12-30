@@ -17,9 +17,11 @@
 extern "C" {
 #endif
 
-/* MINIASYNC_DML memory flags */
+/* MINIASYNC_DML flags */
 #define MINIASYNC_DML_F_MEM_DURABLE		(1U << 0)
-#define MINIASYNC_DML_F_MEM_VALID_FLAGS	(MINIASYNC_DML_F_MEM_DURABLE)
+#define MINIASYNC_DML_F_PATH_HW			(1U << 1)
+#define MINIASYNC_DML_F_VALID_FLAGS	(MINIASYNC_DML_F_MEM_DURABLE | \
+		MINIASYNC_DML_F_PATH_HW)
 
 #ifdef __cplusplus
 }
