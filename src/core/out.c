@@ -18,7 +18,7 @@
 #include "out.h"
 #include "os.h"
 #include "os_thread.h"
-#include "valgrind/valgrind_internal.h"
+#include "valgrind_internal.h"
 #include "util.h"
 
 static const char *Log_prefix;
