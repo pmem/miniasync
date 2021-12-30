@@ -16,7 +16,7 @@
 
 #include "util.h"
 #include "os.h"
-#include "valgrind/valgrind_internal.h"
+#include "valgrind_internal.h"
 #include "alloc.h"
 
 /* library-wide page size */

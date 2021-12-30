@@ -20,6 +20,8 @@ extern "C" {
 #ifdef _WIN32
 #include "windows/include/unistd.h"
 #include "windows/include/platform.h"
+#else
+#include <unistd.h>
 #endif
 
 #ifndef _WIN32
