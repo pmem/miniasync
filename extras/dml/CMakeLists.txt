@@ -29,6 +29,12 @@ set(DML_CORE_DEPS
 
 add_library(miniasync-dml STATIC ${DML_SOURCES} ${DML_CORE_DEPS})
 
+if(NOT DML_HW_PATH)
+    set(DML_HW_PATH 0)
+endif()
+
+target_compile_definitions(miniasync-dml PRIVATE DML_HW_PATH=${DML_HW_PATH})
+
 target_include_directories(miniasync-dml PRIVATE .
 	${MINIASYNC_DML_INCLUDE_DIR}
 	${MINIASYNC_INCLUDE_DIR}
