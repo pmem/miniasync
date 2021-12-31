@@ -1,6 +1,5 @@
-//
-// Created by blazej-smorawski on 21/12/2021.
-//
+// SPDX-License-Identifier: BSD-3-Clause
+/* Copyright 2021, Intel Corporation */
 
 #include <stdlib.h>
 #include <string.h>
