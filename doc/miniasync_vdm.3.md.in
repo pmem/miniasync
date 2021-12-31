@@ -8,14 +8,14 @@ secondary_title: miniasync
 ...
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2021, Intel Corporation)
+[comment]: <> (Copyright 2022, Intel Corporation)
 
 [comment]: <> (miniasync_vdm.3 -- man page for miniasync vdm API)
 
 [NAME](#name)<br />
 [SYNOPSIS](#synopsis)<br />
 [DESCRIPTION](#description)<br />
-[ERRORS](#errors)<br />
+[RETURN VALUE](#return-value)<br />
 [SEE ALSO](#see-also)<br />
 
 
@@ -29,11 +29,9 @@ secondary_title: miniasync
 ```c
 #include <libminiasync.h>
 
-struct vdm_descriptor *vdm_descriptor_synchronous(void);
-struct vdm_descriptor *vdm_descriptor_pthreads(void);
-
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
+struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);
 ```
 
 For general description of miniasync see **miniasync**(7).
@@ -41,30 +39,34 @@ For general description of miniasync see **miniasync**(7).
 
 # DESCRIPTION #
 
-XXX: add description here.
-
-`struct vdm_descriptor *vdm_descriptor_synchronous(void);`
-
-:	XXX add description here.
-
-`struct vdm_descriptor *vdm_descriptor_pthreads(void);`
-
-:	XXX add description here.
+API for miniasync library forming the basis of various virtual data movers.
 
 `struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
 
-:	XXX add description here.
+Creates new instance of virtual data mover defined by the `descriptor`. Some descriptors may implement
+additional procedures called on creating and deleting an instance of vdm which are `vdm_data_init`
+and `vdm_data_fini`. They are responsible for initializing and finalizing data needed
+for the virtual data mover to work. For example,
+creating instance of vdm with `vdm_descriptor_threads` calls a procedure that creates
+necessary threads and data associated with them and calling `vdm_delete` on
+the mover calls a procedure that closes the threads.
 
 `void vdm_delete(struct vdm *vdm);`
 
-:	XXX add description here.
+Cleans up all memory allocated by `vdm_new` and performs additional finalization
+if specified in the descriptor of the vdm instance.
 
+`struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);`
 
-## ERRORS ##
+Initializes and returns a new memcpy future based on the virtual data mover instance `vdm` and
+the remaining parameters.
 
-XXX add description here.
+# RETURN VALUE #
 
+The `vdm_new` returns pointer to a `struct vdm` or **NULL** if the allocation of
+`struct vdm` failed, passed descriptor is **NULL** or calling `vdm_data_init` failed.
+The `vdm_memcpy` always returns a copy of `struct vdm_memcpy_future`.
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm_synchronous**(3), **miniasync_vdm_threads**(3) and **<https://pmem.io>**
