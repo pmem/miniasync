@@ -248,6 +248,14 @@ pthread_cleanup_handler(void *lock)
 	pthread_mutex_unlock(lock);
 }
 
+static void *
+async_memcpy_pthread(void *arg)
+{
+	memcpy_impl(NULL, arg);
+
+	return NULL;
+}
+
 void *
 vdm_pthread_loop(void *arg)
 {
@@ -272,7 +280,7 @@ vdm_pthread_loop(void *arg)
 		}
 		pthread_mutex_unlock(&pthread_data->lock);
 
-		memcpy_impl(NULL, data);
+		async_memcpy_pthread(data);
 
 	}
 
@@ -319,14 +327,6 @@ vdm_pthread_queue_loop(void *arg)
 		pthread_mutex_unlock(&pthread_data->lock);
 	}
 	pthread_cleanup_pop(0);
-}
-
-static void *
-async_memcpy_pthread(void *arg)
-{
-	memcpy_impl(NULL, arg);
-
-	return NULL;
 }
 
 static void
