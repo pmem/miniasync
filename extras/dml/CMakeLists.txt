@@ -5,8 +5,6 @@
 
 project(miniasync-dml C)
 
-set(MINIASYNC_DML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 add_cstyle(miniasync-dml
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
