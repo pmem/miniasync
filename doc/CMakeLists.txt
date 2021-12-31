@@ -71,6 +71,13 @@ if(PANDOC)
 	add_manpage_links(miniasync_vdm.3
 		vdm_descriptor_synchronous vdm_descriptor_pthreads vdm_new vdm_delete)
 
+	# miniasync_dml_vdm.3
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/miniasync_dml_vdm.3.md.in
+	${MAN_DIR}/tmp/miniasync_dml_vdm.3.md)
+	configure_man(miniasync_dml_vdm.3 ${MAN_DIR}/tmp/miniasync_dml_vdm.3.md)
+	add_manpage_links(miniasync_dml_vdm.3
+		vdm_descriptor_dml vdm_descriptor_dml_async)
+
 	# install manpages
 	install(FILES ${MAN_DIR}/miniasync.7
 		DESTINATION ${CMAKE_INSTALL_MANDIR}/man7)
