@@ -9,6 +9,12 @@ set(LIBS_BASIC
 	miniasync
 	${CMAKE_THREAD_LIBS_INIT})
 
+set(LIBS_DML
+	miniasync-dml
+	dl
+	dml
+	${LIBS_BASIC})
+
 set(SOURCES_DUMMY_TEST
 	dummy/dummy.c)
 
@@ -17,6 +23,10 @@ set(SOURCES_DUMMY_NEGATIVE_TEST
 
 set(SOURCES_MEMCPY_PTHREADS_TEST
 		memcpy_threads/memcpy_threads.c)
+
+set(SOURCES_DML_VDM_TEST
+	dml_vdm/dml_vdm.c
+	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
 
 add_custom_target(tests)
 
@@ -55,3 +65,12 @@ test("dummy_negative" "dummy_negative" test_dummy_negative none)
 test("ex_basic" "ex_basic" test_ex_basic none)
 test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
+
+# add miniasync-dml test only if the sources in extras/dml were compiled
+if (COMPILE_DML)
+	add_link_executable(dml_vdm
+			"${SOURCES_DML_VDM_TEST}"
+			"${LIBS_DML}")
+
+	test("dml_vdm" "dml_vdm" test_dml_vdm none)
+endif()
