@@ -23,8 +23,8 @@ set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/test
 	CACHE STRING "working directory for tests")
 
 option(COVERAGE "run coverage test" OFF)
-option(DEVELOPER_MODE "enable developer checks" OFF)
-option(CHECK_CSTYLE "check code style of C sources" OFF)
+option(DEVELOPER_MODE "enable developer checks" ON)
+option(CHECK_CSTYLE "check code style of C sources" ON)
 option(TRACE_TESTS "more verbose test outputs" OFF)
 option(USE_ASAN "enable AddressSanitizer (debugging)" OFF)
 option(USE_UBSAN "enable UndefinedBehaviorSanitizer (debugging)" OFF)

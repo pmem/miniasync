@@ -23,6 +23,8 @@
 #define VDM_H 1
 
 #include "future.h"
+#include "core/ringbuf.h"
+#include "core/os_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +37,7 @@ typedef void (*vdm_data_fn)(void **vdm_data);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
+	int started;
 	int complete;
 	struct vdm *vdm;
 	void *dest;
@@ -68,8 +71,11 @@ struct vdm_descriptor {
 };
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
-struct vdm_descriptor *vdm_descriptor_pthreads(void);
-struct vdm_descriptor *vdm_descriptor_pthreads_polled(void);
+struct vdm_descriptor *vdm_descriptor_threads(void);
+struct vdm_descriptor *vdm_descriptor_threads_polled(void);
+
+void *vdm_threads_loop(void *arg);
+
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);

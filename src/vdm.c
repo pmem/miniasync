@@ -1,27 +1,39 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "libminiasync/vdm.h"
+#include "libminiasync/vdm_threads.h"
 #include "core/util.h"
 
 struct vdm {
-	struct vdm_descriptor *descriptor;
-	void *data;
+    struct vdm_descriptor *descriptor;
+    void *data;
 };
 
+/*
+ * Returns NULL if failed to allocate memory for struct vdm
+ * or vdm_data_init failed
+ */
 struct vdm *
 vdm_new(struct vdm_descriptor *descriptor)
 {
 	struct vdm *vdm = malloc(sizeof(struct vdm));
+
+	if (!vdm)
+		return NULL;
+
 	vdm->descriptor = descriptor;
 	vdm->data = NULL;
 
-	if (descriptor->vdm_data_init)
+	if (descriptor->vdm_data_init) {
 		descriptor->vdm_data_init(&vdm->data);
+		if (!vdm->data) {
+			free(vdm);
+			return NULL;
+		}
+	}
 
 	return vdm;
 }
@@ -47,9 +59,9 @@ static void
 vdm_memcpy_cb(struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
-	util_atomic_store64(&data->complete, 1);
 	if (data->notifier.notifier_used == FUTURE_NOTIFIER_WAKER)
 		FUTURE_WAKER_WAKE(&data->notifier.waker);
+	util_atomic_store64(&data->complete, 1);
 }
 
 static enum future_state
@@ -82,8 +94,9 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.data.dest = dest;
 	future.data.src = src;
 	future.data.n = n;
+	future.data.started = 0;
 	future.data.complete = 0;
-	future.output = (struct vdm_memcpy_output){ NULL };
+	future.output = (struct vdm_memcpy_output){NULL};
 	future.data.flags = flags;
 	FUTURE_INIT(&future, vdm_memcpy_impl);
 
@@ -109,6 +122,20 @@ vdm_check(struct future_context *context)
 	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
 }
 
+static enum future_state
+vdm_check_async_start(struct future_context *context)
+{
+	struct vdm_memcpy_data *data = future_context_get_data(context);
+	int started, complete;
+	util_atomic_load64(&data->started, &started);
+	util_atomic_load64(&data->complete, &complete);
+	if (complete)
+		return FUTURE_STATE_COMPLETE;
+	if (started)
+		return FUTURE_STATE_RUNNING;
+	return FUTURE_STATE_IDLE;
+}
+
 static void
 memcpy_sync(void *descriptor, struct future_notifier *notifier,
 	struct future_context *context)
@@ -132,58 +159,86 @@ vdm_descriptor_synchronous(void)
 }
 
 static void *
-async_memcpy_pthread(void *arg)
+async_memcpy_threads(void *arg)
 {
 	memcpy_impl(NULL, arg);
 
 	return NULL;
 }
 
-static void
-memcpy_pthreads(void *descriptor, struct future_notifier *notifier,
-	struct future_context *context)
+void *
+vdm_threads_loop(void *arg)
 {
-	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
+	struct vdm_threads_data *vdm_threads_data = arg;
+	struct ringbuf *buf = vdm_threads_data->buf;
+	struct future_context *data;
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, async_memcpy_pthread, context);
+	while (1) {
+		/*
+		 * Worker thread is trying to dequeue from ringbuffer,
+		 * if he fails, he's waiting until something is added to
+		 * the ringbuffer.
+		 */
+		data = ringbuf_dequeue(buf);
+
+		if (!vdm_threads_data->running)
+			return NULL;
+
+		async_memcpy_threads(data);
+	}
 }
 
 static void
-memcpy_pthreads_polled(void *descriptor, struct future_notifier *notifier,
+memcpy_threads(void *descriptor, struct future_notifier *notifier,
 	struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
+	struct vdm_threads_data *vdm_threads_data = vdm_get_data(data->vdm);
+
+	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
+	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
+		util_atomic_store64(&data->started, 1);
+	}
+
+}
+
+static void
+memcpy_threads_polled(void *descriptor, struct future_notifier *notifier,
+	struct future_context *context)
+{
+	struct vdm_memcpy_data *data = future_context_get_data(context);
+	struct vdm_threads_data *vdm_threads_data = vdm_get_data(data->vdm);
 
 	notifier->notifier_used = FUTURE_NOTIFIER_POLLER;
 	notifier->poller.ptr_to_monitor = (uint64_t *)&data->complete;
 
-	pthread_t thread;
-	pthread_create(&thread, NULL, async_memcpy_pthread, context);
+	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
+		util_atomic_store64(&data->started, 1);
+	}
 }
 
-static struct vdm_descriptor pthreads_descriptor = {
-	.memcpy = memcpy_pthreads,
-	.vdm_data_init = NULL,
-	.vdm_data_fini = NULL,
-	.check = vdm_check,
+static struct vdm_descriptor threads_descriptor = {
+	.memcpy = memcpy_threads,
+	.vdm_data_init = vdm_threads_init,
+	.vdm_data_fini = vdm_threads_fini,
+	.check = vdm_check_async_start,
 };
 
 struct vdm_descriptor *
-vdm_descriptor_pthreads(void)
+vdm_descriptor_threads(void)
 {
-	return &pthreads_descriptor;
+	return &threads_descriptor;
 }
 
-static struct vdm_descriptor pthreads_polled_descriptor = {
-	.memcpy = memcpy_pthreads_polled,
-	.vdm_data_init = NULL,
-	.vdm_data_fini = NULL,
-	.check = vdm_check,
+static struct vdm_descriptor threads_polled_descriptor = {
+	.memcpy = memcpy_threads_polled,
+	.vdm_data_init = vdm_threads_init,
+	.vdm_data_fini = vdm_threads_fini,
+	.check = vdm_check_async_start,
 };
 
 struct vdm_descriptor *
-vdm_descriptor_pthreads_polled(void)
+vdm_descriptor_threads_polled(void)
 {
-	return &pthreads_polled_descriptor;
+	return &threads_polled_descriptor;
 }

@@ -47,9 +47,21 @@ XXX: add description here.
 
 :	XXX add description here.
 
-`struct vdm_descriptor *vdm_descriptor_pthreads(void);`
+`struct vdm_descriptor *vdm_descriptor_threads(void);`
 
-:	XXX add description here.
+:   In order to use parallel memcpy on os threads, create appropriate
+descriptor:
+```c
+struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
+```
+Then, create a new virtual data mover instance using that descriptor:
+```c
+struct vdm *vdm = vdm_new(vdm_async_descriptor);
+```
+From now on, every future created with `vdm_memcpy` and previously
+created instance of data mover `struct vdm_memcpy_future fut = vdm_memcpy(vdm, dst, src, size, flags);`
+will be performed asynchronously.
+Every time a future is polled it tries to add it's memcpy into queue until it succedes. The queue is dequeued in FIFO policy and processed by background worker threads.
 
 `struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
 
