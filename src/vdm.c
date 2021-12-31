@@ -251,7 +251,6 @@ pthread_cleanup_handler(void *lock)
 void *
 vdm_pthread_loop(void *arg)
 {
-	int running;
 	struct vdm_pthread_data *pthread_data = arg;
 	struct ringbuf *buf = pthread_data->buf;
 	struct future_context *data;
@@ -273,8 +272,6 @@ vdm_pthread_loop(void *arg)
 		}
 		pthread_mutex_unlock(&pthread_data->lock);
 
-		struct vdm_memcpy_data *vdm_data =
-			future_context_get_data(data);
 		memcpy_impl(NULL, data);
 
 	}
@@ -307,8 +304,6 @@ vdm_pthread_queue_loop(void *arg)
 		}
 		pthread_mutex_unlock(&queue->lock);
 
-		struct vdm_memcpy_data *vdm_data =
-			future_context_get_data(data);
 		ringbuf_enqueue(buf, data);
 		/*
 		 * We should lock sending signal because it could be

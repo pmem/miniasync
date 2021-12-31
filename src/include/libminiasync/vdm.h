@@ -34,6 +34,7 @@ extern "C" {
 #endif
 
 struct vdm;
+struct vdm_pthread_queue;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
 typedef void (*vdm_data_fn)(void **vdm_data);
