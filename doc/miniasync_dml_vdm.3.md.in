@@ -1,0 +1,69 @@
+---
+layout: manual
+Content-Style: 'text/css'
+title: _MP(MINIASYNC_DML_VDM, 3)
+collection: miniasync_dml
+header: MINIASYNC_DML_VDM
+secondary_title: miniasync_dml
+...
+
+[comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
+[comment]: <> (Copyright 2021, Intel Corporation)
+
+[comment]: <> (miniasync_dml_vdm.3 -- man page for miniasync-dml vdm API)
+
+[NAME](#name)<br />
+[SYNOPSIS](#synopsis)<br />
+[DESCRIPTION](#description)<br />
+[ERRORS](#errors)<br />
+[SEE ALSO](#see-also)<br />
+
+
+# NAME #
+
+**miniasync_dml_vdm** - Virtual data mover API for miniasync-dml library
+
+
+# SYNOPSIS #
+
+```c
+#include <libminiasync.h>
+#include <libminiasync-dml.h>
+
+struct vdm_descriptor *vdm_descriptor_dml(void);
+```
+
+For general description of miniasync see **miniasync**(7).
+
+
+# DESCRIPTION #
+
+**vdm_descriptor_dml**() is **miniasync**(7) virtual data mover
+implementation of Data Mover Library (**DML**).
+
+**miniasync_dml_vdm** provides following flags:
+
+* **MINIASYNC_DML_F_MEM_DURABLE** - write is performed to durable memory
+
+* **MINIASYNC_DML_F_PATH_HW** - operation executes using hardware path
+
+`struct vdm_descriptor *vdm_descriptor_dml(void);`
+
+:	Data Mover Library implementation of virtual data mover. It is a nonblocking copy operation.
+	By default, this operation executes using software path. Set *MINIASYNC_DML_F_PATH_HW* flag to
+	use hardware path.
+	If you want to make use of hardware path, make sure that DML is installed with ```DML_HW``` option.
+	For more information about **DML**, see **<https://github.com/intel/DML>**.
+
+For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file.
+
+
+## ERRORS ##
+
+**vdm_descriptor_dml**() does not return any errors.
+
+
+# SEE ALSO #
+
+**miniasync**(7), **miniasync_dml_vdm**(3),
+**<https://github.com/intel/DML>** and **<https://pmem.io>**
