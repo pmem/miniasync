@@ -185,7 +185,7 @@ if(NOT "${CPACK_GENERATOR}" STREQUAL "")
 	include(${CMAKE_SOURCE_DIR}/cmake/packages.cmake)
 endif()
 
-# add CMakeLists.txt from the mover directory
+# add CMakeLists.txt from the extras dml directory
 if (COMPILE_DML)
 	add_subdirectory(extras/dml)
 endif()
