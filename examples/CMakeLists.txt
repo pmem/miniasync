@@ -36,9 +36,11 @@ function(add_example name)
 	set(srcs ${ARGN})
 	prepend(srcs ${CMAKE_CURRENT_SOURCE_DIR} ${srcs})
 	add_executable(example-${name} ${srcs})
+	message(STATUS "MY_VARIABLE=${CMAKE_CURRENT_SOURCE_DIR}")
 	target_link_libraries(example-${name} miniasync ${CMAKE_THREAD_LIBS_INIT})
 	add_dependencies(examples example-${name})
 endfunction()
 
 # add all the examples with a use of the add_example function defined above
 add_example(basic basic/basic.c)
+add_example(basic-async basic-async/basic-async.c)
