@@ -6,7 +6,8 @@
 #include <string.h>
 #include "libminiasync.h"
 
-int main() {
+int main()
+{
 	struct runtime *r = runtime_new();
 
 	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_pthreads();
@@ -29,13 +30,13 @@ int main() {
 		memset(src4, 4, 1 << 10);
 
 		struct vdm_memcpy_future fut = vdm_memcpy(
-			vdm, dst, src, 1 << 10, NULL);
+			vdm, dst, src, 1 << 10, 0);
 		struct vdm_memcpy_future fut2 = vdm_memcpy(
-			vdm, dst2, src2, 1 << 10, NULL);
+			vdm, dst2, src2, 1 << 10, 0);
 		struct vdm_memcpy_future fut3 = vdm_memcpy(
-			vdm, dst3, src3, 1 << 10, NULL);
+			vdm, dst3, src3, 1 << 10, 0);
 		struct vdm_memcpy_future fut4 = vdm_memcpy(
-			vdm, dst4, src4, 1 << 10, NULL);
+			vdm, dst4, src4, 1 << 10, 0);
 
 		struct future *futs[] = {FUTURE_AS_RUNNABLE(&fut),
 			FUTURE_AS_RUNNABLE(&fut2),
@@ -43,7 +44,7 @@ int main() {
 			FUTURE_AS_RUNNABLE(&fut4)
 		};
 
-		runtime_wait_multiple(r, futs, rand() % 4 + 1);
+		runtime_wait_multiple(r, futs, (unsigned)rand() % 4 + 1);
 
 		free(src);
 		free(src2);
