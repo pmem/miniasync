@@ -22,19 +22,32 @@
 #ifndef VDM_H
 #define VDM_H 1
 
+#define THREADS_COUNT 12
+#define RINGBUF_SIZE 4
+#define QUEUE_SIZE 4
+
 #include "future.h"
+#include "core/ringbuf.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct vdm;
+struct vdm_pthread_queue;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
 typedef void (*vdm_data_fn)(void **vdm_data);
+typedef int (*vdm_pthread_enqueue_fn)(struct vdm_pthread_queue *queue, struct future_context *data);
+typedef struct future_context* (*vdm_pthread_dequeue_fn)(struct vdm_pthread_queue *queue);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
+	int started;
 	int complete;
 	struct vdm *vdm;
 	void *dest;
@@ -43,6 +56,28 @@ struct vdm_memcpy_data {
 	vdm_cb_fn vdm_cb;
 	uint64_t flags;
 	void *extra;
+};
+
+struct vdm_pthread_queue {
+    vdm_pthread_enqueue_fn enqueue;
+    vdm_pthread_dequeue_fn dequeue;
+    void** buf;
+    size_t size;
+    size_t count;
+    size_t enqueue_index;
+    size_t dequeue_index;
+    pthread_mutex_t lock;
+    pthread_cond_t added_to_queue;
+};
+
+struct vdm_pthread_data {
+    	struct ringbuf *buf;
+	struct vdm_pthread_queue queue;
+	pthread_t queue_thread;
+    	pthread_t **threads;
+    	pthread_cond_t added_to_ringbuf;
+    	pthread_cond_t removed_from_ringbuf;
+    	pthread_mutex_t lock;
 };
 
 struct vdm_memcpy_output {
@@ -69,6 +104,14 @@ struct vdm_descriptor {
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
 struct vdm_descriptor *vdm_descriptor_pthreads(void);
+
+void vdm_pthread_init(void **vdm_data);
+void vdm_pthread_fini(void **vdm_data);
+void *vdm_pthread_loop(void *arg);
+void *vdm_pthread_queue_loop(void *arg);
+int vdm_pthread_enqueue(struct vdm_pthread_queue *queue,struct future_context *arg);
+struct future_context* vdm_pthread_dequeue(struct vdm_pthread_queue *queue);
+
 struct vdm_descriptor *vdm_descriptor_pthreads_polled(void);
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);

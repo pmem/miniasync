@@ -24,7 +24,8 @@ set(CORE_DEPS
 	${CORE_SOURCE_DIR}/os_thread_posix.c
 	${CORE_SOURCE_DIR}/out.c
 	${CORE_SOURCE_DIR}/util.c
-	${CORE_SOURCE_DIR}/util_posix.c)
+	${CORE_SOURCE_DIR}/util_posix.c
+	${CORE_SOURCE_DIR}/ringbuf.c)
 
 add_library(miniasync STATIC ${SOURCES} ${CORE_DEPS})
 
