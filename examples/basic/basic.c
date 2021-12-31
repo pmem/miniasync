@@ -96,9 +96,9 @@ main(int argc, char *argv[])
 	char *buf_b = strdup("otherbuf");
 	struct runtime *r = runtime_new();
 
-	struct vdm *pthread_mover = vdm_new(vdm_descriptor_pthreads_polled());
+	struct vdm *thread_mover = vdm_new(vdm_descriptor_threads_polled());
 	struct vdm_memcpy_future a_to_b =
-		vdm_memcpy(pthread_mover, buf_b, buf_a, testbuf_size, 0);
+		vdm_memcpy(thread_mover, buf_b, buf_a, testbuf_size, 0);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
 
@@ -106,16 +106,16 @@ main(int argc, char *argv[])
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&print_5));
 
 	struct async_memcpy_print_fut memcpy_print =
-		async_memcpy_print(pthread_mover, buf_b, buf_a, testbuf_size);
+		async_memcpy_print(thread_mover, buf_b, buf_a, testbuf_size);
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&memcpy_print));
 
 	runtime_delete(r);
 
 	struct async_memcpy_print_fut memcpy_print_busy =
-		async_memcpy_print(pthread_mover, buf_b, buf_a, testbuf_size);
+		async_memcpy_print(thread_mover, buf_b, buf_a, testbuf_size);
 	FUTURE_BUSY_POLL(&memcpy_print_busy);
 
-	vdm_delete(pthread_mover);
+	vdm_delete(thread_mover);
 
 	printf("%s %s %d\n", buf_a, buf_b, memcmp(buf_a, buf_b, testbuf_size));
 
