@@ -1,0 +1,61 @@
+---
+layout: manual
+Content-Style: 'text/css'
+title: _MP(MINIASYNC_DML_VDM, 3)
+collection: miniasync_dml
+header: MINIASYNC_DML_VDM
+secondary_title: miniasync_dml
+...
+
+[comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
+[comment]: <> (Copyright 2021, Intel Corporation)
+
+[comment]: <> (miniasync_dml_vdm.3 -- man page for miniasync-dml vdm API)
+
+[NAME](#name)<br />
+[SYNOPSIS](#synopsis)<br />
+[DESCRIPTION](#description)<br />
+[ERRORS](#errors)<br />
+[SEE ALSO](#see-also)<br />
+
+
+# NAME #
+
+**miniasync_dml_vdm** - Virtual data mover API for miniasync-dml library
+
+
+# SYNOPSIS #
+
+```c
+#include <libminiasync.h>
+#include <libminiasync-dml.h>
+
+struct vdm_descriptor *vdm_descriptor_dml_async(void);
+```
+
+For general description of miniasync see **miniasync**(7).
+
+
+# DESCRIPTION #
+
+**vdm_descriptor_dml_async**() is **miniasync**(7) virtual data mover
+implementation of Data Mover Library (**DML**).
+
+`struct vdm_descriptor *vdm_descriptor_dml_async(void);`
+
+:	Data Mover Library implementation of asynchronous virtual data mover. It is a nonblocking copy operation.
+	This operation can executed using either software or hardware path, depending on options set during **DML**
+	library compilation. For more information about **DML**, see **<https://github.com/intel/DML>**.
+
+For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file.
+
+
+## ERRORS ##
+
+**vdm_descriptor_dml_async**() does not return any errors.
+
+
+# SEE ALSO #
+
+**miniasync**(7), **miniasync_dml_vdm**(3),
+**<https://github.com/intel/DML>** and **<https://pmem.io>**
