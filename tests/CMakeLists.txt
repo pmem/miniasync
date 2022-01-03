@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021, Intel Corporation
+# Copyright 2021-2022, Intel Corporation
 #
 
 include(cmake/ctest_helpers.cmake)
@@ -37,7 +37,9 @@ add_link_executable(dummy_negative
         "${LIBS_BASIC}")
 
 # add test using test function defined in the ctest_helpers.cmake file
-test("dummy_memcheck" "dummy" test_dummy memcheck)
 test("dummy" "dummy" test_dummy none)
+test("dummy_drd" "dummy" test_dummy drd)
+test("dummy_helgrind" "dummy" test_dummy helgrind)
+test("dummy_memcheck" "dummy" test_dummy memcheck)
 test("dummy_negative" "dummy_negative" test_dummy_negative none)
 test("ex_basic" "ex_basic" test_ex_basic none)
