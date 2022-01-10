@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 #include <dml/dml.h>
 #include <libminiasync.h>
@@ -85,19 +85,6 @@ vdm_dml_memcpy_job_delete(dml_job_t **dml_job)
 }
 
 /*
- * vdm_dml_memcpy_job_execute -- execute memcpy job (blocking)
- */
-static void *
-vdm_dml_memcpy_job_execute(dml_job_t *dml_job)
-{
-	dml_status_t status;
-	status = dml_execute_job(dml_job);
-	ASSERTeq(status, DML_STATUS_OK);
-
-	return dml_job->destination_first_ptr;
-}
-
-/*
  * vdm_dml_memcpy_job_submit -- submit memcpy job (nonblocking)
  */
 static void *
@@ -111,22 +98,7 @@ vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 }
 
 /*
- * vdm_dml_check -- check status of memcpy job executed synchronously
- */
-static enum future_state
-vdm_dml_check(struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-
-	int complete;
-	util_atomic_load64(&data->complete, &complete);
-
-	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
-}
-
-/*
- * vdm_dml_check_delete_job -- check status of memcpy job executed
- *                             asynchronously
+ * vdm_dml_check_delete_job -- check status of memcpy job
  */
 static enum future_state
 vdm_dml_check_delete_job(struct future_context *context)
@@ -147,49 +119,10 @@ vdm_dml_check_delete_job(struct future_context *context)
 }
 
 /*
- * vdm_dml_memcpy_sync -- execute dml synchronous memcpy operation
+ * vdm_dml_memcpy -- execute dml memcpy operation
  */
 static void
-vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
-	struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-
-	uint64_t tflags = 0;
-	dml_path_t path = 0;
-	vdm_dml_translate_flags(data->flags, &tflags, &path);
-	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags, path);
-	output->dest = vdm_dml_memcpy_job_execute(dml_job);
-	vdm_dml_memcpy_job_delete(&dml_job);
-	data->vdm_cb(context);
-}
-
-/*
- * dml_synchronous_descriptor -- dml synchronous memcpy descriptor
- */
-static struct vdm_descriptor dml_synchronous_descriptor = {
-	.vdm_data_init = NULL,
-	.vdm_data_fini = NULL,
-	.memcpy = vdm_dml_memcpy_sync,
-	.check = vdm_dml_check,
-};
-
-/*
- * vdm_descriptor_dml -- return dml synchronous memcpy descriptor
- */
-struct vdm_descriptor *
-vdm_descriptor_dml(void)
-{
-	return &dml_synchronous_descriptor;
-}
-
-/*
- * vdm_dml_memcpy_async -- execute dml asynchronous memcpy operation
- */
-static void
-vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
+vdm_dml_memcpy(void *runner, struct future_notifier *notifier,
 	struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
@@ -205,20 +138,20 @@ vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
 }
 
 /*
- * dml_synchronous_descriptor -- dml asynchronous memcpy descriptor
+ * dml_synchronous_descriptor -- dml memcpy descriptor
  */
-static struct vdm_descriptor dml_asynchronous_descriptor = {
+static struct vdm_descriptor dml_descriptor = {
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
-	.memcpy = vdm_dml_memcpy_async,
+	.memcpy = vdm_dml_memcpy,
 	.check = vdm_dml_check_delete_job,
 };
 
 /*
- * vdm_descriptor_dml -- return dml asynchronous memcpy descriptor
+ * vdm_descriptor_dml -- return dml memcpy descriptor
  */
 struct vdm_descriptor *
-vdm_descriptor_dml_async(void)
+vdm_descriptor_dml(void)
 {
-	return &dml_asynchronous_descriptor;
+	return &dml_descriptor;
 }
