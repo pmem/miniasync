@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2016-2022, Intel Corporation
 #
 
 #
@@ -27,12 +27,13 @@ ENV BASE_DEPS "\
 	which"
 
 ENV TOOLS_DEPS "\
+	automake \
+	glibc-devel \
 	python3-jinja2"
 
 ENV TESTS_DEPS "\
 	pylint \
 	python3-pip \
-	valgrind \
 	python3-pytest"
 
 ENV PYTHON_DEPS "\
@@ -68,6 +69,10 @@ RUN dnf install -y \
 && dnf clean all
 
 RUN pip3 install --upgrade pip
+
+# Install valgrind
+COPY install-valgrind.sh install-valgrind.sh
+RUN ./install-valgrind.sh fedora
 
 # Install txt2man
 COPY install-txt2man.sh install-txt2man.sh

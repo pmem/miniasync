@@ -19,7 +19,15 @@ set(DML_SOURCES
     vdm_dml.c
 )
 
-add_library(miniasync-dml STATIC ${DML_SOURCES})
+set(DML_CORE_DEPS
+	${CORE_SOURCE_DIR}/alloc.c
+	${CORE_SOURCE_DIR}/os_posix.c
+	${CORE_SOURCE_DIR}/os_thread_posix.c
+	${CORE_SOURCE_DIR}/out.c
+	${CORE_SOURCE_DIR}/util.c
+	${CORE_SOURCE_DIR}/util_posix.c)
+
+add_library(miniasync-dml STATIC ${DML_SOURCES} ${DML_CORE_DEPS})
 
 target_include_directories(miniasync-dml PRIVATE .
 	${MINIASYNC_DML_INCLUDE_DIR}

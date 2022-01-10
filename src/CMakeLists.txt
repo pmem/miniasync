@@ -18,7 +18,15 @@ set(SOURCES
     vdm.c
 )
 
-add_library(miniasync STATIC ${SOURCES})
+set(CORE_DEPS
+	${CORE_SOURCE_DIR}/alloc.c
+	${CORE_SOURCE_DIR}/os_posix.c
+	${CORE_SOURCE_DIR}/os_thread_posix.c
+	${CORE_SOURCE_DIR}/out.c
+	${CORE_SOURCE_DIR}/util.c
+	${CORE_SOURCE_DIR}/util_posix.c)
+
+add_library(miniasync STATIC ${SOURCES} ${CORE_DEPS})
 
 target_include_directories(miniasync PRIVATE . include)
 

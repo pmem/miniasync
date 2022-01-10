@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2016-2021, Intel Corporation
+# Copyright 2016-2022, Intel Corporation
 #
 
 #
@@ -38,12 +38,14 @@ ENV BASE_DEPS "\
 	pandoc"
 
 ENV TOOLS_DEPS "\
+	automake \
+	autotools-dev \
+	libc6-dbg \
 	python3-jinja2"
 
 ENV TESTS_DEPS "\
 	pylint3 \
 	python3-pip \
-	valgrind \
 	python3-pytest"
 
 ENV PYTHON_DEPS "\
@@ -78,6 +80,10 @@ RUN apt-get install -y --no-install-recommends \
 && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip
+
+# Install valgrind
+COPY install-valgrind.sh install-valgrind.sh
+RUN ./install-valgrind.sh ubuntu
 
 # Install txt2man
 COPY install-txt2man.sh install-txt2man.sh
