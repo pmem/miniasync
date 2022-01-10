@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: BSD-3-Clause */
+// SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2022, Intel Corporation */
 
 #include <stdlib.h>
@@ -7,8 +7,8 @@
 #include "libminiasync.h"
 
 int
-test_pthreads_memcpy_multiple_same_char(unsigned int memcpy_count,
-	unsigned int n,size_t test_size)
+test_pthreads_memcpy_multiple_same_char(unsigned memcpy_count,
+	unsigned n, size_t test_size)
 {
 	struct runtime *r = runtime_new();
 	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_pthreads();
@@ -24,10 +24,10 @@ test_pthreads_memcpy_multiple_same_char(unsigned int memcpy_count,
 	struct vdm_memcpy_future *memcpy_futures =
 		malloc(memcpy_count * sizeof(struct vdm_memcpy_future) * n);
 
-	unsigned int index = 0;
+	unsigned index = 0;
 
-	for(unsigned int iter=0;iter<n;iter++) {
-		for (unsigned int i = index; i < index+memcpy_count; i++) {
+	for (unsigned iter = 0; iter < n; iter++) {
+		for (unsigned i = index; i < index + memcpy_count; i++) {
 			values[i] = (char)((i % 26) + 'A');
 			if (test_size) {
 				sizes[i] = test_size;
@@ -43,14 +43,14 @@ test_pthreads_memcpy_multiple_same_char(unsigned int memcpy_count,
 				FUTURE_AS_RUNNABLE(&memcpy_futures[i]);
 		}
 
-		runtime_wait_multiple(r, futures+iter*memcpy_count,
+		runtime_wait_multiple(r, futures + iter * memcpy_count,
 			memcpy_count);
-		index+=memcpy_count;
+		index += memcpy_count;
 	}
 
-	/*Verification*/
+	/* Verification */
 
-	for (unsigned int i = 0; i < memcpy_count*n; i++) {
+	for (unsigned i = 0; i < memcpy_count * n; i++) {
 		if (memcmp(sources[i], destinations[i], sizes[i]) !=
 			0) {
 			fprintf(stderr,
@@ -59,13 +59,13 @@ test_pthreads_memcpy_multiple_same_char(unsigned int memcpy_count,
 			return 1;
 		}
 		printf("Memcpy nr. %u from [%p] to [%p] n=%lu "
-		       "content='%c' is correct\n", i, sources[i],
-			destinations[i], sizes[i],values[i]);
+			"content='%c' is correct\n", i, sources[i],
+			destinations[i], sizes[i], values[i]);
 	}
 
-	/*Cleanup*/
+	/* Cleanup */
 
-	for (unsigned int i = 0; i < memcpy_count*n; i++) {
+	for (unsigned i = 0; i < memcpy_count * n; i++) {
 		free(sources[i]);
 		free(destinations[i]);
 	}
@@ -81,11 +81,12 @@ test_pthreads_memcpy_multiple_same_char(unsigned int memcpy_count,
 	return 0;
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
 	srand(time(NULL));
 
-	test_pthreads_memcpy_multiple_same_char(10,10,1<<11);
+	test_pthreads_memcpy_multiple_same_char(100, 100, 1 << 11);
 
 	return 0;
 }

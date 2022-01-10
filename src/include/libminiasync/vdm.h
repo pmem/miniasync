@@ -28,6 +28,7 @@
 
 #include "future.h"
 #include "core/ringbuf.h"
+#include "core/os_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,18 +67,19 @@ struct vdm_pthread_queue {
     size_t count;
     size_t enqueue_index;
     size_t dequeue_index;
-    pthread_mutex_t lock;
-    pthread_cond_t added_to_queue;
+    os_mutex_t lock;
+    os_cond_t added_to_queue;
 };
 
 struct vdm_pthread_data {
     	struct ringbuf *buf;
 	struct vdm_pthread_queue queue;
-	pthread_t queue_thread;
-    	pthread_t **threads;
-    	pthread_cond_t added_to_ringbuf;
-    	pthread_cond_t removed_from_ringbuf;
-    	pthread_mutex_t lock;
+    	os_thread_t queue_thread;
+    	os_thread_t **threads;
+    	os_cond_t added_to_ringbuf;
+    	os_cond_t removed_from_ringbuf;
+    	os_mutex_t lock;
+	int running;
 };
 
 struct vdm_memcpy_output {

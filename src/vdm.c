@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021, Intel Corporation */
 
-#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include "libminiasync/vdm.h"
 #include "core/util.h"
 
@@ -150,12 +148,12 @@ vdm_pthread_init(void **vdm_data)
 		malloc(sizeof(struct vdm_pthread_data));
 	pthread_data->buf = ringbuf_new(RINGBUF_SIZE);
 
-	pthread_cond_init(&pthread_data->added_to_ringbuf, NULL);
-	pthread_cond_init(&pthread_data->removed_from_ringbuf, NULL);
-	pthread_mutex_init(&pthread_data->lock, NULL);
+	os_cond_init(&pthread_data->added_to_ringbuf);
+	os_cond_init(&pthread_data->removed_from_ringbuf);
+	os_mutex_init(&pthread_data->lock);
 
-	pthread_mutex_init(&pthread_data->queue.lock, NULL);
-	pthread_cond_init(&pthread_data->queue.added_to_queue, NULL);
+	os_mutex_init(&pthread_data->queue.lock);
+	os_cond_init(&pthread_data->queue.added_to_queue);
 	pthread_data->queue.dequeue = vdm_pthread_dequeue;
 	pthread_data->queue.enqueue = vdm_pthread_enqueue;
 	pthread_data->queue.size = QUEUE_SIZE;
@@ -164,14 +162,15 @@ vdm_pthread_init(void **vdm_data)
 		malloc(sizeof(void *) * pthread_data->queue.size);
 	pthread_data->queue.enqueue_index = 0;
 	pthread_data->queue.dequeue_index = 0;
+	pthread_data->running = 1;
 
-	pthread_create(&pthread_data->queue_thread,
+	os_thread_create(&pthread_data->queue_thread,
 		NULL, vdm_pthread_queue_loop, pthread_data);
 
 	pthread_data->threads = malloc(sizeof(pthread_t) * THREADS_COUNT);
 	for (int i = 0; i < THREADS_COUNT; i++) {
 		pthread_data->threads[i] = malloc(sizeof(pthread_t));
-		pthread_create(pthread_data->threads[i],
+		os_thread_create(pthread_data->threads[i],
 			NULL, vdm_pthread_loop, pthread_data);
 	}
 	*vdm_data = pthread_data;
@@ -181,19 +180,24 @@ void
 vdm_pthread_fini(void **vdm_data)
 {
 	struct vdm_pthread_data *pthread_data = *vdm_data;
+	pthread_data->running = 0;
+	/*
+	 * We broadcast here, so every thread will spin one more time
+	 * and check if it should be running.
+	 */
+	os_cond_broadcast(&pthread_data->added_to_ringbuf);
 	for (int i = 0; i < THREADS_COUNT; i++) {
-		pthread_cancel(*pthread_data->threads[i]);
-		pthread_join(*pthread_data->threads[i], NULL);
+		os_thread_join(pthread_data->threads[i], NULL);
 		free(pthread_data->threads[i]);
 	}
 	free(pthread_data->threads);
-	pthread_cancel(pthread_data->queue_thread);
-	pthread_join(pthread_data->queue_thread, NULL);
+	os_cond_broadcast(&pthread_data->queue.added_to_queue);
+	os_thread_join(&pthread_data->queue_thread, NULL);
 	ringbuf_delete(pthread_data->buf);
-	pthread_mutex_destroy(&pthread_data->queue.lock);
-	pthread_mutex_destroy(&pthread_data->lock);
-	pthread_cond_destroy(&pthread_data->removed_from_ringbuf);
-	pthread_cond_destroy(&pthread_data->added_to_ringbuf);
+	os_mutex_destroy(&pthread_data->queue.lock);
+	os_mutex_destroy(&pthread_data->lock);
+	os_cond_destroy(&pthread_data->removed_from_ringbuf);
+	os_cond_destroy(&pthread_data->added_to_ringbuf);
 	free(pthread_data->queue.buf);
 	free(pthread_data);
 	vdm_data = NULL;
@@ -213,7 +217,7 @@ vdm_pthread_enqueue(struct vdm_pthread_queue *queue,
 	queue->buf[queue->enqueue_index] = context;
 	queue->enqueue_index = (queue->enqueue_index + 1) % queue->size;
 	queue->count++;
-	pthread_cond_signal(&queue->added_to_queue);
+	os_cond_signal(&queue->added_to_queue);
 
 	return 0;
 }
@@ -237,13 +241,6 @@ vdm_pthread_dequeue(struct vdm_pthread_queue *queue)
 	return return_value;
 }
 
-void
-pthread_cleanup_handler(void *lock)
-{
-	/* We close threads that are most likely waiting on some condition*/
-	pthread_mutex_unlock(lock);
-}
-
 static void *
 async_memcpy_pthread(void *arg)
 {
@@ -259,28 +256,27 @@ vdm_pthread_loop(void *arg)
 	struct ringbuf *buf = pthread_data->buf;
 	struct future_context *data;
 
-	pthread_cleanup_push(pthread_cleanup_handler, &pthread_data->lock)
-
 	while (1) {
 		/*
 		 * Worker thread is trying to dequeue from ringbuffer,
 		 * if he fails, he's waiting until something is added to
 		 * the ringbuffer.
 		 */
-		pthread_mutex_lock(&pthread_data->lock);
+		os_mutex_lock(&pthread_data->lock);
 		while ((data = ringbuf_trydequeue(buf)) == NULL) {
-			pthread_cond_wait(
+			if (!pthread_data->running) {
+				os_mutex_unlock(&pthread_data->lock);
+				return NULL;
+			}
+			os_cond_wait(
 				&pthread_data->added_to_ringbuf,
 				&pthread_data->lock);
 		}
-		struct vdm_memcpy_data* dt = future_context_get_data(data);
-		pthread_mutex_unlock(&pthread_data->lock);
+		os_mutex_unlock(&pthread_data->lock);
 
 		async_memcpy_pthread(data);
 
 	}
-
-	pthread_cleanup_pop(0);
 }
 
 void *
@@ -291,8 +287,6 @@ vdm_pthread_queue_loop(void *arg)
 	struct vdm_pthread_queue *queue = &pthread_data->queue;
 	struct future_context *data;
 
-	pthread_cleanup_push(pthread_cleanup_handler, &queue->lock)
-
 	while (1) {
 		/*
 		 * ringbuf_enqueue will block if the buffer is full,
@@ -300,13 +294,17 @@ vdm_pthread_queue_loop(void *arg)
 		 * until something is added into queue, most likely by
 		 * main thread.
 		 */
-		pthread_mutex_lock(&queue->lock);
+		os_mutex_lock(&queue->lock);
 		while ((data = queue->dequeue(queue)) == NULL) {
-			pthread_cond_wait(
+			if (!pthread_data->running) {
+				os_mutex_unlock(&queue->lock);
+				return NULL;
+			}
+			os_cond_wait(
 				&queue->added_to_queue,
 				&queue->lock);
 		}
-		pthread_mutex_unlock(&queue->lock);
+		os_mutex_unlock(&queue->lock);
 		ringbuf_enqueue(buf, data);
 		/*
 		 * We should lock sending signal because it could be
@@ -316,12 +314,11 @@ vdm_pthread_queue_loop(void *arg)
 		 * ringbuf_trydequeue(failed)--->\added_to_ringbuf\
 		 * --->pthread_cond_wait
 		 */
-		pthread_mutex_lock(&pthread_data->lock);
-		pthread_cond_signal(
+		os_mutex_lock(&pthread_data->lock);
+		os_cond_signal(
 			&pthread_data->added_to_ringbuf);
-		pthread_mutex_unlock(&pthread_data->lock);
+		os_mutex_unlock(&pthread_data->lock);
 	}
-	pthread_cleanup_pop(0);
 }
 
 static void
@@ -332,11 +329,11 @@ memcpy_pthreads(void *descriptor, struct future_notifier *notifier,
 	struct vdm_pthread_data *pthread_data = vdm_get_data(data->vdm);
 
 	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
-	pthread_mutex_lock(&pthread_data->queue.lock);
+	os_mutex_lock(&pthread_data->queue.lock);
 	if (pthread_data->queue.enqueue(&pthread_data->queue, context) == 0) {
 		util_atomic_store64(&data->started, 1);
 	}
-	pthread_mutex_unlock(&pthread_data->queue.lock);
+	os_mutex_unlock(&pthread_data->queue.lock);
 }
 
 static void
@@ -349,11 +346,11 @@ memcpy_pthreads_polled(void *descriptor, struct future_notifier *notifier,
 	notifier->notifier_used = FUTURE_NOTIFIER_POLLER;
 	notifier->poller.ptr_to_monitor = (uint64_t *)&data->complete;
 
-	pthread_mutex_lock(&pthread_data->queue.lock);
+	os_mutex_lock(&pthread_data->queue.lock);
 	if (pthread_data->queue.enqueue(&pthread_data->queue, context) == 0) {
 		util_atomic_store64(&data->started, 1);
 	}
-	pthread_mutex_unlock(&pthread_data->queue.lock);
+	os_mutex_unlock(&pthread_data->queue.lock);
 }
 
 static struct vdm_descriptor pthreads_descriptor = {

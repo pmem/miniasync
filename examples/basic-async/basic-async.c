@@ -15,13 +15,13 @@ main()
 
 	for (int i = 0; i < 10; i++) {
 		char *src = malloc(1 << 10 * sizeof(char));
-		char *dst = malloc(1 << 10* sizeof(char));
-		char *src2 = malloc(1 << 10* sizeof(char));
-		char *dst2 = malloc(1 << 10* sizeof(char));
-		char *src3 = malloc(1 << 10* sizeof(char));
-		char *dst3 = malloc(1 << 10* sizeof(char));
-		char *src4 = malloc(1 << 10* sizeof(char));
-		char *dst4 = malloc(1 << 10* sizeof(char));
+		char *dst = malloc(1 << 10 * sizeof(char));
+		char *src2 = malloc(1 << 10 * sizeof(char));
+		char *dst2 = malloc(1 << 10 * sizeof(char));
+		char *src3 = malloc(1 << 10 * sizeof(char));
+		char *dst3 = malloc(1 << 10 * sizeof(char));
+		char *src4 = malloc(1 << 10 * sizeof(char));
+		char *dst4 = malloc(1 << 10 * sizeof(char));
 
 		memset(src, 7, 1 << 10);
 		memset(src2, 6, 1 << 10);
