@@ -1,6 +1,5 @@
-//
-// Created by blazej-smorawski on 11/01/2022.
-//
+/* SPDX-License-Identifier: BSD-3-Clause */
+/* Copyright 2022, Intel Corporation */
 
 #ifndef VDM_THREAD_H
 #define VDM_THREAD_H
