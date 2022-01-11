@@ -16,6 +16,7 @@ set(SOURCES
     future.c
     runtime.c
     vdm.c
+    vdm_threads.c
 )
 
 set(CORE_DEPS

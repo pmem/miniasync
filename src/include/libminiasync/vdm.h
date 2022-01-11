@@ -22,10 +22,6 @@
 #ifndef VDM_H
 #define VDM_H 1
 
-#define THREADS_COUNT 12
-#define RINGBUF_SIZE 4
-#define QUEUE_SIZE 4
-
 #include "future.h"
 #include "core/ringbuf.h"
 #include "core/os_thread.h"
@@ -34,17 +30,10 @@
 extern "C" {
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct vdm;
-struct vdm_pthread_queue;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
 typedef void (*vdm_data_fn)(void **vdm_data);
-typedef int (*vdm_pthread_enqueue_fn)(struct vdm_pthread_queue *queue, struct future_context *data);
-typedef struct future_context* (*vdm_pthread_dequeue_fn)(struct vdm_pthread_queue *queue);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
@@ -82,16 +71,11 @@ struct vdm_descriptor {
 };
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
-struct vdm_descriptor *vdm_descriptor_pthreads(void);
+struct vdm_descriptor *vdm_descriptor_threads(void);
+struct vdm_descriptor *vdm_descriptor_threads_polled(void);
 
-void vdm_pthread_init(void **vdm_data);
-void vdm_pthread_fini(void **vdm_data);
-void *vdm_pthread_loop(void *arg);
-void *vdm_pthread_queue_loop(void *arg);
-int vdm_pthread_enqueue(struct vdm_pthread_queue *queue,struct future_context *arg);
-struct future_context* vdm_pthread_dequeue(struct vdm_pthread_queue *queue);
+void *vdm_threads_loop(void *arg);
 
-struct vdm_descriptor *vdm_descriptor_pthreads_polled(void);
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);

@@ -10,7 +10,7 @@ main()
 {
 	struct runtime *r = runtime_new();
 
-	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_pthreads();
+	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
 	struct vdm *vdm = vdm_new(vdm_async_descriptor);
 
 	size_t test_size = 1 << 10;

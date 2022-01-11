@@ -16,7 +16,7 @@ set(SOURCES_DUMMY_NEGATIVE_TEST
 	dummy_negative/dummy_negative.c)
 
 set(SOURCES_MEMCPY_PTHREADS_TEST
-		memcpy_pthreads/memcpy_pthreads.c)
+		memcpy_threads/memcpy_threads.c)
 
 add_custom_target(tests)
 
@@ -42,7 +42,7 @@ add_link_executable(dummy_negative
 		"${SOURCES_DUMMY_NEGATIVE_TEST}"
         "${LIBS_BASIC}")
 
-add_link_executable(memcpy_pthreads
+add_link_executable(memcpy_threads
 		"${SOURCES_MEMCPY_PTHREADS_TEST}"
 		"${LIBS_BASIC}")
 
@@ -53,4 +53,4 @@ test("dummy_helgrind" "dummy" test_dummy helgrind)
 test("dummy_memcheck" "dummy" test_dummy memcheck)
 test("dummy_negative" "dummy_negative" test_dummy_negative none)
 test("ex_basic" "ex_basic" test_ex_basic none)
-test("memcpy_pthreads" "memcpy_pthreads" test_memcpy_pthreads none)
+test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)

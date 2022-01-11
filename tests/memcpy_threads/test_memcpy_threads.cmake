@@ -7,7 +7,7 @@ include(${SRC_DIR}/cmake/test_helpers.cmake)
 
 setup()
 
-execute(0 ${TEST_DIR}/memcpy_pthreads)
-execute_assert_pass(${TEST_DIR}/memcpy_pthreads)
+execute(0 ${TEST_DIR}/memcpy_threads)
+execute_assert_pass(${TEST_DIR}/memcpy_threads)
 
 cleanup()

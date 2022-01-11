@@ -7,11 +7,11 @@
 #include "libminiasync.h"
 
 int
-test_pthreads_memcpy_multiple_same_char(unsigned memcpy_count,
+test_threads_memcpy_multiple_same_char(unsigned memcpy_count,
 	unsigned n, size_t test_size)
 {
 	struct runtime *r = runtime_new();
-	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_pthreads();
+	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
 	struct vdm *vdm = vdm_new(vdm_async_descriptor);
 
 	if (!vdm) {
@@ -87,11 +87,11 @@ test_pthreads_memcpy_multiple_same_char(unsigned memcpy_count,
 }
 
 int
-test_pthreads_memcpy_multiple_sequence(unsigned memcpy_count,
+test_threads_memcpy_multiple_sequence(unsigned memcpy_count,
 	unsigned n, size_t test_size)
 {
 	struct runtime *r = runtime_new();
-	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_pthreads();
+	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
 	struct vdm *vdm = vdm_new(vdm_async_descriptor);
 
 	char **sources = malloc(memcpy_count * sizeof(char *) * n);
@@ -167,9 +167,10 @@ int
 main(int argc, char *argv[])
 {
 	srand(time(NULL));
-
-	test_pthreads_memcpy_multiple_same_char(100, 100, 1 << 10);
-	test_pthreads_memcpy_multiple_sequence(100, 100, 128);
-	test_pthreads_memcpy_multiple_sequence(100, 100, 7);
-	return 0;
+	return
+		test_threads_memcpy_multiple_same_char(100, 10, 10) ||
+		test_threads_memcpy_multiple_same_char(100, 10, 1 << 10) ||
+		test_threads_memcpy_multiple_sequence(100, 10, 128) ||
+		test_threads_memcpy_multiple_sequence(100, 10, 7) ||
+		test_threads_memcpy_multiple_sequence(100, 10, 0);
 }
