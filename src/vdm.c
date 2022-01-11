@@ -11,15 +11,51 @@ struct vdm {
     void *data;
 };
 
+struct vdm_pthread_queue {
+    vdm_pthread_enqueue_fn enqueue;
+    vdm_pthread_dequeue_fn dequeue;
+    void **buf;
+    size_t size;
+    size_t count;
+    size_t enqueue_index;
+    size_t dequeue_index;
+    os_mutex_t lock;
+    os_cond_t added_to_queue;
+};
+
+struct vdm_pthread_data {
+    struct ringbuf *buf;
+    struct vdm_pthread_queue queue;
+    os_thread_t queue_thread;
+    os_thread_t **threads;
+    os_cond_t added_to_ringbuf;
+    os_cond_t removed_from_ringbuf;
+    os_mutex_t lock;
+    int running;
+};
+
+/*
+ * Returns NULL if failed to allocate memory for struct vdm
+ * or vdm_data_init failed
+ */
 struct vdm *
 vdm_new(struct vdm_descriptor *descriptor)
 {
 	struct vdm *vdm = malloc(sizeof(struct vdm));
+
+	if (!vdm)
+		return NULL;
+
 	vdm->descriptor = descriptor;
 	vdm->data = NULL;
 
-	if (descriptor->vdm_data_init)
+	if (descriptor->vdm_data_init) {
 		descriptor->vdm_data_init(&vdm->data);
+		if (!vdm->data) {
+			free(vdm);
+			return NULL;
+		}
+	}
 
 	return vdm;
 }
@@ -115,8 +151,11 @@ vdm_check_async_start(struct future_context *context)
 	int started, complete;
 	util_atomic_load64(&data->started, &started);
 	util_atomic_load64(&data->complete, &complete);
-	return (complete) ? FUTURE_STATE_COMPLETE :
-		((started) ? FUTURE_STATE_RUNNING : FUTURE_STATE_IDLE);
+	if (complete)
+		return FUTURE_STATE_COMPLETE;
+	if (started)
+		return FUTURE_STATE_RUNNING;
+	return FUTURE_STATE_IDLE;
 }
 
 static void
@@ -146,7 +185,17 @@ vdm_pthread_init(void **vdm_data)
 {
 	struct vdm_pthread_data *pthread_data =
 		malloc(sizeof(struct vdm_pthread_data));
+
+	if (!pthread_data) {
+		return;
+	}
+
 	pthread_data->buf = ringbuf_new(RINGBUF_SIZE);
+
+	if (!pthread_data->buf) {
+		free(pthread_data);
+		return;
+	}
 
 	os_cond_init(&pthread_data->added_to_ringbuf);
 	os_cond_init(&pthread_data->removed_from_ringbuf);
@@ -164,12 +213,38 @@ vdm_pthread_init(void **vdm_data)
 	pthread_data->queue.dequeue_index = 0;
 	pthread_data->running = 1;
 
+	if (!pthread_data->queue.buf) {
+		ringbuf_delete(pthread_data->buf);
+		free(pthread_data);
+		return;
+	}
+
 	os_thread_create(&pthread_data->queue_thread,
 		NULL, vdm_pthread_queue_loop, pthread_data);
 
 	pthread_data->threads = malloc(sizeof(pthread_t) * THREADS_COUNT);
+
+	if (!pthread_data->threads) {
+		free(pthread_data->queue.buf);
+		ringbuf_delete(pthread_data->buf);
+		free(pthread_data);
+		return;
+	}
+
 	for (int i = 0; i < THREADS_COUNT; i++) {
 		pthread_data->threads[i] = malloc(sizeof(pthread_t));
+
+		if (!pthread_data->threads[i]) {
+			for (int j = 0; j < i; j++) {
+				free(pthread_data->threads[j]);
+			}
+			free(pthread_data->threads);
+			free(pthread_data->queue.buf);
+			ringbuf_delete(pthread_data->buf);
+			free(pthread_data);
+			return;
+		}
+
 		os_thread_create(pthread_data->threads[i],
 			NULL, vdm_pthread_loop, pthread_data);
 	}
@@ -186,6 +261,7 @@ vdm_pthread_fini(void **vdm_data)
 	 * and check if it should be running.
 	 */
 	os_cond_broadcast(&pthread_data->added_to_ringbuf);
+	ringbuf_stop(pthread_data->buf);
 	for (int i = 0; i < THREADS_COUNT; i++) {
 		os_thread_join(pthread_data->threads[i], NULL);
 		free(pthread_data->threads[i]);
@@ -262,17 +338,10 @@ vdm_pthread_loop(void *arg)
 		 * if he fails, he's waiting until something is added to
 		 * the ringbuffer.
 		 */
-		os_mutex_lock(&pthread_data->lock);
-		while ((data = ringbuf_trydequeue(buf)) == NULL) {
-			if (!pthread_data->running) {
-				os_mutex_unlock(&pthread_data->lock);
-				return NULL;
-			}
-			os_cond_wait(
-				&pthread_data->added_to_ringbuf,
-				&pthread_data->lock);
-		}
-		os_mutex_unlock(&pthread_data->lock);
+		data = ringbuf_dequeue(buf);
+
+		if (!pthread_data->running)
+			return NULL;
 
 		async_memcpy_pthread(data);
 

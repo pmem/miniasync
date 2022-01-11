@@ -59,29 +59,6 @@ struct vdm_memcpy_data {
 	void *extra;
 };
 
-struct vdm_pthread_queue {
-    vdm_pthread_enqueue_fn enqueue;
-    vdm_pthread_dequeue_fn dequeue;
-    void** buf;
-    size_t size;
-    size_t count;
-    size_t enqueue_index;
-    size_t dequeue_index;
-    os_mutex_t lock;
-    os_cond_t added_to_queue;
-};
-
-struct vdm_pthread_data {
-    	struct ringbuf *buf;
-	struct vdm_pthread_queue queue;
-    	os_thread_t queue_thread;
-    	os_thread_t **threads;
-    	os_cond_t added_to_ringbuf;
-    	os_cond_t removed_from_ringbuf;
-    	os_mutex_t lock;
-	int running;
-};
-
 struct vdm_memcpy_output {
 	void *dest;
 };

@@ -74,12 +74,11 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 	struct future_notifier notifier;
 	notifier.waker = (struct future_waker){&waker_data, runtime_waker_wake};
 	notifier.poller.ptr_to_monitor = NULL;
-	struct future *fut;
 	size_t ndone = 0;
 	for (;;) {
 		for (uint64_t i = 0; i < runtime->spins_before_sleep; ++i) {
 			for (uint64_t f = 0; f < nfuts; ++f) {
-				fut = futs[f];
+				struct future *fut = futs[f];
 				if (fut->context.state == FUTURE_STATE_COMPLETE)
 					continue;
 

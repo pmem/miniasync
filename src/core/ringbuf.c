@@ -17,7 +17,7 @@
 #include "sys_util.h"
 #include "alloc.h"
 
-#if 0
+#if 1
 /*
  * This number defines by how much the relevant semaphore will be increased to
  * unlock waiting threads and thus defines how many threads can wait on
@@ -82,7 +82,7 @@ ringbuf_new(unsigned length)
 	return rbuf;
 }
 
-#if 0
+#if 1
 /*
  * ringbuf_length -- returns the length of the ring buffer
  */
@@ -220,7 +220,7 @@ ringbuf_dequeue_atomic(struct ringbuf *rbuf)
 	return data;
 }
 
-#if 0
+#if 1
 /*
  * ringbuf_dequeue -- retrieves one value from the collection
  *
