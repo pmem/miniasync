@@ -33,7 +33,9 @@ extern "C" {
 struct vdm;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
-typedef void (*vdm_data_fn)(void **vdm_data);
+typedef int (*vdm_data_fn)(void **vdm_data);
+typedef void (*memcpy_impl_fn)(void *descriptor, struct future_context
+	*context);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
@@ -43,6 +45,7 @@ struct vdm_memcpy_data {
 	void *dest;
 	void *src;
 	size_t n;
+    	memcpy_impl_fn memcpy_impl;
 	vdm_cb_fn vdm_cb;
 	uint64_t flags;
 	void *extra;
@@ -71,14 +74,12 @@ struct vdm_descriptor {
 };
 
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
-struct vdm_descriptor *vdm_descriptor_threads(void);
-struct vdm_descriptor *vdm_descriptor_threads_polled(void);
-
-void *vdm_threads_loop(void *arg);
 
 struct vdm *vdm_new(struct vdm_descriptor *descriptor);
 void vdm_delete(struct vdm *vdm);
 void *vdm_get_data(struct vdm *vdm);
+enum future_state vdm_check(struct future_context *context);
+enum future_state vdm_check_async_start(struct future_context *context);
 
 #ifdef __cplusplus
 }

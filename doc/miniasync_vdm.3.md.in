@@ -61,7 +61,8 @@ struct vdm *vdm = vdm_new(vdm_async_descriptor);
 From now on, every future created with `vdm_memcpy` and previously
 created instance of data mover `struct vdm_memcpy_future fut = vdm_memcpy(vdm, dst, src, size, flags);`
 will be performed asynchronously.
-Every time a future is polled it tries to add it's memcpy into queue until it succedes. The queue is dequeued in FIFO policy and processed by background worker threads.
+Every time a future is polled it tries to add its memcpy into the queue until it succeeds. 
+The memcpy's are processed in FIFO policy and performed by background worker threads
 
 `struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
 

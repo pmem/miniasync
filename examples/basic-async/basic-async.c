@@ -6,7 +6,7 @@
 #include "libminiasync.h"
 
 int
-main()
+main(void)
 {
 	struct runtime *r = runtime_new();
 

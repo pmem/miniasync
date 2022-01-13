@@ -11,15 +11,12 @@
 extern "C" {
 #endif
 
-struct vdm_threads_data {
-    struct ringbuf *buf;
-    os_thread_t **threads;
-    int running;
-};
+int vdm_threads_init(void **vdm_data);
+int vdm_threads_fini(void **vdm_data);
+struct vdm_descriptor *vdm_descriptor_threads(void);
+struct vdm_descriptor *vdm_descriptor_threads_polled(void);
 
-void vdm_threads_init(void **vdm_data);
-void vdm_threads_fini(void **vdm_data);
-
+void *vdm_threads_loop(void *arg);
 #ifdef __cplusplus
 }
 #endif
