@@ -116,7 +116,7 @@ vdm_check(struct future_context *context)
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 
 	int complete;
-	util_atomic_load64(&data->complete, &complete);
+	util_atomic_load32(&data->complete, &complete);
 	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
 }
 
@@ -125,8 +125,8 @@ vdm_check_async_start(struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	int started, complete;
-	util_atomic_load64(&data->started, &started);
-	util_atomic_load64(&data->complete, &complete);
+	util_atomic_load32(&data->started, &started);
+	util_atomic_load32(&data->complete, &complete);
 	if (complete)
 		return FUTURE_STATE_COMPLETE;
 	if (started)

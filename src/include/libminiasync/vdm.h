@@ -37,8 +37,8 @@ typedef int (*vdm_data_fn)(void **vdm_data);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
-	uint32_t started;
-    	uint32_t complete;
+	int32_t started;
+    	int32_t complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;

@@ -23,7 +23,7 @@ memcpy_threads(void *descriptor, struct future_notifier *notifier,
 
 	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
 	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
-		util_atomic_store64(&data->started, 1);
+		util_atomic_store32(&data->started, 1);
 	}
 
 }
@@ -39,7 +39,7 @@ memcpy_threads_polled(void *descriptor, struct future_notifier *notifier,
 	notifier->poller.ptr_to_monitor = (uint64_t *)&data->complete;
 
 	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
-		util_atomic_store64(&data->started, 1);
+		util_atomic_store32(&data->started, 1);
 	}
 }
 
