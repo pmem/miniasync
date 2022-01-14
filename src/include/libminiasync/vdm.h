@@ -34,18 +34,15 @@ struct vdm;
 
 typedef void (*vdm_cb_fn)(struct future_context *context);
 typedef int (*vdm_data_fn)(void **vdm_data);
-typedef void (*memcpy_impl_fn)(void *descriptor, struct future_context
-	*context);
 
 struct vdm_memcpy_data {
 	struct future_notifier notifier;
-	int started;
-	int complete;
+	uint32_t started;
+    	uint32_t complete;
 	struct vdm *vdm;
 	void *dest;
 	void *src;
 	size_t n;
-    	memcpy_impl_fn memcpy_impl;
 	vdm_cb_fn vdm_cb;
 	uint64_t flags;
 	void *extra;

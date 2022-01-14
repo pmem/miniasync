@@ -11,12 +11,12 @@
 extern "C" {
 #endif
 
-int vdm_threads_init(void **vdm_data);
-int vdm_threads_fini(void **vdm_data);
+#define THREADS_COUNT 1
+#define RINGBUF_SIZE 128
+	
 struct vdm_descriptor *vdm_descriptor_threads(void);
 struct vdm_descriptor *vdm_descriptor_threads_polled(void);
 
-void *vdm_threads_loop(void *arg);
 #ifdef __cplusplus
 }
 #endif

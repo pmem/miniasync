@@ -2,7 +2,7 @@
 /* Copyright 2021, Intel Corporation */
 
 #include "libminiasync/runtime.h"
-#include <core/os_thread.h>
+#include "core/os_thread.h"
 #include <emmintrin.h>
 #include <time.h>
 #include <stdio.h>

@@ -68,7 +68,7 @@ vdm_memcpy_cb(struct future_context *context)
 	 * the notifier it will refer to main thread's stack address
 	 * that is no longer relevant and cause segmentation fault.
 	 */
-	util_atomic_store64(&data->complete, 1);
+	util_atomic_store32(&data->complete, 1);
 }
 
 static enum future_state
@@ -93,15 +93,6 @@ vdm_memcpy_impl(struct future_context *context, struct future_notifier *n)
 	return data->vdm->descriptor->check(context);
 }
 
-static void
-memcpy_impl(void *descriptor, struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-	output->dest = memcpy(data->dest, data->src, data->n);
-	data->vdm_cb(context);
-}
-
 struct vdm_memcpy_future
 vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
@@ -112,7 +103,6 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.data.n = n;
 	future.data.started = 0;
 	future.data.complete = 0;
-	future.data.memcpy_impl = memcpy_impl;
 	future.output = (struct vdm_memcpy_output){NULL};
 	future.data.flags = flags;
 	FUTURE_INIT(&future, vdm_memcpy_impl);
@@ -150,7 +140,10 @@ memcpy_sync(void *descriptor, struct future_notifier *notifier,
 {
 	notifier->notifier_used = FUTURE_NOTIFIER_NONE;
 
-	memcpy_impl(descriptor, context);
+	struct vdm_memcpy_data *data = future_context_get_data(context);
+	struct vdm_memcpy_output *output = future_context_get_output(context);
+	output->dest = memcpy(data->dest, data->src, data->n);
+	util_atomic_store32(&data->complete, 1);
 }
 
 static struct vdm_descriptor synchronous_descriptor = {

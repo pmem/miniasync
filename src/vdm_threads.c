@@ -9,74 +9,10 @@
 #include "core/os_thread.h"
 #include "core/ringbuf.h"
 
-#define THREADS_COUNT 12
-#define RINGBUF_SIZE 128
-
 struct vdm_threads_data {
     struct ringbuf *buf;
     os_thread_t **threads;
 };
-
-int
-vdm_threads_init(void **vdm_data)
-{
-	struct vdm_threads_data *vdm_threads_data =
-		malloc(sizeof(struct vdm_threads_data));
-
-	if (!vdm_threads_data) {
-		return 1;
-	}
-
-	vdm_threads_data->buf = ringbuf_new(RINGBUF_SIZE);
-
-	if (!vdm_threads_data->buf) {
-		free(vdm_threads_data);
-		return 2;
-	}
-
-	vdm_threads_data->threads = malloc(sizeof(os_thread_t) * THREADS_COUNT);
-
-	if (!vdm_threads_data->threads) {
-		ringbuf_delete(vdm_threads_data->buf);
-		free(vdm_threads_data);
-		return 3;
-	}
-
-	for (int i = 0; i < THREADS_COUNT; i++) {
-		vdm_threads_data->threads[i] = malloc(sizeof(os_thread_t));
-
-		if (!vdm_threads_data->threads[i]) {
-			for (int j = 0; j < i; j++) {
-				free(vdm_threads_data->threads[j]);
-			}
-			free(vdm_threads_data->threads);
-			ringbuf_delete(vdm_threads_data->buf);
-			free(vdm_threads_data);
-			return 4;
-		}
-
-		os_thread_create(vdm_threads_data->threads[i],
-			NULL, vdm_threads_loop, vdm_threads_data);
-	}
-	*vdm_data = vdm_threads_data;
-	return 0;
-}
-
-int
-vdm_threads_fini(void **vdm_data)
-{
-	struct vdm_threads_data *vdm_threads_data = *vdm_data;
-	ringbuf_stop(vdm_threads_data->buf);
-	for (int i = 0; i < THREADS_COUNT; i++) {
-		os_thread_join(vdm_threads_data->threads[i], NULL);
-		free(vdm_threads_data->threads[i]);
-	}
-	free(vdm_threads_data->threads);
-	ringbuf_delete(vdm_threads_data->buf);
-	free(vdm_threads_data);
-	vdm_data = NULL;
-	return 0;
-}
 
 static void
 memcpy_threads(void *descriptor, struct future_notifier *notifier,
@@ -107,6 +43,16 @@ memcpy_threads_polled(void *descriptor, struct future_notifier *notifier,
 	}
 }
 
+static void
+memcpy_impl(void *descriptor, struct future_context *context)
+{
+	struct vdm_memcpy_data *data = future_context_get_data(context);
+	struct vdm_memcpy_output *output = future_context_get_output(context);
+
+	output->dest = memcpy(data->dest, data->src, data->n);
+	data->vdm_cb(context);
+}
+
 void *
 vdm_threads_loop(void *arg)
 {
@@ -125,9 +71,68 @@ vdm_threads_loop(void *arg)
 		if (context == NULL)
 			return NULL;
 
-		struct vdm_memcpy_data *data = future_context_get_data(context);
-		data->memcpy_impl(NULL, context);
+		memcpy_impl(NULL, context);
 	}
+}
+
+int
+vdm_threads_init(void **vdm_data)
+{
+	struct vdm_threads_data *vdm_threads_data =
+		malloc(sizeof(struct vdm_threads_data));
+	if (vdm_threads_data == NULL)
+		goto data_failed;
+
+	vdm_threads_data->buf = ringbuf_new(RINGBUF_SIZE);
+	if (vdm_threads_data->buf == NULL)
+		goto ringbuf_failed;
+
+	vdm_threads_data->threads = malloc(sizeof(os_thread_t) * THREADS_COUNT);
+	if (vdm_threads_data->threads == NULL)
+		goto threads_array_failed;
+
+	int i;
+	for (i = 0; i < THREADS_COUNT; i++) {
+		vdm_threads_data->threads[i] = malloc(sizeof(os_thread_t));
+		if (vdm_threads_data->threads[i] == NULL)
+			goto threads_failed;
+
+		os_thread_create(vdm_threads_data->threads[i],
+			NULL, vdm_threads_loop, vdm_threads_data);
+	}
+	*vdm_data = vdm_threads_data;
+	return 0;
+
+threads_failed:
+	for (int j = 0; j < i; j++) {
+		free(vdm_threads_data->threads[j]);
+	}
+
+threads_array_failed:
+	ringbuf_delete(vdm_threads_data->buf);
+	free(vdm_threads_data);
+
+ringbuf_failed:
+	free(vdm_threads_data);
+
+data_failed:
+	return 1;
+}
+
+int
+vdm_threads_fini(void **vdm_data)
+{
+	struct vdm_threads_data *vdm_threads_data = *vdm_data;
+	ringbuf_stop(vdm_threads_data->buf);
+	for (int i = 0; i < THREADS_COUNT; i++) {
+		os_thread_join(vdm_threads_data->threads[i], NULL);
+		free(vdm_threads_data->threads[i]);
+	}
+	free(vdm_threads_data->threads);
+	ringbuf_delete(vdm_threads_data->buf);
+	free(vdm_threads_data);
+	vdm_data = NULL;
+	return 0;
 }
 
 static struct vdm_descriptor threads_descriptor = {
