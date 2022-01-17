@@ -5,10 +5,11 @@
 #include <string.h>
 #include "libminiasync/vdm.h"
 #include "core/util.h"
+#include "core/valgrind_internal.h"
 
 struct vdm {
-    struct vdm_descriptor *descriptor;
-    void *data;
+	struct vdm_descriptor *descriptor;
+	void *data;
 };
 
 /*
@@ -19,8 +20,7 @@ struct vdm *
 vdm_new(struct vdm_descriptor *descriptor)
 {
 	struct vdm *vdm = malloc(sizeof(struct vdm));
-
-	if (!vdm)
+	if (vdm == NULL)
 		return NULL;
 
 	vdm->descriptor = descriptor;
@@ -69,6 +69,14 @@ vdm_memcpy_cb(struct future_context *context)
 	 * that is no longer relevant and cause segmentation fault.
 	 */
 	util_atomic_store32(&data->complete, 1);
+	/*
+	 * Just a dirty test of supressing helgrind errors
+	 * 1 is for performing memcpy
+	 * 2 is for creating vdm_memcpy
+	 * 3 is for waking runtime
+	 */
+	VALGRIND_ANNOTATE_HAPPENS_AFTER(2);
+	VALGRIND_ANNOTATE_HAPPENS_BEFORE(1);
 }
 
 static enum future_state
@@ -106,7 +114,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.output = (struct vdm_memcpy_output){NULL};
 	future.data.flags = flags;
 	FUTURE_INIT(&future, vdm_memcpy_impl);
-
+	VALGRIND_ANNOTATE_HAPPENS_BEFORE(2);
 	return future;
 }
 

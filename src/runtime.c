@@ -3,6 +3,7 @@
 
 #include "libminiasync/runtime.h"
 #include "core/os_thread.h"
+#include "core/valgrind_internal.h"
 #include <emmintrin.h>
 #include <time.h>
 #include <stdio.h>
@@ -19,6 +20,7 @@ runtime_waker_wake(void *fdata)
 	os_mutex_lock(data->lock);
 	os_cond_signal(data->cond);
 	os_mutex_unlock(data->lock);
+	VALGRIND_ANNOTATE_HAPPENS_BEFORE(3);
 }
 
 struct runtime {
@@ -107,6 +109,8 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 		}
 		runtime_sleep(runtime);
 	}
+	VALGRIND_ANNOTATE_HAPPENS_AFTER(3); /* Waking runtime */
+	VALGRIND_ANNOTATE_HAPPENS_AFTER(1); /* Performing memcpys */
 }
 
 void
