@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2017-2019, Intel Corporation */
+/* Copyright 2017-2022, Intel Corporation */
 
 /*
  * ringbuf.h -- internal definitions for mpmc ring buffer
