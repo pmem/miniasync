@@ -66,7 +66,6 @@ vdm_threads_loop(void *arg)
 		 * the ringbuffer.
 		 */
 		context = ringbuf_dequeue(buf);
-
 		if (context == NULL)
 			return NULL;
 
