@@ -104,7 +104,11 @@ endif()
 
 if(DEVELOPER_MODE)
 	add_flag(-Wall)
-	add_flag(-Werror)
+	if(WIN32)
+		add_flag(-WX)
+	else()
+		add_flag(-Werror)
+	endif()
 
 	if(CHECK_CSTYLE)
 		add_dependencies(checkers cstyle)

@@ -105,10 +105,10 @@ threads_failed:
 	for (int j = 0; j < i; j++) {
 		free(vdm_threads_data->threads[j]);
 	}
+	free(vdm_threads_data->threads);
 
 threads_array_failed:
 	ringbuf_delete(vdm_threads_data->buf);
-	free(vdm_threads_data);
 
 ringbuf_failed:
 	free(vdm_threads_data);

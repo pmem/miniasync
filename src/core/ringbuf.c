@@ -17,6 +17,10 @@
 #include "sys_util.h"
 #include "alloc.h"
 
+#ifdef _WIN32
+#define __sync_synchronize() MemoryBarrier()
+#endif
+
 #if 1
 /*
  * This number defines by how much the relevant semaphore will be increased to
