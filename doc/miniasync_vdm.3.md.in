@@ -47,9 +47,35 @@ XXX: add description here.
 
 :	XXX add description here.
 
-`struct vdm_descriptor *vdm_descriptor_pthreads(void);`
+`struct vdm_descriptor *vdm_descriptor_threads(void);`
 
-:	XXX add description here.
+:   In order to use parallel memcpy on os threads, create an appropriate
+descriptor:
+```c
+struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
+```
+Then, create a new virtual data mover instance using this descriptor:
+```c
+struct vdm *vdm = vdm_new(vdm_async_descriptor);
+```
+The next step is creating a future that will handle the memcpy operation:
+```c
+struct vdm_memcpy_future fut = vdm_memcpy(vdm, dst, src, size, flags);
+```
+Now, during `runtime_wait` or `runtime_wait_complete` this future will be polled
+as long as it is not complete i.e. its state is not `FUTURE_STATE_COMPLETE`. 
+When this kind of future is polled and it is in state `FUTURE_STATE_IDLE`, 
+it tries to add its memcpy data into a queue of pending operations 
+that is watched by worker threads. If the memcpy data was added to the queue
+successfully, the state of the future is set to `FUTURE_STATE_RUNNING`, 
+which guarantees that a worker thread will perform this operation. Otherwise,
+the state is set to `FUTURE_STATE_IDLE` and whole process is repeated in a
+next poll of this future. Polling a future in state `FUTURE_STATE_RUNNING` is just
+a check if it's complete, so if it is - its state is set to `FUTURE_STATE_COMPLETE`,
+otherwise it is still `FUTURE_STATE_RUNNING`. Memcpy operations are processed in
+order in which they are put into the queue, but we cannot guarantee that they will
+be processed in the same order as they are in the array of futures passed to
+`runtime_wait_multiple` if the count of operations is bigger than size of the queue.
 
 `struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
 

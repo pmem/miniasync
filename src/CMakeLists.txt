@@ -20,15 +20,13 @@ set(SOURCES
     future.c
     runtime.c
     vdm.c
+    vdm_threads.c
 )
 
 if(WIN32)
 	set(CORE_DEPS
-		${CORE_SOURCE_DIR}/alloc.c
 		${CORE_SOURCE_DIR}/os_windows.c
 		${CORE_SOURCE_DIR}/os_thread_windows.c
-		${CORE_SOURCE_DIR}/out.c
-		${CORE_SOURCE_DIR}/util.c
 		${CORE_SOURCE_DIR}/util_windows.c)
 else()
 	set(CORE_DEPS
@@ -36,6 +34,12 @@ else()
 		${CORE_SOURCE_DIR}/os_posix.c
 		${CORE_SOURCE_DIR}/util_posix.c)
 endif()
+
+set(CORE_DEPS ${CORE_DEPS}
+	${CORE_SOURCE_DIR}/alloc.c
+	${CORE_SOURCE_DIR}/out.c
+	${CORE_SOURCE_DIR}/util.c
+	${CORE_SOURCE_DIR}/ringbuf.c)
 
 add_library(miniasync STATIC ${SOURCES} ${CORE_DEPS})
 

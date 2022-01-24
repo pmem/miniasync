@@ -36,7 +36,6 @@ runtime_new(void)
 	struct runtime *runtime = malloc(sizeof(struct runtime));
 	os_cond_init(&runtime->cond);
 	os_mutex_init(&runtime->lock);
-
 	runtime->spins_before_sleep = 1000;
 	runtime->cond_wait_time = (struct timespec){0, 1000000};
 
@@ -76,7 +75,6 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 	struct future_notifier notifier;
 	notifier.waker = (struct future_waker){&waker_data, runtime_waker_wake};
 	notifier.poller.ptr_to_monitor = NULL;
-
 	size_t ndone = 0;
 	for (;;) {
 		for (uint64_t i = 0; i < runtime->spins_before_sleep; ++i) {
