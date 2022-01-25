@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021, Intel Corporation
+# Copyright 2021-2022, Intel Corporation
 #
 
 add_cstyle(src
@@ -26,7 +26,7 @@ set(CORE_DEPS
 	${CORE_SOURCE_DIR}/util.c
 	${CORE_SOURCE_DIR}/util_posix.c)
 
-add_library(miniasync STATIC ${SOURCES} ${CORE_DEPS})
+add_library(miniasync SHARED ${SOURCES} ${CORE_DEPS})
 
 target_include_directories(miniasync PRIVATE . include)
 
