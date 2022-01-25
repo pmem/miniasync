@@ -21,6 +21,7 @@ set(SOURCES
 
 set(CORE_DEPS
 	${CORE_SOURCE_DIR}/alloc.c
+	${CORE_SOURCE_DIR}/cpu.c
 	${CORE_SOURCE_DIR}/os_posix.c
 	${CORE_SOURCE_DIR}/os_thread_posix.c
 	${CORE_SOURCE_DIR}/out.c

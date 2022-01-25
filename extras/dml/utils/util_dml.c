@@ -7,13 +7,20 @@
 
 #include <dml/dml.h>
 
+#include "cpu.h"
+
 /*
  * util_dml_check_hw_available -- check DML operations with hardware path can
- *                                be performed on current platform
+ *                                be performed on current platform. Returns '0'
+ *                                when it's available and '-1' when it's not.
  */
 int
 util_dml_check_hw_available()
 {
+	if (!is_cpu_movdir64b_present()) {
+		return -1;
+	}
+
 	int ret = 0;
 	size_t buf_alloc_size = sizeof(char);
 	char *buf = malloc(buf_alloc_size);
