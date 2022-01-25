@@ -20,6 +20,9 @@ function(add_link_executable name sources libs)
 		${MINIASYNC_DML_INCLUDE_DIR}
 		${MINIASYNC_DML_SOURCE_DIR}/utils)
 
+	target_include_directories(${name}
+		PRIVATE ${CORE_SOURCE_DIR})
+
 	target_link_libraries(${name} PRIVATE ${libs})
 endfunction()
 
