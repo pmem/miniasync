@@ -36,7 +36,6 @@ dml_memcpy(unsigned flags)
 	return 0;
 }
 
-
 static int
 test_dml_basic_memcpy()
 {
