@@ -39,9 +39,9 @@ For general description of miniasync see **miniasync**(7).
 
 In order to use synchronous memcpy performed on the main thread, use following
 descriptor:
-
-`struct vdm_descriptor *vdm_descriptor_synchronous(void);`
-
+```c
+struct vdm_descriptor *vdm_descriptor_synchronous(void);
+```
 Then, create a new virtual data mover instance using this descriptor and a new
 future:
 ```c
@@ -49,15 +49,15 @@ struct vdm *vdm = vdm_new(vdm_descriptor_synchronous);
 struct vdm_memcpy_future fut = vdm_memcpy(vdm, dst, src, size, flags);
 ```
 
-Now, when the future is polled for the first time in `runtime_wait` 
+Now, when the future is polled for the first time in **runtime_wait**(3) 
 the memcpy operation will be performed synchronously on the same thread as 
-`runtime_wait`.
+**runtime_wait**(3).
 
 # RETURN VALUE #
 
-The `vdm_descriptor_synchronous` returns a pointer to `static struct
+The **vdm_descriptor_synchronous** returns a pointer to `static struct
 vdm_descriptor` describing synchronous virtual data mover.
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3),**miniasync_vdm**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3),**miniasync_vdm**(3), **runtime_wait**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**

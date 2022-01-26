@@ -40,33 +40,31 @@ For general description of miniasync see **miniasync**(7).
 # DESCRIPTION #
 
 API for miniasync library forming the basis of various virtual data movers.
-
-`struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
-
-Creates new instance of virtual data mover defined by the `descriptor`. Some descriptors may implement
-additional procedures called on creating and deleting an instance of vdm which are `vdm_data_init`
-and `vdm_data_fini`. They are responsible for initializing and finalizing data needed
-for the virtual data mover to work. For example,
-creating instance of vdm with `vdm_descriptor_threads` calls a procedure that creates
-necessary threads and data associated with them and calling `vdm_delete` on
-the mover calls a procedure that closes the threads.
-
-`void vdm_delete(struct vdm *vdm);`
-
-Cleans up all memory allocated by `vdm_new` and performs additional finalization
+```c
+struct vdm *vdm_new(struct vdm_descriptor *descriptor);
+```
+Creates a new instance of virtual data mover defined by the `descriptor` and performs
+additional initialization if specified in the descriptor. For example,
+creating instance of vdm with **vdm_descriptor_threads**(3) also calls a procedure that creates
+necessary threads and data associated with them.
+```c
+void vdm_delete(struct vdm *vdm);
+```
+Cleans up all memory allocated by **vdm_new** of the `vdm` instance and performs additional finalization
 if specified in the descriptor of the vdm instance.
-
-`struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);`
-
-Initializes and returns a new memcpy future based on the virtual data mover instance `vdm` and
-the remaining parameters.
+```c
+struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);
+```
+Initializes and returns a new memcpy future based on the virtual data mover instance `vdm`.
+The parameters: `dest`, `src`, `n` are standard memcpy parameters. The `flags`
+represents mover specific flags. For example, flags for dml mover that describe how
+the memcpy will be performed by the mover.
 
 # RETURN VALUE #
 
-The `vdm_new` returns pointer to a `struct vdm` or **NULL** if the allocation of
-`struct vdm` failed, passed descriptor is **NULL** or calling `vdm_data_init` failed.
-The `vdm_memcpy` always returns a copy of `struct vdm_memcpy_future`.
+The **vdm_new** returns pointer to a `struct vdm` or **NULL** if the allocation of
+`struct vdm` failed, passed descriptor is **NULL** or the additional initialization failed.
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm_synchronous**(3), **miniasync_vdm_threads**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm_synchronous**(3), **miniasync_vdm_threads**(3), **vdm_descriptor_threads**(3) and **<https://pmem.io>**
