@@ -5,17 +5,20 @@
 #include <string.h>
 #include <time.h>
 #include "libminiasync.h"
+#include "core/os.h"
 
 int
 test_threads_memcpy_multiple_same_char(unsigned memcpy_count,
 	unsigned n, size_t test_size)
 {
+	unsigned seed = (unsigned)time(NULL);
 	struct runtime *r = runtime_new();
 	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
 	struct vdm *vdm = vdm_new(vdm_async_descriptor);
 
-	if (!vdm) {
+	if (vdm == NULL) {
 		fprintf(stderr, "Failed to create VDM\n");
+		runtime_delete(r);
 		return 1;
 	}
 
@@ -37,7 +40,8 @@ test_threads_memcpy_multiple_same_char(unsigned memcpy_count,
 			if (test_size) {
 				sizes[i] = test_size;
 			} else {
-				sizes[i] = (size_t)rand() % (1 << 20) + 1;
+				sizes[i] = (size_t)os_rand_r(&seed)
+					% (1 << 20) + 1;
 			}
 			sources[i] = malloc(sizes[i] * sizeof(char));
 			destinations[i] = malloc(sizes[i] * sizeof(char));
@@ -56,11 +60,24 @@ test_threads_memcpy_multiple_same_char(unsigned memcpy_count,
 	/* Verification */
 
 	for (unsigned i = 0; i < memcpy_count * n; i++) {
-		if (memcmp(sources[i], destinations[i], sizes[i]) !=
-			0) {
+		if (memcmp(sources[i], destinations[i], sizes[i]) != 0) {
 			fprintf(stderr,
 				"Memcpy nr. %u result is wrong! "
 				"Returning\n", i);
+
+			/* Cleanup */
+			for (unsigned j = 0; j < memcpy_count * n; j++) {
+				free(sources[j]);
+				free(destinations[j]);
+			}
+			free(sources);
+			free(destinations);
+			free(values);
+			free(sizes);
+			free(futures);
+			free(memcpy_futures);
+			runtime_delete(r);
+			vdm_delete(vdm);
 			return 1;
 		}
 		printf("Memcpy nr. %u from [%p] to [%p] n=%lu "
@@ -90,9 +107,16 @@ int
 test_threads_memcpy_multiple_sequence(unsigned memcpy_count,
 	unsigned n, size_t test_size)
 {
+	unsigned seed = (unsigned)time(NULL);
 	struct runtime *r = runtime_new();
 	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
 	struct vdm *vdm = vdm_new(vdm_async_descriptor);
+
+	if (vdm == NULL) {
+		fprintf(stderr, "Failed to create VDM\n");
+		runtime_delete(r);
+		return 1;
+	}
 
 	char **sources = malloc(memcpy_count * sizeof(char *) * n);
 	char **destinations = malloc(memcpy_count * sizeof(char *) * n);
@@ -110,7 +134,8 @@ test_threads_memcpy_multiple_sequence(unsigned memcpy_count,
 			if (test_size) {
 				sizes[i] = test_size;
 			} else {
-				sizes[i] = (size_t)rand() % (1 << 20) + 1;
+				sizes[i] = (size_t)os_rand_r(&seed)
+					% (1 << 20) + 1;
 			}
 			sources[i] = malloc(sizes[i] * sizeof(char));
 			destinations[i] = malloc(sizes[i] * sizeof(char));
@@ -134,11 +159,23 @@ test_threads_memcpy_multiple_sequence(unsigned memcpy_count,
 	/* Verification */
 
 	for (unsigned i = 0; i < memcpy_count * n; i++) {
-		if (memcmp(sources[i], destinations[i], sizes[i]) !=
-			0) {
+		if (memcmp(sources[i], destinations[i], sizes[i]) != 0) {
 			fprintf(stderr,
 				"Memcpy nr. %u result is wrong! "
 				"Returning\n", i);
+
+			/* Cleanup */
+			for (unsigned j = 0; j < memcpy_count * n; j++) {
+				free(sources[j]);
+				free(destinations[j]);
+			}
+			free(sources);
+			free(destinations);
+			free(sizes);
+			free(futures);
+			free(memcpy_futures);
+			runtime_delete(r);
+			vdm_delete(vdm);
 			return 1;
 		}
 		printf("Memcpy nr. %u from [%p] to [%p] n=%lu "
@@ -166,7 +203,6 @@ test_threads_memcpy_multiple_sequence(unsigned memcpy_count,
 int
 main(int argc, char *argv[])
 {
-	srand(time(NULL));
 	return
 		test_threads_memcpy_multiple_same_char(100, 10, 10) ||
 		test_threads_memcpy_multiple_same_char(100, 2, 1 << 10) ||
