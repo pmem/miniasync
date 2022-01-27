@@ -11,7 +11,7 @@
 
 struct vdm_threads_data {
     struct ringbuf *buf;
-    os_thread_t **threads;
+    os_thread_t *threads;
 };
 
 /*
@@ -114,21 +114,11 @@ vdm_threads_init(void **vdm_data)
 
 	int i;
 	for (i = 0; i < THREADS_COUNT; i++) {
-		vdm_threads_data->threads[i] = malloc(sizeof(os_thread_t));
-		if (vdm_threads_data->threads[i] == NULL)
-			goto threads_failed;
-
-		os_thread_create(vdm_threads_data->threads[i],
+		os_thread_create(&vdm_threads_data->threads[i],
 			NULL, vdm_threads_loop, vdm_threads_data);
 	}
 	*vdm_data = vdm_threads_data;
 	return 0;
-
-threads_failed:
-	for (int j = 0; j < i; j++) {
-		free(vdm_threads_data->threads[j]);
-	}
-	free(vdm_threads_data->threads);
 
 threads_array_failed:
 	ringbuf_delete(vdm_threads_data->buf);
@@ -150,8 +140,7 @@ vdm_threads_fini(void **vdm_data)
 	struct vdm_threads_data *vdm_threads_data = *vdm_data;
 	ringbuf_stop(vdm_threads_data->buf);
 	for (int i = 0; i < THREADS_COUNT; i++) {
-		os_thread_join(vdm_threads_data->threads[i], NULL);
-		free(vdm_threads_data->threads[i]);
+		os_thread_join(&vdm_threads_data->threads[i], NULL);
 	}
 	free(vdm_threads_data->threads);
 	ringbuf_delete(vdm_threads_data->buf);

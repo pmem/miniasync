@@ -12,14 +12,14 @@ struct vdm {
 };
 
 /*
- * vdm_new -- returns NULL if failed to allocate memory for struct vdm
- * or vdm_data_init failed
+ * vdm_new -- returns NULL if failed to allocate memory
+ * for struct vdm or vdm_data_init failed.
  */
 struct vdm *
 vdm_new(struct vdm_descriptor *descriptor)
 {
 	struct vdm *vdm = malloc(sizeof(struct vdm));
-	if (vdm == NULL || descriptor == NULL)
+	if (vdm == NULL)
 		return NULL;
 
 	vdm->descriptor = descriptor;
