@@ -63,7 +63,7 @@ the memcpy will be performed by the mover.
 # RETURN VALUE #
 
 The **vdm_new** returns pointer to a `struct vdm` or **NULL** if the allocation of
-`struct vdm` failed, passed descriptor is **NULL** or the additional initialization failed.
+`struct vdm` failed or the additional initialization failed.
 
 # SEE ALSO #
 
