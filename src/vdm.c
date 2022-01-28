@@ -95,7 +95,7 @@ vdm_memcpy_impl(struct future_context *context, struct future_notifier *n)
 struct vdm_memcpy_future
 vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_memcpy_future future;
+	struct vdm_memcpy_future future = {0};
 	future.data.vdm = vdm;
 	future.data.dest = dest;
 	future.data.src = src;
