@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2021, Intel Corporation */
+/* Copyright 2019-2022, Intel Corporation */
 
 #include "libminiasync/future.h"
 
@@ -75,7 +75,7 @@ future_wake_noop(void *data)
 struct future_notifier
 future_noop_notifier(void)
 {
-	struct future_notifier notifier;
+	struct future_notifier notifier = {0};
 	notifier.poller.ptr_to_monitor = NULL;
 	notifier.waker.wake = future_wake_noop;
 	notifier.waker.data = NULL;
