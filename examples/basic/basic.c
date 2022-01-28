@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2019-2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * main.c -- main of async implementation example
@@ -39,7 +39,7 @@ async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 static struct async_print_fut
 async_print(void *value)
 {
-	struct async_print_fut future;
+	struct async_print_fut future = {0};
 	future.data.value = value;
 
 	FUTURE_INIT(&future, async_print_impl);
@@ -75,7 +75,7 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 static struct async_memcpy_print_fut
 async_memcpy_print(struct vdm *vdm, void *dest, void *src, size_t n)
 {
-	struct async_memcpy_print_fut chain;
+	struct async_memcpy_print_fut chain = {0};
 	FUTURE_CHAIN_ENTRY_INIT(&chain.data.memcpy,
 				vdm_memcpy(vdm, dest, src, n, 0),
 				memcpy_to_print_map, (void *)0xd);
