@@ -1,0 +1,15 @@
+LIBRARY MINIASYNC
+EXPORTS
+    future_context_get_data
+    future_context_get_output
+    future_poll
+    async_chain_impl
+    runtime_new
+    runtime_delete
+    runtime_wait_multiple
+    runtime_wait
+    vdm_memcpy
+    vdm_new
+    vdm_delete
+    vdm_descriptor_threads
+    vdm_descriptor_threads_polled

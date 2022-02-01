@@ -10,7 +10,12 @@
 
 #include "stddef.h"
 #include "stdint.h"
+
+#ifdef _WIN32
+#include "windows/include/unistd.h"
+#else
 #include "unistd.h"
+#endif
 
 struct ringbuf;
 

@@ -64,7 +64,7 @@
 #ifndef FUTURE_H
 #define FUTURE_H 1
 
-#include <unistd.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -156,7 +156,7 @@ struct {\
 	future_map_fn map;\
 	void *arg;\
 	_future_type fut;\
-} _name;
+} _name
 
 #define FUTURE_CHAIN_ENTRY_INIT(_entry, _fut, _map, _map_arg)\
 do {\

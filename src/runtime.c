@@ -3,6 +3,7 @@
 
 #include "libminiasync/runtime.h"
 #include "core/os_thread.h"
+#include "core/os.h"
 #include <emmintrin.h>
 
 struct runtime_waker_data {
@@ -50,7 +51,7 @@ runtime_sleep(struct runtime *runtime)
 {
 	os_mutex_lock(&runtime->lock);
 	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
+	os_clock_gettime(CLOCK_REALTIME, &ts);
 	static const size_t nsec_in_sec = 1000000000ULL;
 	ts.tv_nsec += runtime->cond_wait_time.tv_nsec;
 	uint64_t secs = (uint64_t)ts.tv_nsec / nsec_in_sec;
