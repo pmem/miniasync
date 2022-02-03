@@ -37,9 +37,9 @@ main(void)
 		/*
 		 * Create futures to be performed asynchronously.
 		 */
-		struct vdm_memcpy_future fut = vdm_memcpy(
+		struct vdm_operation_future fut = vdm_memcpy(
 			vdm, dst1, src1, TEST_SIZE, 0);
-		struct vdm_memcpy_future fut2 = vdm_memcpy(
+		struct vdm_operation_future fut2 = vdm_memcpy(
 			vdm, dst2, src2, TEST_SIZE * 2, 0);
 
 		struct future *futs[] = {FUTURE_AS_RUNNABLE(&fut),

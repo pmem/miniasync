@@ -69,7 +69,7 @@ vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags,
 	dml_job->destination_first_ptr = (uint8_t *)dest;
 	dml_job->source_length = n;
 	dml_job->destination_length = n;
-	dml_job->flags = DML_FLAG_COPY_ONLY | flags;
+	dml_job->flags = DML_FLAG_COPY_ONLY | vdm_dml_translate_flags(flags);
 
 	return dml_job;
 }
@@ -98,53 +98,91 @@ vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 }
 
 /*
- * vdm_dml_check_delete_job -- check status of memcpy job
+ * vdm_dml_operation_new -- create a new DML job
  */
-static enum future_state
-vdm_dml_check_delete_job(struct future_context *context)
+static int64_t
+vdm_dml_operation_new(void *vdm_data, const struct vdm_operation *operation)
 {
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	dml_job_t *dml_job = (dml_job_t *)data->extra;
+	struct vdm_operation *sync_op = malloc(sizeof(*sync_op));
+	*sync_op = *operation;
 
-	dml_status_t status = dml_check_job(dml_job);
-	ASSERTne(status, DML_STATUS_JOB_CORRUPTED);
-
-	enum future_state state = (status == DML_STATUS_OK) ?
-			FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
-
-	if (state == FUTURE_STATE_COMPLETE)
-		vdm_dml_memcpy_job_delete(&dml_job);
-
-	return state;
+	switch (operation->type) {
+		case VDM_OPERATION_MEMCPY:
+		return (int64_t)vdm_dml_memcpy_job_new(operation->memcpy.dest,
+			operation->memcpy.src, operation->memcpy.n,
+			operation->memcpy.flags);
+		default:
+		ASSERT(0); /* unreachable */
+	}
+	return 0;
 }
 
 /*
- * vdm_dml_memcpy -- execute dml memcpy operation
+ * vdm_dml_operation_delete -- delete a DML job
  */
 static void
-vdm_dml_memcpy(void *runner, struct future_notifier *notifier,
-	struct future_context *context)
+vdm_dml_operation_delete(void *vdm_data, int64_t op_id)
 {
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-
-	uint64_t tflags = 0;
-	dml_path_t path = 0;
-	vdm_dml_translate_flags(data->flags, &tflags, &path);
-	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags, path);
-	data->extra = dml_job;
-	output->dest = vdm_dml_memcpy_job_submit(dml_job);
+	dml_job_t *job = (dml_job_t *)op_id;
+	vdm_dml_memcpy_job_delete(&job);
 }
 
 /*
- * dml_synchronous_descriptor -- dml memcpy descriptor
+ * vdm_dml_operation_check -- check the status of a DML job
+ */
+enum future_state
+vdm_dml_operation_check(void *vdm_data, int64_t op_id)
+{
+	dml_job_t *job = (dml_job_t *)op_id;
+
+	dml_status_t status = dml_check_job(job);
+	ASSERTne(status, DML_STATUS_JOB_CORRUPTED);
+
+	return (status == DML_STATUS_OK) ?
+		FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
+}
+
+/*
+ * vdm_dml_operation_start_sync -- start ('submit') asynchronous dml job
+ */
+int
+vdm_dml_operation_start(void *vdm_data, int64_t op_id,
+	struct future_notifier *n)
+{
+	n->notifier_used = FUTURE_NOTIFIER_NONE;
+
+	dml_job_t *job = (dml_job_t *)op_id;
+
+	vdm_dml_memcpy_job_submit(job);
+
+	return 0;
+}
+
+/*
+ * vdm_dml_operation_start_sync -- start ('execute') synchronous dml job
+ */
+int
+vdm_dml_operation_start_sync(void *vdm_data, int64_t op_id,
+	struct future_notifier *n)
+{
+	n->notifier_used = FUTURE_NOTIFIER_NONE;
+
+	dml_job_t *job = (dml_job_t *)op_id;
+	vdm_dml_memcpy_job_execute(job);
+
+	return 0;
+}
+
+/*
+ * dml_synchronous_descriptor -- dml asynchronous memcpy descriptor
  */
 static struct vdm_descriptor dml_descriptor = {
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
-	.memcpy = vdm_dml_memcpy,
-	.check = vdm_dml_check_delete_job,
+	.op_new = vdm_dml_operation_new,
+	.op_delete = vdm_dml_operation_delete,
+	.op_check = vdm_dml_operation_check,
+	.op_start = vdm_dml_operation_start,
 };
 
 /*
