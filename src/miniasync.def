@@ -13,3 +13,4 @@ EXPORTS
     vdm_delete
     vdm_descriptor_threads
     vdm_descriptor_threads_polled
+    os_rand_r

@@ -3,6 +3,10 @@
 # Copyright 2021-2022, Intel Corporation
 #
 
+if(MSVC)
+    add_definitions(/FI"platform.h")
+endif()
+
 add_cstyle(src
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/include/*.[h]
