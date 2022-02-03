@@ -61,7 +61,7 @@ async_print(void *value)
  * BEGIN of async_memcpy_print future
  */
 struct async_memcpy_print_data {
-	FUTURE_CHAIN_ENTRY(struct vdm_memcpy_future, memcpy);
+	FUTURE_CHAIN_ENTRY(struct vdm_operation_future, memcpy);
 	FUTURE_CHAIN_ENTRY(struct async_print_fut, print);
 };
 
@@ -77,7 +77,7 @@ static void
 memcpy_to_print_map(struct future_context *memcpy_ctx,
 		    struct future_context *print_ctx, void *arg)
 {
-	struct vdm_memcpy_output *output =
+	struct vdm_operation_output *output =
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
@@ -126,7 +126,7 @@ main(void)
 	 * Create first future for memcpy based on the given 'thread_mover'
 	 * and waits for its execution (in the runtime).
 	 */
-	struct vdm_memcpy_future a_to_b =
+	struct vdm_operation_future a_to_b =
 		vdm_memcpy(thread_mover, buf_b, buf_a, testbuf_size, 0);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));

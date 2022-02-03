@@ -34,8 +34,8 @@ test_threads_memcpy_multiple(unsigned memcpy_count,
 
 	struct future **futures = malloc(
 		memcpy_count * sizeof(struct future *) * n);
-	struct vdm_memcpy_future *memcpy_futures =
-		malloc(memcpy_count * sizeof(struct vdm_memcpy_future) * n);
+	struct vdm_operation_future *memcpy_futures =
+		malloc(memcpy_count * sizeof(struct vdm_operation_future) * n);
 
 	unsigned index = 0;
 	char value = 0;

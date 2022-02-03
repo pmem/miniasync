@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "libminiasync/vdm.h"
 #include "libminiasync/vdm_threads.h"
 #include "core/util.h"
@@ -10,61 +11,42 @@
 #include "core/ringbuf.h"
 
 struct vdm_threads_data {
-    struct ringbuf *buf;
-    os_thread_t *threads;
+	struct ringbuf *buf;
+	os_thread_t *threads;
+};
+
+struct threads_operation_entry {
+	struct vdm_threads_data *threads;
+
+	struct vdm_operation operation;
+	enum future_notifier_type desired_notifier;
+	struct future_notifier notifier;
+	uint64_t complete;
+	uint64_t started;
 };
 
 /*
- * memcpy_threads -- function that is called on future_poll of futures
- * created with vdm associated with vdm_descriptor_threads.
+ * vdm_threads_do_operation -- implementation of the various implementations
+ *	supported by this mover implementation
  */
 static void
-memcpy_threads(void *descriptor, struct future_notifier *notifier,
-	struct future_context *context)
+vdm_threads_do_operation(struct threads_operation_entry *op)
 {
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_threads_data *vdm_threads_data = vdm_get_data(data->vdm);
-
-	notifier->notifier_used = FUTURE_NOTIFIER_WAKER;
-	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
-		util_atomic_store32(&data->started, 1);
+	switch (op->operation.type) {
+		case VDM_OPERATION_MEMCPY: {
+			struct vdm_memcpy_data *mdata
+				= &op->operation.memcpy;
+			memcpy(mdata->dest, mdata->src, mdata->n);
+		} break;
+		default:
+		assert(0); /* unreachable */
+		break;
 	}
-}
 
-/*
- * memcpy_threads_polled -- function that is called on future_poll of
- * futures created with vdm associated with vdm_descriptor_threads_polled.
- */
-static void
-memcpy_threads_polled(void *descriptor, struct future_notifier *notifier,
-	struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_threads_data *vdm_threads_data = vdm_get_data(data->vdm);
-
-	notifier->notifier_used = FUTURE_NOTIFIER_POLLER;
-	notifier->poller.ptr_to_monitor = (uint64_t *)&data->complete;
-
-	if (ringbuf_tryenqueue(vdm_threads_data->buf, context) == 0) {
-		/*
-		 * Memcpy future is seen as started only after adding
-		 * its context into ringbuf.
-		 */
-		util_atomic_store32(&data->started, 1);
+	if (op->desired_notifier == FUTURE_NOTIFIER_WAKER) {
+		FUTURE_WAKER_WAKE(&op->notifier.waker);
 	}
-}
-
-/*
- * memcpy_impl -- implementation of memcpy for vdm memcpy futures.
- */
-static void
-memcpy_impl(void *descriptor, struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-
-	output->dest = memcpy(data->dest, data->src, data->n);
-	data->vdm_cb(context);
+	util_atomic_store_explicit64(&op->complete, 1, memory_order_release);
 }
 
 /*
@@ -76,7 +58,7 @@ vdm_threads_loop(void *arg)
 {
 	struct vdm_threads_data *vdm_threads_data = arg;
 	struct ringbuf *buf = vdm_threads_data->buf;
-	struct future_context *context;
+	struct threads_operation_entry *op;
 
 	while (1) {
 		/*
@@ -84,11 +66,10 @@ vdm_threads_loop(void *arg)
 		 * if he fails, he's waiting until something is added to
 		 * the ringbuffer.
 		 */
-		context = ringbuf_dequeue(buf);
-		if (context == NULL)
+		if ((op = ringbuf_dequeue(buf)) == NULL)
 			return NULL;
 
-		memcpy_impl(NULL, context);
+		vdm_threads_do_operation(op);
 	}
 }
 
@@ -149,13 +130,137 @@ vdm_threads_fini(void **vdm_data)
 	return 0;
 }
 
+/*
+ * vdm_threads_operation_entry_new -- allocate and initialize a new thread
+ * operation structure
+ */
+static struct threads_operation_entry *
+vdm_threads_operation_entry_new(void *vdm_data,
+	const struct vdm_operation *operation,
+	enum future_notifier_type desired_notifier)
+{
+	struct threads_operation_entry *op = malloc(sizeof(*op));
+	op->complete = 0;
+	op->started = 0;
+	op->threads = vdm_data;
+	op->desired_notifier = desired_notifier;
+	op->operation = *operation;
+
+	return op;
+}
+
+/*
+ * vdm_threads_operation_entry_delete -- delete a thread operation
+ */
+static void
+vdm_threads_operation_entry_delete(struct threads_operation_entry *entry)
+{
+	free(entry);
+}
+
+/*
+ * vdm_threads_operation_new -- create a new thread operation that uses
+ * wakers
+ */
+static int64_t
+vdm_threads_operation_new(void *vdm_data,
+	const struct vdm_operation *operation)
+{
+	return (int64_t)vdm_threads_operation_entry_new(vdm_data, operation,
+		FUTURE_NOTIFIER_WAKER);
+}
+
+/*
+ * vdm_threads_polled_operation_new -- create a new thread operation that uses
+ * polling
+ */
+static int64_t
+vdm_threads_polled_operation_new(void *vdm_data,
+	const struct vdm_operation *operation)
+{
+	return (int64_t)vdm_threads_operation_entry_new(vdm_data, operation,
+		FUTURE_NOTIFIER_POLLER);
+}
+
+/*
+ * vdm_threads_operation_delete -- delete a thread operation
+ */
+static void
+vdm_threads_operation_delete(void *vdm_data, int64_t op_id)
+{
+	struct threads_operation_entry *op =
+		(struct threads_operation_entry *)op_id;
+	vdm_threads_operation_entry_delete(op);
+}
+
+/*
+ * vdm_threads_operation_check -- check the status of a thread operation
+ */
+static enum future_state
+vdm_threads_operation_check(void *vdm_data, int64_t op_id)
+{
+	struct threads_operation_entry *op =
+		(struct threads_operation_entry *)op_id;
+
+	uint64_t complete;
+	util_atomic_load_explicit64(&op->complete,
+		&complete, memory_order_acquire);
+	if (complete)
+		return FUTURE_STATE_COMPLETE;
+
+	uint64_t started;
+	util_atomic_load_explicit64(&op->started,
+		&started, memory_order_acquire);
+	if (started)
+		return FUTURE_STATE_RUNNING;
+
+	return FUTURE_STATE_IDLE;
+}
+
+/*
+ * vdm_threads_operation_start -- start a memory operation using threads
+ */
+static int
+vdm_threads_operation_start(void *vdm_data,
+	int64_t op_id, struct future_notifier *n)
+{
+	struct threads_operation_entry *op =
+		(struct threads_operation_entry *)op_id;
+
+	if (n) {
+		n->notifier_used = op->desired_notifier;
+		op->notifier = *n;
+		if (op->desired_notifier == FUTURE_NOTIFIER_POLLER) {
+			n->poller.ptr_to_monitor = &op->complete;
+		}
+	} else {
+		op->desired_notifier = FUTURE_NOTIFIER_NONE;
+	}
+
+	struct vdm_threads_data *vdm_threads_data = vdm_data;
+
+	if (ringbuf_tryenqueue(vdm_threads_data->buf, op) == 0) {
+		util_atomic_store_explicit64(&op->started,
+			FUTURE_STATE_RUNNING, memory_order_release);
+	}
+
+	return 0;
+}
+
 static struct vdm_descriptor threads_descriptor = {
-	.memcpy = memcpy_threads,
 	.vdm_data_init = vdm_threads_init,
 	.vdm_data_fini = vdm_threads_fini,
-	.check = vdm_check_async_start,
+	.op_new = vdm_threads_operation_new,
+	.op_delete = vdm_threads_operation_delete,
+	.op_check = vdm_threads_operation_check,
+	.op_start = vdm_threads_operation_start,
 };
 
+/*
+ * vdm_descriptor_threads -- returns an asynchronous memory mover
+ * that uses worker threads to complete operations.
+ * Uses a waker notifier.
+ */
 struct vdm_descriptor *
 vdm_descriptor_threads(void)
 {
@@ -163,12 +268,19 @@ vdm_descriptor_threads(void)
 }
 
 static struct vdm_descriptor threads_polled_descriptor = {
-	.memcpy = memcpy_threads_polled,
 	.vdm_data_init = vdm_threads_init,
 	.vdm_data_fini = vdm_threads_fini,
-	.check = vdm_check_async_start,
+	.op_new = vdm_threads_polled_operation_new,
+	.op_delete = vdm_threads_operation_delete,
+	.op_check = vdm_threads_operation_check,
+	.op_start = vdm_threads_operation_start,
 };
 
+/*
+ * vdm_descriptor_threads_polled -- returns an asynchronous memory mover
+ * that uses worker threads to complete operations.
+ * Uses polling notifier.
+ */
 struct vdm_descriptor *
 vdm_descriptor_threads_polled(void)
 {

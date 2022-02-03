@@ -35,6 +35,9 @@ vdm_new(struct vdm_descriptor *descriptor)
 	return vdm;
 }
 
+/*
+ * vdm_delete -- deletes a mover instance
+ */
 void
 vdm_delete(struct vdm *vdm)
 {
@@ -46,111 +49,120 @@ vdm_delete(struct vdm *vdm)
 	free(vdm);
 }
 
-void *
-vdm_get_data(struct vdm *vdm)
-{
-	return vdm->data;
-}
-
-static void
-vdm_memcpy_cb(struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	if (data->notifier.notifier_used == FUTURE_NOTIFIER_WAKER)
-		FUTURE_WAKER_WAKE(&data->notifier.waker);
-	/*
-	 * Setting the complete flag has to be done after calling
-	 * the notifier because if the flag is set and runtime
-	 * spins just after that, it is possible that the runtime
-	 * will finish its work (because all complete flags
-	 * will be set) and when the worker thread calls
-	 * the notifier it will refer to main thread's stack address
-	 * that is no longer relevant and cause segmentation fault.
-	 */
-	util_atomic_store32(&data->complete, 1);
-}
-
+/*
+ * vdm_operation_impl -- the poll implementation for a generic vdm operation
+ * The operation lifecycle is as follows:
+ *	FUTURE_STATE_IDLE -- op_start() --> FUTURE_STATE_RUNNING
+ *	FUTURE_STATE_RUNNING -- op_check() --> FUTURE_STATE_COMPLETE
+ *	FUTURE_STATE_COMPLETE --> op_delete()
+ */
 static enum future_state
-vdm_memcpy_impl(struct future_context *context, struct future_notifier *n)
+vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 {
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	if (context->state == FUTURE_STATE_IDLE) {
-		if (n) {
-			data->notifier = *n;
-		} else {
-			data->notifier.notifier_used = FUTURE_NOTIFIER_NONE;
-		}
+	struct vdm_operation_data *data = future_context_get_data(context);
+	void *vdata = data->vdm->data;
 
-		data->vdm_cb = vdm_memcpy_cb;
-		data->vdm->descriptor->memcpy(data->vdm->descriptor,
-			&data->notifier, context);
-		if (n) {
-			*n = data->notifier;
+	if (context->state == FUTURE_STATE_IDLE) {
+		if (data->vdm->descriptor->op_start(vdata, data->id, n) != 0) {
+			return FUTURE_STATE_IDLE;
 		}
 	}
 
-	return data->vdm->descriptor->check(context);
+	enum future_state state =
+		data->vdm->descriptor->op_check(vdata, data->id);
+
+	if (state == FUTURE_STATE_COMPLETE) {
+		struct vdm_operation_output *output =
+			future_context_get_output(context);
+		output->dest = vdata;
+
+		data->vdm->descriptor->op_delete(vdata, data->id);
+		/* variable data is no longer valid! */
+	}
+
+	return state;
 }
 
-struct vdm_memcpy_future
+/*
+ * vdm_memcpy -- instantiates a new memcpy vdm operation and returns a new
+ * future to represent that operation
+ */
+struct vdm_operation_future
 vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_memcpy_future future = {0};
+	struct vdm_operation op;
+	op.type = VDM_OPERATION_MEMCPY;
+	op.memcpy.dest = dest;
+	op.memcpy.flags = flags;
+	op.memcpy.n = n;
+	op.memcpy.src = src;
+
+	struct vdm_operation_future future = {0};
+	future.data.id = vdm->descriptor->op_new(vdm->data, &op);
 	future.data.vdm = vdm;
-	future.data.dest = dest;
-	future.data.src = src;
-	future.data.n = n;
-	future.data.started = 0;
-	future.data.complete = 0;
-	future.output = (struct vdm_memcpy_output){NULL};
-	future.data.flags = flags;
-	FUTURE_INIT(&future, vdm_memcpy_impl);
+	future.output.dest = NULL;
+	FUTURE_INIT(&future, vdm_operation_impl);
+
 	return future;
 }
 
-enum future_state
-vdm_check(struct future_context *context)
+/*
+ * sync_operation_new -- creates a new sync operation
+ */
+static int64_t
+sync_operation_new(void *vdm_data, const struct vdm_operation *operation)
 {
-	struct vdm_memcpy_data *data = future_context_get_data(context);
+	struct vdm_operation *sync_op = malloc(sizeof(*sync_op));
+	*sync_op = *operation;
 
-	int complete;
-	util_atomic_load32(&data->complete, &complete);
-	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
+	return (int64_t)sync_op;
 }
 
-enum future_state
-vdm_check_async_start(struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	int started, complete;
-	util_atomic_load32(&data->started, &started);
-	util_atomic_load32(&data->complete, &complete);
-	if (complete)
-		return FUTURE_STATE_COMPLETE;
-	if (started)
-		return FUTURE_STATE_RUNNING;
-	return FUTURE_STATE_IDLE;
-}
-
+/*
+ * sync_operation_delete -- deletes sync operation
+ */
 static void
-memcpy_sync(void *descriptor, struct future_notifier *notifier,
-	struct future_context *context)
+sync_operation_delete(void *vdm_data, int64_t op_id)
 {
-	notifier->notifier_used = FUTURE_NOTIFIER_NONE;
+	struct vdm_operation *sync_op = (struct vdm_operation *)op_id;
+	free(sync_op);
+}
 
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-	output->dest = memcpy(data->dest, data->src, data->n);
-	util_atomic_store32(&data->complete, 1);
+/*
+ * sync_operation_check -- always returns COMPLETE because sync mover operations
+ * are complete immediately after starting.
+ */
+static enum future_state
+sync_operation_check(void *vdm_data, int64_t op_id)
+{
+	return FUTURE_STATE_COMPLETE;
+}
+
+/*
+ * sync_operation_start -- start (and perform) a synchronous memory operation
+ */
+static int
+sync_operation_start(void *vdm_data, int64_t op_id, struct future_notifier *n)
+{
+	struct vdm_operation *sync_op = (struct vdm_operation *)op_id;
+	n->notifier_used = FUTURE_NOTIFIER_NONE;
+	memcpy(sync_op->memcpy.dest, sync_op->memcpy.src, sync_op->memcpy.n);
+
+	return 0;
 }
 
 static struct vdm_descriptor synchronous_descriptor = {
-	.memcpy = memcpy_sync,
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
-	.check = vdm_check,
+	.op_new = sync_operation_new,
+	.op_delete = sync_operation_delete,
+	.op_check = sync_operation_check,
+	.op_start = sync_operation_start,
 };
 
+/*
+ * vdm_descriptor_synchronous -- returns a synchronous memory mover descriptor
+ */
 struct vdm_descriptor *
 vdm_descriptor_synchronous(void)
 {
