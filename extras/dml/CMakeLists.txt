@@ -32,7 +32,7 @@ set(DML_CORE_DEPS
 	${CORE_SOURCE_DIR}/util.c
 	${CORE_SOURCE_DIR}/util_posix.c)
 
-add_library(miniasync-dml STATIC ${DML_SOURCES} ${DML_CORE_DEPS})
+add_library(miniasync-dml SHARED ${DML_SOURCES} ${DML_CORE_DEPS})
 
 target_include_directories(miniasync-dml PRIVATE .
 	${MINIASYNC_DML_INCLUDE_DIR}
