@@ -42,14 +42,14 @@ jobs:
 
   windows:
     name: Windows
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
-      GENERATOR: "Visual Studio 16 2019"
+      GENERATOR: "Visual Studio 17 2022"
       ARCH:      "x64"
       platform: x64
       msbuild: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\MSBuild\\Current\\Bin"
-      # Platform Toolset for Visual Studio 2019
-      platform_toolset: "v142"
+      # Platform Toolset for Visual Studio 2022
+      platform_toolset: "v143"
       perl: "C:\\Strawberry\\perl\\bin"
     strategy:
       matrix:
@@ -60,6 +60,11 @@ jobs:
             echo "${env:msbuild}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         - name: Clone the git repo
           uses: actions/checkout@v2
+
+        - name: Setup MSBuild.exe
+          uses: microsoft/setup-msbuild@v1.1
+          with:
+            msbuild-architecture: x64
 
         - name: Unshallow it
           run: git fetch --prune --unshallow
@@ -81,5 +86,5 @@ jobs:
 
         #- name: Examples
           #working-directory: examples
-          #run: cmake . 
+          #run: cmake .
                #msbuild

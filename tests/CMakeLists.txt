@@ -7,6 +7,7 @@ include(cmake/ctest_helpers.cmake)
 
 set(LIBS_BASIC
 	miniasync
+	cores
 	${CMAKE_THREAD_LIBS_INIT})
 
 set(SOURCES_DUMMY_TEST

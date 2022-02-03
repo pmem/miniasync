@@ -41,13 +41,19 @@ set(CORE_DEPS ${CORE_DEPS}
 	${CORE_SOURCE_DIR}/util.c
 	${CORE_SOURCE_DIR}/ringbuf.c)
 
-add_library(miniasync SHARED ${SOURCES} ${CORE_DEPS} miniasync.def)
+add_library(cores STATIC ${CORE_DEPS})
+add_library(miniasync SHARED ${SOURCES} miniasync.def)
+set_property(TARGET cores PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(miniasync PRIVATE cores)
 
 target_include_directories(miniasync PRIVATE . include)
+target_include_directories(cores PRIVATE . include)
 
 if(WIN32)
 	target_include_directories(miniasync PRIVATE ${MINIASYNC_INCLUDE_DIR_WIN}/sys)
 	target_include_directories(miniasync PRIVATE ${MINIASYNC_INCLUDE_DIR_WIN})
+	target_include_directories(cores PRIVATE ${MINIASYNC_INCLUDE_DIR_WIN}/sys)
+	target_include_directories(cores PRIVATE ${MINIASYNC_INCLUDE_DIR_WIN})
 endif()
 
 set_target_properties(miniasync PROPERTIES
