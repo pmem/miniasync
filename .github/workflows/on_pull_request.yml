@@ -44,11 +44,11 @@ jobs:
     name: Windows
     runs-on: windows-2022
     env:
-      GENERATOR: "Visual Studio 16 2019"
+      GENERATOR: "Visual Studio 17 2022"
       ARCH:      "x64"
       platform: x64
       # Platform Toolset for Visual Studio 2022
-      platform_toolset: "v142"
+      platform_toolset: "v143"
       perl: "C:\\Strawberry\\perl\\bin"
     strategy:
       matrix:
