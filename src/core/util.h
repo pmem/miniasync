@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2014-2021, Intel Corporation */
+/* Copyright 2014-2022, Intel Corporation */
 /*
  * Copyright (c) 2016-2021, Microsoft Corporation. All rights reserved.
  *
@@ -52,7 +52,7 @@
 #include <sys/param.h>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <platform.h>
 #endif
 
 #ifdef __cplusplus
