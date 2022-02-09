@@ -2,6 +2,7 @@
 /* Copyright 2019-2022, Intel Corporation */
 
 #include "libminiasync/future.h"
+#include "core/util.h"
 
 void *
 future_context_get_data(struct future_context *context)
@@ -69,7 +70,8 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 static void
 future_wake_noop(void *data)
 {
-
+	/* to avoid unused formal parameter warning */
+	SUPPRESS_UNUSED(data);
 }
 
 struct future_notifier
