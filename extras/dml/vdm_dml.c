@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 #include <dml/dml.h>
 #include <libminiasync.h>
@@ -11,21 +11,30 @@
 #include "core/util.h"
 
 /*
- * vdm_dml_translate_flags -- translate miniasync-dml flags into dml flags
+ * vdm_dml_translate_flags -- translate miniasync-dml flags
  */
-static uint64_t
-vdm_dml_translate_flags(uint64_t flags)
+static void
+vdm_dml_translate_flags(uint64_t flags, uint64_t *dml_flags, dml_path_t *path)
 {
-	ASSERTeq((flags & ~MINIASYNC_DML_F_MEM_VALID_FLAGS), 0);
+	ASSERTeq((flags & ~MINIASYNC_DML_F_VALID_FLAGS), 0);
 
-	uint64_t tflags = 0;
+	*dml_flags = 0;
+	*path = DML_PATH_SW; /* default path */
 	for (uint64_t iflag = 1; flags > 0; iflag = iflag << 1) {
 		if ((flags & iflag) == 0)
 			continue;
 
 		switch (iflag) {
+			/*
+			 * write to destination is identified as write to
+			 * durable memory
+			 */
 			case MINIASYNC_DML_F_MEM_DURABLE:
-				tflags |= DML_FLAG_DST1_DURABLE;
+				*dml_flags |= DML_FLAG_DST1_DURABLE;
+				break;
+			/* perform operation using hardware path */
+			case MINIASYNC_DML_F_PATH_HW:
+				*path = DML_PATH_HW;
 				break;
 			default: /* shouldn't be possible */
 				ASSERT(0);
@@ -34,26 +43,25 @@ vdm_dml_translate_flags(uint64_t flags)
 		/* remove translated flag from the flags to be translated */
 		flags = flags & (~iflag);
 	}
-
-	return tflags;
 }
 
 /*
  * vdm_dml_memcpy_job_new -- create a new memcpy job struct
  */
 static dml_job_t *
-vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags)
+vdm_dml_memcpy_job_new(void *dest, void *src, size_t n, uint64_t flags,
+		dml_path_t path)
 {
 	dml_status_t status;
 	uint32_t job_size;
 	dml_job_t *dml_job = NULL;
 
-	status = dml_get_job_size(DML_PATH_HW, &job_size);
+	status = dml_get_job_size(path, &job_size);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job = (dml_job_t *)malloc(job_size);
 
-	status = dml_init_job(DML_PATH_HW, dml_job);
+	status = dml_init_job(path, dml_job);
 	ASSERTeq(status, DML_STATUS_OK);
 
 	dml_job->operation = DML_OP_MEM_MOVE;
@@ -77,19 +85,6 @@ vdm_dml_memcpy_job_delete(dml_job_t **dml_job)
 }
 
 /*
- * vdm_dml_memcpy_job_execute -- execute memcpy job (blocking)
- */
-static void *
-vdm_dml_memcpy_job_execute(dml_job_t *dml_job)
-{
-	dml_status_t status;
-	status = dml_execute_job(dml_job);
-	ASSERTeq(status, DML_STATUS_OK);
-
-	return dml_job->destination_first_ptr;
-}
-
-/*
  * vdm_dml_memcpy_job_submit -- submit memcpy job (nonblocking)
  */
 static void *
@@ -103,22 +98,7 @@ vdm_dml_memcpy_job_submit(dml_job_t *dml_job)
 }
 
 /*
- * vdm_dml_check -- check status of memcpy job executed synchronously
- */
-static enum future_state
-vdm_dml_check(struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-
-	int complete;
-	util_atomic_load64(&data->complete, &complete);
-
-	return (complete) ? FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
-}
-
-/*
- * vdm_dml_check_delete_job -- check status of memcpy job executed
- *                             asynchronously
+ * vdm_dml_check_delete_job -- check status of memcpy job
  */
 static enum future_state
 vdm_dml_check_delete_job(struct future_context *context)
@@ -139,74 +119,39 @@ vdm_dml_check_delete_job(struct future_context *context)
 }
 
 /*
- * vdm_dml_memcpy_sync -- execute dml synchronous memcpy operation
+ * vdm_dml_memcpy -- execute dml memcpy operation
  */
 static void
-vdm_dml_memcpy_sync(void *runner, struct future_notifier *notifier,
+vdm_dml_memcpy(void *runner, struct future_notifier *notifier,
 	struct future_context *context)
 {
 	struct vdm_memcpy_data *data = future_context_get_data(context);
 	struct vdm_memcpy_output *output = future_context_get_output(context);
 
-	uint64_t tflags = vdm_dml_translate_flags(data->flags);
+	uint64_t tflags = 0;
+	dml_path_t path = 0;
+	vdm_dml_translate_flags(data->flags, &tflags, &path);
 	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags);
-	output->dest = vdm_dml_memcpy_job_execute(dml_job);
-	vdm_dml_memcpy_job_delete(&dml_job);
-	data->vdm_cb(context);
-}
-
-/*
- * dml_synchronous_descriptor -- dml synchronous memcpy descriptor
- */
-static struct vdm_descriptor dml_synchronous_descriptor = {
-	.vdm_data_init = NULL,
-	.vdm_data_fini = NULL,
-	.memcpy = vdm_dml_memcpy_sync,
-	.check = vdm_dml_check,
-};
-
-/*
- * vdm_descriptor_dml -- return dml synchronous memcpy descriptor
- */
-struct vdm_descriptor *
-vdm_descriptor_dml(void)
-{
-	return &dml_synchronous_descriptor;
-}
-
-/*
- * vdm_dml_memcpy_async -- execute dml asynchronous memcpy operation
- */
-static void
-vdm_dml_memcpy_async(void *runner, struct future_notifier *notifier,
-	struct future_context *context)
-{
-	struct vdm_memcpy_data *data = future_context_get_data(context);
-	struct vdm_memcpy_output *output = future_context_get_output(context);
-
-	uint64_t tflags = vdm_dml_translate_flags(data->flags);
-	dml_job_t *dml_job = vdm_dml_memcpy_job_new(data->dest, data->src,
-			data->n, tflags);
+			data->n, tflags, path);
 	data->extra = dml_job;
 	output->dest = vdm_dml_memcpy_job_submit(dml_job);
 }
 
 /*
- * dml_synchronous_descriptor -- dml asynchronous memcpy descriptor
+ * dml_synchronous_descriptor -- dml memcpy descriptor
  */
-static struct vdm_descriptor dml_asynchronous_descriptor = {
+static struct vdm_descriptor dml_descriptor = {
 	.vdm_data_init = NULL,
 	.vdm_data_fini = NULL,
-	.memcpy = vdm_dml_memcpy_async,
+	.memcpy = vdm_dml_memcpy,
 	.check = vdm_dml_check_delete_job,
 };
 
 /*
- * vdm_descriptor_dml -- return dml asynchronous memcpy descriptor
+ * vdm_descriptor_dml -- return dml memcpy descriptor
  */
 struct vdm_descriptor *
-vdm_descriptor_dml_async(void)
+vdm_descriptor_dml(void)
 {
-	return &dml_asynchronous_descriptor;
+	return &dml_descriptor;
 }

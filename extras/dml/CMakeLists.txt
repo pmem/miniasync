@@ -1,11 +1,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021, Intel Corporation
+# Copyright 2021-2022, Intel Corporation
 #
 
 project(miniasync-dml C)
-
-set(MINIASYNC_DML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_cstyle(miniasync-dml
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
@@ -21,6 +19,7 @@ set(DML_SOURCES
 
 set(DML_CORE_DEPS
 	${CORE_SOURCE_DIR}/alloc.c
+	${CORE_SOURCE_DIR}/cpu.c
 	${CORE_SOURCE_DIR}/os_posix.c
 	${CORE_SOURCE_DIR}/os_thread_posix.c
 	${CORE_SOURCE_DIR}/out.c
@@ -48,3 +47,11 @@ install(DIRECTORY ${MINIASYNC_DML_INCLUDE_DIR}/libminiasync-dml
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 	FILES_MATCHING PATTERN "*.h"
 )
+
+set(CHECK_MOVDIR64B_SOURCES
+	${MINIASYNC_DML_SOURCE_DIR}/utils/check_movdir64b.c
+	${CORE_SOURCE_DIR}/cpu.c)
+
+add_link_executable(check_movdir64b
+	"${CHECK_MOVDIR64B_SOURCES}"
+	"")
