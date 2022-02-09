@@ -32,6 +32,10 @@ FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
 static enum future_state
 async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
+	if (notifier != NULL) {
+		notifier->notifier_used = FUTURE_NOTIFIER_NONE;
+	}
+
 	struct async_print_data *data = future_context_get_data(ctx);
 	printf("async print: %p\n", data->value);
 
@@ -102,12 +106,17 @@ async_memcpy_print(struct vdm *vdm, void *dest, void *src, size_t n)
 
 /* Main - creates instances and executes the futures */
 int
-main(int argc, char *argv[])
+main(void)
 {
 	/* Set up the data, create runtime and desired mover */
 	size_t testbuf_size = strlen("testbuf");
-	char *buf_a = strdup("testbuf");
-	char *buf_b = strdup("otherbuf");
+	size_t otherbuf_size = strlen("otherbuf");
+
+	char *buf_a = malloc(testbuf_size + 1);
+	char *buf_b = malloc(otherbuf_size + 1);
+
+	strcpy(buf_a, "testbuf");
+	strcpy(buf_b, "otherbuf");
 
 	struct runtime *r = runtime_new();
 
