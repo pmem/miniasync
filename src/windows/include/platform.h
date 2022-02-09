@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2015-2021, Intel Corporation */
+/* Copyright 2015-2022, Intel Corporation */
 /*
  * Copyright (c) 2016, Microsoft Corporation. All rights reserved.
  *
@@ -156,7 +156,7 @@ sigemptyset(sigset_t *set)
 __inline int
 sigfillset(sigset_t *set)
 {
-	*set = ~0;
+	*set = (sigset_t)~0;
 	return 0;
 }
 
