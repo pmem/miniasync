@@ -16,6 +16,10 @@
 
 #include "libminiasync.h"
 
+#ifdef _WIN32
+#define strdup(x) _strdup(x)
+#endif
+
 struct async_print_data {
 	void *value;
 };
@@ -30,6 +34,10 @@ FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
 static enum future_state
 async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
+	if (notifier != NULL) {
+		notifier->notifier_used = FUTURE_NOTIFIER_NONE;
+	}
+
 	struct async_print_data *data = future_context_get_data(ctx);
 	printf("async print: %p\n", data->value);
 
@@ -88,7 +96,7 @@ async_memcpy_print(struct vdm *vdm, void *dest, void *src, size_t n)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
 	size_t testbuf_size = strlen("testbuf");
 	char *buf_a = strdup("testbuf");

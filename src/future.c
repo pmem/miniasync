@@ -69,7 +69,8 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 static void
 future_wake_noop(void *data)
 {
-
+	/* to avoid unused formal parameter warning */
+	(void) data;
 }
 
 struct future_notifier

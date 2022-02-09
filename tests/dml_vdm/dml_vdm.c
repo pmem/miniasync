@@ -55,7 +55,7 @@ test_dml_hw_path_flag_memcpy()
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
 	int ret = test_dml_basic_memcpy();
 	if (ret)
