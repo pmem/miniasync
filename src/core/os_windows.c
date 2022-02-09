@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2017-2021, Intel Corporation */
+/* Copyright 2017-2022, Intel Corporation */
 /*
  * Copyright (c) 2016, Microsoft Corporation. All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,14 @@
 /*
  * os_windows.c -- windows abstraction layer
  */
+
+#define _CRT_RAND_S
+
 #include <windows.h>
 #include <io.h>
 #include <sys/locking.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "alloc.h"
 #include "util.h"
@@ -114,6 +118,9 @@ os_fsync(int fd)
 int
 os_fsync_dir(const char *dir_name)
 {
+	/* to avoid unused formal parameter warning */
+	SUPPRESS_UNUSED(dir_name);
+
 	/* XXX not used and not implemented */
 	ASSERT(0);
 	return -1;

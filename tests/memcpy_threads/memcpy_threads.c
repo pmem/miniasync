@@ -86,7 +86,7 @@ test_threads_memcpy_multiple(unsigned memcpy_count,
 			ret = 1;
 			goto cleanup;
 		}
-		printf("Memcpy nr. %u from [%p] to [%p] n=%lu "
+		printf("Memcpy nr. %u from [%p] to [%p] n=%zu "
 			"content=sequence is correct\n", i, sources[i],
 			destinations[i], sizes[i]);
 	}
@@ -109,7 +109,7 @@ cleanup:
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
 	return
 		test_threads_memcpy_multiple(100, 10, 10,
