@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * future.h - public definitions for the future type, its associated state and
@@ -174,7 +174,7 @@ enum future_state future_poll(struct future *fut,
 
 #define FUTURE_BUSY_POLL(_futurep)\
 while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
-	FUTURE_STATE_COMPLETE) {}
+	FUTURE_STATE_COMPLETE) { _mm_pause(); }
 
 enum future_state async_chain_impl(struct future_context *ctx,
 	struct future_notifier *notifier);
