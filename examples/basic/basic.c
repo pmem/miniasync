@@ -14,7 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/out.h"
 #include "libminiasync.h"
+#include "libminiasync/future.h"
+#include "libminiasync/vdm.h"
+#include "libminiasync/vdm_threads.h"
 
 struct async_print_data {
 	void *value;
@@ -68,7 +72,8 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
-	print->value = output->dest;
+	ASSERTeq(output->type, VDM_OPERATION_MEMCPY);
+	print->value = output->memcpy.dest;
 	assert(arg == (void *)0xd);
 }
 
@@ -96,7 +101,8 @@ main(int argc, char *argv[])
 	char *buf_b = strdup("otherbuf");
 	struct runtime *r = runtime_new();
 
-	struct vdm *thread_mover = vdm_new(vdm_descriptor_threads_polled());
+	struct vdm *thread_mover = vdm_threads_new(4, 1024,
+		FUTURE_NOTIFIER_WAKER);
 	struct vdm_operation_future a_to_b =
 		vdm_memcpy(thread_mover, buf_b, buf_a, testbuf_size, 0);
 
@@ -115,7 +121,7 @@ main(int argc, char *argv[])
 		async_memcpy_print(thread_mover, buf_b, buf_a, testbuf_size);
 	FUTURE_BUSY_POLL(&memcpy_print_busy);
 
-	vdm_delete(thread_mover);
+	vdm_threads_delete(thread_mover);
 
 	printf("%s %s %d\n", buf_a, buf_b, memcmp(buf_a, buf_b, testbuf_size));
 
