@@ -67,8 +67,8 @@ be processed in the same order as they are in the array of futures passed to
 
 # RETURN VALUE #
 
-The **vdm_descriptor_threads** returns a pointer to `static struct
-vdm_descriptor` describing virtual data mover using system threads.
+The **vdm_descriptor_threads** returns a pointer to `struct vdm_descriptor`
+describing virtual data mover using system threads.
 
 # SEE ALSO #
 

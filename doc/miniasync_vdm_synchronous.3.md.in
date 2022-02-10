@@ -55,8 +55,8 @@ the memcpy operation will be performed synchronously on the same thread as
 
 # RETURN VALUE #
 
-The **vdm_descriptor_synchronous** returns a pointer to `static struct
-vdm_descriptor` describing synchronous virtual data mover.
+The **vdm_descriptor_synchronous** returns a pointer to `struct vdm_descriptor`
+describing synchronous virtual data mover.
 
 # SEE ALSO #
 
