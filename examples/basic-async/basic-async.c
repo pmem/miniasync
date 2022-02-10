@@ -17,9 +17,8 @@ main(void)
 	 */
 	struct runtime *r = runtime_new();
 
-	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
-	struct vdm *vdm = vdm_new(vdm_async_descriptor);
-
+	struct vdm *vdm = vdm_threads_new(4, 1024,
+		FUTURE_NOTIFIER_WAKER);
 	/*
 	 * Asynchronous memcpy operations can be performed by a runtime one
 	 * after another. In this example we call two unique memcpy
@@ -67,7 +66,7 @@ main(void)
 	 * which is freed only by vdm_delete or at end of execution of a process
 	 * that called vdm_new.
 	 */
-	vdm_delete(vdm);
+	vdm_threads_delete(vdm);
 	runtime_delete(r);
 	return 0;
 }
