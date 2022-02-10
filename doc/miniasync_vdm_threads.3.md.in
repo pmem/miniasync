@@ -30,6 +30,7 @@ secondary_title: miniasync
 #include <libminiasync.h>
 
 struct vdm_descriptor *vdm_descriptor_threads(void);
+struct vdm_descriptor *vdm_descriptor_threads_polled(void);
 ```
 
 For general description of miniasync see **miniasync**(7).
@@ -64,6 +65,11 @@ otherwise it is still `FUTURE_STATE_RUNNING`. Memcpy operations are processed in
 order in which they are put into the queue, but we cannot guarantee that they will
 be processed in the same order as they are in the array of futures passed to
 **runtime_wait_multiple**(3) if the count of operations is bigger than size of the queue.
+
+```c
+struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads_polled();
+```
+:   XXX add description for vdm_descriptor_threads_polled
 
 # RETURN VALUE #
 
