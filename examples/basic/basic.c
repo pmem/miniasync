@@ -12,6 +12,9 @@
 #include <string.h>
 
 #include "libminiasync.h"
+#include "libminiasync/future.h"
+#include "libminiasync/vdm.h"
+#include "libminiasync/vdm_threads.h"
 
 /* Definitions of futures, their data and output structs */
 
@@ -32,6 +35,8 @@ FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
 static enum future_state
 async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
+	if (notifier) notifier->notifier_used = FUTURE_NOTIFIER_NONE;
+
 	struct async_print_data *data = future_context_get_data(ctx);
 	printf("async print: %p\n", data->value);
 
@@ -77,7 +82,8 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
-	print->value = output->dest;
+	assert(output->type == VDM_OPERATION_MEMCPY);
+	print->value = output->memcpy.dest;
 	assert(arg == (void *)0xd);
 }
 
@@ -111,7 +117,8 @@ main(int argc, char *argv[])
 
 	struct runtime *r = runtime_new();
 
-	struct vdm *thread_mover = vdm_new(vdm_descriptor_threads_polled());
+	struct vdm *thread_mover = vdm_threads_new(4, 1024,
+		FUTURE_NOTIFIER_WAKER);
 
 	/*
 	 * Create first future for memcpy based on the given 'thread_mover'
@@ -150,7 +157,7 @@ main(int argc, char *argv[])
 	FUTURE_BUSY_POLL(&memcpy_print_busy);
 
 	/* At the end we require cleanup and we just print the buffers */
-	vdm_delete(thread_mover);
+	vdm_threads_delete(thread_mover);
 
 	printf("%s %s %d\n", buf_a, buf_b, memcmp(buf_a, buf_b, testbuf_size));
 

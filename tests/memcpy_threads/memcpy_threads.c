@@ -14,16 +14,14 @@ enum test_type {SEQUENCE, SINGLE_CHAR};
  */
 int
 test_threads_memcpy_multiple(unsigned memcpy_count,
-	unsigned n, size_t test_size, struct vdm_descriptor *descriptor,
-	enum test_type test_type)
+	unsigned n, size_t test_size, enum test_type test_type)
 {
 	int ret = 0;
 	unsigned seed = (unsigned)time(NULL);
 	struct runtime *r = runtime_new();
-	struct vdm *vdm = vdm_new(descriptor);
+	struct vdm *vdm = vdm_threads_new(4, 1024, FUTURE_NOTIFIER_WAKER);
 
 	if (vdm == NULL) {
-		fprintf(stderr, "Failed to create VDM\n");
 		runtime_delete(r);
 		return 1;
 	}
@@ -86,9 +84,6 @@ test_threads_memcpy_multiple(unsigned memcpy_count,
 			ret = 1;
 			goto cleanup;
 		}
-		printf("Memcpy nr. %u from [%p] to [%p] n=%lu "
-			"content=sequence is correct\n", i, sources[i],
-			destinations[i], sizes[i]);
 	}
 
 	/* Cleanup */
@@ -104,7 +99,7 @@ cleanup:
 	free(memcpy_futures);
 
 	runtime_delete(r);
-	vdm_delete(vdm);
+	vdm_threads_delete(vdm);
 	return ret;
 }
 
@@ -112,16 +107,10 @@ int
 main(int argc, char *argv[])
 {
 	return
-		test_threads_memcpy_multiple(100, 10, 10,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 2, 1 << 10,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 10, 128,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 10, 7,
-			vdm_descriptor_threads(), SEQUENCE) ||
-		test_threads_memcpy_multiple(100, 1, 1 << 10,
-			vdm_descriptor_threads(), SEQUENCE) ||
-		test_threads_memcpy_multiple(100, 10, 0,
-			vdm_descriptor_threads(), SEQUENCE);
+		test_threads_memcpy_multiple(100, 10, 10, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 2, 1 << 10, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 10, 128, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 10, 7, SEQUENCE) ||
+		test_threads_memcpy_multiple(100, 1, 1 << 10, SEQUENCE) ||
+		test_threads_memcpy_multiple(100, 10, 0, SEQUENCE);
 }
