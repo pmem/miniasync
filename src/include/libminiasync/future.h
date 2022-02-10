@@ -31,9 +31,6 @@
  * indicates otherwise, futures can be moved in memory and don't always have
  * to be polled by the same thread.
  *
- * TODO: Any future with an inline value that is updated externally,
- * like in DSA or io_uring, is not safe to move in memory.
- *
  * Optionally, future implementations can accept wakers for use in polling.
  * A future can use a waker to signal the caller that some progress can be made
  * and the future should be polled again. This is useful to avoid busy polling
@@ -66,6 +63,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <emmintrin.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -175,7 +173,7 @@ enum future_state future_poll(struct future *fut,
 
 #define FUTURE_BUSY_POLL(_futurep)\
 while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
-	FUTURE_STATE_COMPLETE) {}
+	FUTURE_STATE_COMPLETE) { _mm_pause(); }
 
 enum future_state async_chain_impl(struct future_context *ctx,
 	struct future_notifier *notifier);
