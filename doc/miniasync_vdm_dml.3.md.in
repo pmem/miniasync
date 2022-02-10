@@ -57,7 +57,8 @@ implementation of Data Mover Library (**DML**).
 
 * **MINIASYNC_DML_F_PATH_HW** - operation executes using hardware path
 
-For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file.
+For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file
+on miniasync repository <https://github.com/pmem/miniasync>.
 
 
 # EXAMPLE #
