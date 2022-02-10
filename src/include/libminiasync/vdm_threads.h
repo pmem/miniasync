@@ -4,9 +4,6 @@
 #ifndef VDM_THREADS_H
 #define VDM_THREADS_H
 
-#include "future.h"
-#include "core/os_thread.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
