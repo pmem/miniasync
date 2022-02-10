@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "libminiasync-dml/vdm_dml.h"
+#include "libminiasync-dml/data_mover_dml.h"
 
 #ifdef __cplusplus
 extern "C" {

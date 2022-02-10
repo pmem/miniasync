@@ -25,9 +25,12 @@ set(SOURCES_DUMMY_NEGATIVE_TEST
 set(SOURCES_MEMCPY_PTHREADS_TEST
 		memcpy_threads/memcpy_threads.c)
 
-set(SOURCES_DML_VDM_TEST
-	dml_vdm/dml_vdm.c
+set(SOURCES_DATA_MOVER_DML_TEST
+	data_mover_dml/data_mover_dml.c
 	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+
+set(SOURCES_MEMBUF_TEST
+	membuf/membuf_simple.c)
 
 add_custom_target(tests)
 
@@ -57,6 +60,10 @@ add_link_executable(memcpy_threads
 		"${SOURCES_MEMCPY_PTHREADS_TEST}"
 		"${LIBS_BASIC}")
 
+add_link_executable(membuf
+		"${SOURCES_MEMBUF_TEST}"
+		"${LIBS_BASIC}")
+
 # add test using test function defined in the ctest_helpers.cmake file
 test("dummy" "dummy" test_dummy none)
 test("dummy_drd" "dummy" test_dummy drd)
@@ -66,12 +73,13 @@ test("dummy_negative" "dummy_negative" test_dummy_negative none)
 test("ex_basic" "ex_basic" test_ex_basic none)
 test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
+test("membuf" "membuf" test_membuf none)
 
 # add miniasync-dml test only if the sources in extras/dml were compiled
 if (COMPILE_DML)
-	add_link_executable(dml_vdm
-			"${SOURCES_DML_VDM_TEST}"
+	add_link_executable(data_mover_dml
+			"${SOURCES_DATA_MOVER_DML_TEST}"
 			"${LIBS_DML}")
 
-	test("dml_vdm" "dml_vdm" test_dml_vdm none)
+	test("data_mover_dml" "data_mover_dml" test_data_mover_dml none)
 endif()

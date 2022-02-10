@@ -13,7 +13,8 @@
 
 #include "libminiasync/future.h"
 #include "libminiasync/vdm.h"
-#include "libminiasync/vdm_threads.h"
+#include "libminiasync/data_mover_threads.h"
+#include "libminiasync/data_mover_sync.h"
 #include "libminiasync/runtime.h"
 
 #ifdef __cplusplus

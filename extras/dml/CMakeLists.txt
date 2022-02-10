@@ -20,7 +20,7 @@ add_check_whitespace(miniasync-dml
 	${CMAKE_CURRENT_SOURCE_DIR}/utils/*.[ch])
 
 set(DML_SOURCES
-    vdm_dml.c
+    data_mover_dml.c
 )
 
 set(DML_CORE_DEPS
