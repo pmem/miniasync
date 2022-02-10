@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * future.h - public definitions for the future type, its associated state and
@@ -167,7 +167,7 @@ do {\
 
 /*
  * TODO: Notifiers have to be copied into the state of the future, so we might
- * consider just passing it by copy here... Needs to be evaluted for perfomance.
+ * consider just passing it by copy here... Needs to be evaluated for performance.
  */
 enum future_state future_poll(struct future *fut,
 	struct future_notifier *notifier);

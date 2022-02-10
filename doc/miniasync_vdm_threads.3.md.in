@@ -72,4 +72,5 @@ vdm_descriptor` describing virtual data mover using system threads.
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm**(3), **runtime_wait**(3), **runtime_wait_multiple**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm**(3), **runtime_wait**(3),
+**runtime_wait_multiple**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**

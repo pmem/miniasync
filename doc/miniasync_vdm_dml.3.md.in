@@ -44,7 +44,7 @@ implementation of Data Mover Library (**DML**).
 
 `struct vdm_descriptor *vdm_descriptor_dml(void);`
 
-:	Data Mover Library implementation of virtual data mover. It is a nonblocking copy operation.
+:	Data Mover Library implementation of virtual data mover. It is a non-blocking copy operation.
 	By default, this operation executes using software path. Set *MINIASYNC_DML_F_PATH_HW* flag to
 	use hardware path. Hardware path enables use of hardware accelerators (e.g. Intel Data Streaming Accelerator)
 	for certain computations.
