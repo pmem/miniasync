@@ -167,7 +167,8 @@ do {\
 
 /*
  * TODO: Notifiers have to be copied into the state of the future, so we might
- * consider just passing it by copy here... Needs to be evaluated for performance.
+ * consider just passing it by copy here... Needs to be evaluated for
+ * performance.
  */
 enum future_state future_poll(struct future *fut,
 	struct future_notifier *notifier);

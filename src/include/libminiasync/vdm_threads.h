@@ -10,7 +10,7 @@ extern "C" {
 
 #define THREADS_COUNT 12
 #define RINGBUF_SIZE 128
-	
+
 struct vdm_descriptor *vdm_descriptor_threads(void);
 struct vdm_descriptor *vdm_descriptor_threads_polled(void);
 
