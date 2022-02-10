@@ -7,11 +7,17 @@ project(miniasync-dml C)
 
 add_cstyle(miniasync-dml
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
-	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/include/libminiasync-dml/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/utils/*.[ch])
 
 add_check_whitespace(miniasync-dml
+	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+	${CMAKE_CURRENT_SOURCE_DIR}/README.md
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
-	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+	${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/include/libminiasync-dml/*.h
+	${CMAKE_CURRENT_SOURCE_DIR}/utils/*.[ch])
 
 set(DML_SOURCES
     vdm_dml.c
