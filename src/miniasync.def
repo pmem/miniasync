@@ -9,7 +9,10 @@ EXPORTS
     runtime_wait_multiple
     runtime_wait
     vdm_memcpy
-    vdm_new
-    vdm_delete
-    vdm_descriptor_threads
-    vdm_descriptor_threads_polled
+    data_mover_sync_new
+    data_mover_sync_get_vdm
+    data_mover_sync_delete
+    data_mover_threads_new
+    data_mover_threads_default
+    data_mover_threads_get_vdm
+    data_mover_threads_delete

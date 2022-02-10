@@ -34,7 +34,7 @@ enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 };
 
-struct vdm_memcpy_data {
+struct vdm_operation_data_memcpy {
 	void *dest;
 	void *src;
 	size_t n;
@@ -44,28 +44,23 @@ struct vdm_memcpy_data {
 struct vdm_operation {
 	enum vdm_operation_type type;
 	union {
-		struct vdm_memcpy_data memcpy;
+		struct vdm_operation_data_memcpy memcpy;
 	};
 };
 
-typedef int64_t (*vdm_operation_new)
-	(void *vdm_data, const struct vdm_operation *operation);
-typedef int (*vdm_operation_start)
-	(void *vdm_data, int64_t operation_id, struct future_notifier *n);
-typedef enum future_state (*vdm_operation_check)
-	(void *vdm_data, int64_t operation_id);
-typedef void (*vdm_operation_delete)
-	(void *vdm_data, int64_t operation_id);
-
-typedef int (*vdm_data_fn)(void **vdm_data);
-
 struct vdm_operation_data {
-	struct vdm *vdm;
-	int64_t id;
+	void *op;
+};
+
+struct vdm_operation_output_memcpy {
+	void *dest;
 };
 
 struct vdm_operation_output {
-	void *dest;
+	enum vdm_operation_type type; /* XXX: determine if needed */
+	union {
+		struct vdm_operation_output_memcpy memcpy;
+	};
 };
 
 FUTURE(vdm_operation_future,
@@ -74,19 +69,22 @@ FUTURE(vdm_operation_future,
 struct vdm_operation_future vdm_memcpy(struct vdm *vdm, void *dest, void *src,
 		size_t n, uint64_t flags);
 
-struct vdm_descriptor {
-	vdm_data_fn vdm_data_init;
-	vdm_data_fn vdm_data_fini;
+typedef void *(*vdm_operation_new)
+	(struct vdm *vdm, const struct vdm_operation *operation);
+typedef int (*vdm_operation_start)(void *op, struct future_notifier *n);
+typedef enum future_state (*vdm_operation_check)(void *op);
+typedef void (*vdm_operation_delete)(void *op,
+	struct vdm_operation_output *output);
+
+struct vdm {
 	vdm_operation_new op_new;
 	vdm_operation_delete op_delete;
 	vdm_operation_start op_start;
 	vdm_operation_check op_check;
 };
 
-struct vdm_descriptor *vdm_descriptor_synchronous(void);
-
-struct vdm *vdm_new(struct vdm_descriptor *descriptor);
-void vdm_delete(struct vdm *vdm);
+struct vdm *vdm_synchronous_new(void);
+void vdm_synchronous_delete(struct vdm *vdm);
 
 #ifdef __cplusplus
 }

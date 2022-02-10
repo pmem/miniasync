@@ -6,6 +6,7 @@
 #include <time.h>
 #include "libminiasync.h"
 #include "core/os.h"
+#include "libminiasync/data_mover_threads.h"
 
 enum test_type {SEQUENCE, SINGLE_CHAR};
 /*
@@ -14,19 +15,19 @@ enum test_type {SEQUENCE, SINGLE_CHAR};
  */
 int
 test_threads_memcpy_multiple(unsigned memcpy_count,
-	unsigned n, size_t test_size, struct vdm_descriptor *descriptor,
-	enum test_type test_type)
+	unsigned n, size_t test_size, enum test_type test_type)
 {
 	int ret = 0;
 	unsigned seed = (unsigned)time(NULL);
 	struct runtime *r = runtime_new();
-	struct vdm *vdm = vdm_new(descriptor);
+	struct data_mover_threads *dmt = data_mover_threads_default();
 
-	if (vdm == NULL) {
-		fprintf(stderr, "Failed to create VDM\n");
+	if (dmt == NULL) {
 		runtime_delete(r);
 		return 1;
 	}
+
+	struct vdm *vdm = data_mover_threads_get_vdm(dmt);
 
 	char **sources = malloc(memcpy_count * sizeof(char *) * n);
 	char **destinations = malloc(memcpy_count * sizeof(char *) * n);
@@ -86,9 +87,6 @@ test_threads_memcpy_multiple(unsigned memcpy_count,
 			ret = 1;
 			goto cleanup;
 		}
-		printf("Memcpy nr. %u from [%p] to [%p] n=%zu "
-			"content=sequence is correct\n", i, sources[i],
-			destinations[i], sizes[i]);
 	}
 
 	/* Cleanup */
@@ -104,7 +102,7 @@ cleanup:
 	free(memcpy_futures);
 
 	runtime_delete(r);
-	vdm_delete(vdm);
+	data_mover_threads_delete(dmt);
 	return ret;
 }
 
@@ -112,16 +110,10 @@ int
 main(void)
 {
 	return
-		test_threads_memcpy_multiple(100, 10, 10,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 2, 1 << 10,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 10, 128,
-			vdm_descriptor_threads(), SINGLE_CHAR) ||
-		test_threads_memcpy_multiple(100, 10, 7,
-			vdm_descriptor_threads(), SEQUENCE) ||
-		test_threads_memcpy_multiple(100, 1, 1 << 10,
-			vdm_descriptor_threads(), SEQUENCE) ||
-		test_threads_memcpy_multiple(100, 10, 0,
-			vdm_descriptor_threads(), SEQUENCE);
+		test_threads_memcpy_multiple(100, 10, 10, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 2, 1 << 10, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 10, 128, SINGLE_CHAR) ||
+		test_threads_memcpy_multiple(100, 10, 7, SEQUENCE) ||
+		test_threads_memcpy_multiple(100, 1, 1 << 10, SEQUENCE) ||
+		test_threads_memcpy_multiple(100, 10, 0, SEQUENCE);
 }

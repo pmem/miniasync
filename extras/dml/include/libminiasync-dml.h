@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * libminiasync-dml.h -- definition of miniasync dml implementation
@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "libminiasync-dml/vdm_dml.h"
+#include "libminiasync-dml/data_mover_dml.h"
 
 #ifdef __cplusplus
 extern "C" {
