@@ -4,15 +4,15 @@
 #ifndef VDM_THREADS_H
 #define VDM_THREADS_H
 
+#include "vdm.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define THREADS_COUNT 12
-#define RINGBUF_SIZE 128
-
-struct vdm_descriptor *vdm_descriptor_threads(void);
-struct vdm_descriptor *vdm_descriptor_threads_polled(void);
+struct vdm *vdm_threads_new(size_t nthreads, size_t ringbuf_size,
+	enum future_notifier_type desired_notifier);
+void vdm_threads_delete(struct vdm *vdm);
 
 #ifdef __cplusplus
 }
