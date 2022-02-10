@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2021, Intel Corporation */
+/* Copyright 2021-2022, Intel Corporation */
 
 /*
  * vdm.h - public definitions for an abstract virtual data mover (VDM) type.
@@ -23,8 +23,6 @@
 #define VDM_H 1
 
 #include "future.h"
-#include "core/ringbuf.h"
-#include "core/os_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
