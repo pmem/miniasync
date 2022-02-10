@@ -11,7 +11,8 @@
 extern "C" {
 #endif
 
-struct vdm_descriptor *vdm_descriptor_dml(void);
+struct vdm *vdm_dml_new();
+void vdm_dml_delete(struct vdm *vdm);
 
 #ifdef __cplusplus
 }
