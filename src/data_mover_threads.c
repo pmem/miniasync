@@ -105,34 +105,6 @@ data_mover_threads_operation_check(void *op)
 }
 
 /*
- * data_mover_threads_membuf_check -- checks the status of a threads job
- */
-static enum membuf_check_result
-data_mover_threads_membuf_check(void *ptr, void *data)
-{
-	switch (data_mover_threads_operation_check(ptr)) {
-		case FUTURE_STATE_COMPLETE:
-			return MEMBUF_PTR_CAN_REUSE;
-		case FUTURE_STATE_RUNNING:
-			return MEMBUF_PTR_CAN_WAIT;
-		case FUTURE_STATE_IDLE:
-			return MEMBUF_PTR_IN_USE;
-	}
-
-	ASSERT(0);
-	return MEMBUF_PTR_IN_USE;
-}
-
-/*
- * data_mover_threads_membuf_size -- returns the size of a threads job size
- */
-static size_t
-data_mover_threads_membuf_size(void *ptr, void *data)
-{
-	return sizeof(struct data_mover_threads_op);
-}
-
-/*
  * data_mover_threads_operation_new -- create a new thread operation that uses
  * wakers
  */
@@ -172,6 +144,8 @@ data_mover_threads_operation_delete(void *op,
 		default:
 			ASSERT(0);
 	}
+
+	membuf_free(op);
 }
 
 /*
@@ -229,8 +203,7 @@ data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
 	if (dmt_threads->buf == NULL)
 		goto ringbuf_failed;
 
-	dmt_threads->membuf = membuf_new(data_mover_threads_membuf_check,
-		data_mover_threads_membuf_size, NULL, dmt_threads);
+	dmt_threads->membuf = membuf_new(dmt_threads);
 	if (dmt_threads->membuf == NULL)
 		goto membuf_failed;
 
