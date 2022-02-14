@@ -80,7 +80,8 @@ if(PANDOC)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/miniasync_vdm_threads.3.md.in
 			${MAN_DIR}/tmp/miniasync_vdm_threads.3.md)
 	configure_man(miniasync_vdm_threads.3 ${MAN_DIR}/tmp/miniasync_vdm_threads.3.md)
-	add_manpage_links(miniasync_vdm_threads.3 vdm_descriptor_threads)
+	add_manpage_links(miniasync_vdm_threads.3
+		vdm_descriptor_threads vdm_descriptor_threads_polled)
 
 	# miniasync_vdm_dml.3
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/miniasync_vdm_dml.3.md.in

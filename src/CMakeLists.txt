@@ -6,12 +6,14 @@
 add_cstyle(src
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/include/*.[h]
+	${CMAKE_CURRENT_SOURCE_DIR}/include/libminiasync/*.[h]
 	${CMAKE_CURRENT_SOURCE_DIR}/windows/include/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/core/*.[ch])
 
 add_check_whitespace(src
 	${CMAKE_CURRENT_SOURCE_DIR}/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/include/*.[h]
+	${CMAKE_CURRENT_SOURCE_DIR}/include/libminiasync/*.[h]
 	${CMAKE_CURRENT_SOURCE_DIR}/windows/include/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/core/*.[ch]
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)

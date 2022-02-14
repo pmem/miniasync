@@ -67,4 +67,5 @@ The **vdm_new** returns pointer to a `struct vdm` or **NULL** if the allocation 
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm_synchronous**(3), **miniasync_vdm_threads**(3), **vdm_descriptor_threads**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm_synchronous**(3),
+**miniasync_vdm_threads**(3), **vdm_descriptor_threads**(3) and **<https://pmem.io>**

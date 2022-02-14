@@ -55,9 +55,10 @@ the memcpy operation will be performed synchronously on the same thread as
 
 # RETURN VALUE #
 
-The **vdm_descriptor_synchronous** returns a pointer to `static struct
-vdm_descriptor` describing synchronous virtual data mover.
+The **vdm_descriptor_synchronous** returns a pointer to `struct vdm_descriptor`
+describing synchronous virtual data mover.
 
 # SEE ALSO #
 
-**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3),**miniasync_vdm**(3), **runtime_wait**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**
+**miniasync**(7), **miniasync_future**(3), **miniasync_runtime**(3),**miniasync_vdm**(3),
+**runtime_wait**(3), **vdm_memcpy**(3), **vdm_new**(3) and **<https://pmem.io>**
