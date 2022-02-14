@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2015-2021, Intel Corporation */
+/* Copyright 2015-2022, Intel Corporation */
 /*
  * Copyright (c) 2016, Microsoft Corporation. All rights reserved.
  *
@@ -493,6 +493,9 @@ int
 os_thread_create(os_thread_t *thread, const os_thread_attr_t *attr,
 	void *(*start_routine)(void *), void *arg)
 {
+	/* to avoid unused formal parameter warning */
+	SUPPRESS_UNUSED(attr);
+
 	COMPILE_ERROR_ON(sizeof(os_thread_t) < sizeof(internal_os_thread_t));
 	internal_os_thread_t *thread_info = (internal_os_thread_t *)thread;
 
@@ -590,6 +593,9 @@ int
 os_thread_setaffinity_np(os_thread_t *thread, size_t set_size,
 	const os_cpu_set_t *set)
 {
+	/* to avoid unused formal parameter warning */
+	SUPPRESS_UNUSED(set_size);
+
 	internal_os_cpu_set_t *internal_set = (internal_os_cpu_set_t *)set;
 	internal_os_thread_t *internal_thread = (internal_os_thread_t *)thread;
 
