@@ -78,9 +78,10 @@ enum future_state {
 };
 
 struct future_context {
-	enum future_state state;
 	size_t data_size;
 	size_t output_size;
+	enum future_state state;
+	uint32_t padding;
 };
 
 typedef void (*future_waker_wake_fn)(void *data);
@@ -101,9 +102,10 @@ enum future_notifier_type {
 };
 
 struct future_notifier {
-	enum future_notifier_type notifier_used;
 	struct future_waker waker;
 	struct future_poller poller;
+	enum future_notifier_type notifier_used;
+	uint32_t padding;
 };
 
 void *future_context_get_data(struct future_context *context);
