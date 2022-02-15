@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021, Intel Corporation
+# Copyright 2021-2022, Intel Corporation
 #
 
 cmake_minimum_required(VERSION 3.3)
@@ -94,6 +94,14 @@ add_flag(-std=gnu99)
 add_flag(-ggdb DEBUG)
 add_flag(-DDEBUG DEBUG)
 add_flag("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2" RELEASE)
+
+if(WIN32)
+# It looks like the issue is still unfixed:
+# https://developercommunity.visualstudio.com/t/several-warnings-in-windows-sdk-100177630-in-windo/435362
+	add_flag(-DWIN32_LEAN_AND_MEAN)
+# Enable when all Warnings are fixed.
+	#add_flag(-WX)
+endif()
 
 if(USE_ASAN)
 	add_sanitizer_flag(address)

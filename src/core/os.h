@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2017-2021, Intel Corporation */
+/* Copyright 2017-2022, Intel Corporation */
 
 /*
  * os.h -- os abstraction layer
@@ -94,7 +94,6 @@ FILE *os_fopen(const char *pathname, const char *mode);
 FILE *os_fdopen(int fd, const char *mode);
 int os_chmod(const char *pathname, mode_t mode);
 int os_mkstemp(char *temp);
-int os_posix_fallocate(int fd, os_off_t offset, os_off_t len);
 int os_ftruncate(int fd, os_off_t length);
 int os_flock(int fd, int operation);
 ssize_t os_writev(int fd, const struct iovec *iov, int iovcnt);
