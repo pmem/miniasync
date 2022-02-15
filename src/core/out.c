@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2014-2021, Intel Corporation */
+/* Copyright 2014-2022, Intel Corporation */
 
 /*
  * out.c -- support for logging, tracing, and assertion output
@@ -30,6 +30,14 @@ static unsigned Log_alignment;
 #define MAXPRINT 8192	/* maximum expected log line */
 #else
 #define MAXPRINT 256	/* maximum expected log line for libpmem */
+#endif
+
+#ifndef SDS_ENABLED
+#define SDS_ENABLED 0
+#endif
+
+#ifndef NDCTL_ENABLED
+#define NDCTL_ENABLED 0
 #endif
 
 struct errormsg

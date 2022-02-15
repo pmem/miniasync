@@ -27,7 +27,7 @@
 #include <cpuid.h>
 
 static inline void
-cpuid(unsigned func, unsigned subfunc, unsigned cpuinfo[4])
+cpuid(int func, int subfunc, int cpuinfo[4])
 {
 	__cpuid_count(func, subfunc, cpuinfo[EAX_IDX], cpuinfo[EBX_IDX],
 			cpuinfo[ECX_IDX], cpuinfo[EDX_IDX]);
@@ -38,7 +38,7 @@ cpuid(unsigned func, unsigned subfunc, unsigned cpuinfo[4])
 #include <intrin.h>
 
 static inline void
-cpuid(unsigned func, unsigned subfunc, unsigned cpuinfo[4])
+cpuid(int func, int subfunc, int cpuinfo[4])
 {
 	__cpuidex(cpuinfo, func, subfunc);
 }
@@ -57,9 +57,9 @@ cpuid(unsigned func, unsigned subfunc, unsigned cpuinfo[4])
  * is_cpu_feature_present -- (internal) checks if CPU feature is supported
  */
 static int
-is_cpu_feature_present(unsigned func, unsigned reg, unsigned bit)
+is_cpu_feature_present(int func, unsigned reg, int bit)
 {
-	unsigned cpuinfo[4] = { 0 };
+	int cpuinfo[4] = { 0 };
 
 	/* check CPUID level first */
 	cpuid(0x0, 0x0, cpuinfo);
