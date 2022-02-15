@@ -50,19 +50,22 @@
 #include "out.h"
 
 typedef struct {
-	unsigned attr;
 	CRITICAL_SECTION lock;
+	unsigned attr;
+	uint32_t padding;
 } internal_os_mutex_t;
 
 typedef struct {
+	SRWLOCK lock;
 	unsigned attr;
 	char is_write;
-	SRWLOCK lock;
+	char padding[3];
 } internal_os_rwlock_t;
 
 typedef struct {
-	unsigned attr;
 	CONDITION_VARIABLE cond;
+	unsigned attr;
+	uint32_t padding;
 } internal_os_cond_t;
 
 typedef long long internal_os_once_t;

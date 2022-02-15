@@ -41,8 +41,8 @@ struct ringbuf {
 	CACHELINE_PADDING(os_semaphore_t, nfree);
 	CACHELINE_PADDING(os_semaphore_t, nused);
 
-	unsigned len;
 	uint64_t len_mask;
+	unsigned len;
 	int running;
 
 	void *data[];
