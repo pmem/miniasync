@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
-/* Copyright 2019-2021, Intel Corporation */
+/* Copyright 2019-2022, Intel Corporation */
 
 #ifndef COMMON_ALLOC_H
 #define COMMON_ALLOC_H
@@ -16,19 +16,11 @@ extern "C" {
 	extern Malloc_func fn_malloc;
 	extern Realloc_func fn_realloc;
 
-#if FAULT_INJECTION
-	void *_flt_Malloc(size_t, const char *);
-	void *_flt_Realloc(void *, size_t, const char *);
-
-#define Malloc(size) _flt_Malloc(size, __func__)
-#define Realloc(ptr, size) _flt_Realloc(ptr, size, __func__)
-#else
 	void *_Malloc(size_t);
 	void *_Realloc(void *, size_t);
 
 #define Malloc(size) _Malloc(size)
 #define Realloc(ptr, size) _Realloc(ptr, size)
-#endif
 
 	void set_func_malloc(void *(*malloc_func)(size_t size));
 	void set_func_realloc(void *(*realloc_func)(void *ptr, size_t size));
