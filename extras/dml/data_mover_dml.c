@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "core/membuf.h"
-#include "libminiasync-dml.h"
+#include "libminiasync-vdm-dml.h"
 #include "core/out.h"
 #include "core/util.h"
 
