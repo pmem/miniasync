@@ -16,6 +16,7 @@ secondary_title: miniasync
 [DESCRIPTION](#description)<br />
 [SEE ALSO](#see-also)<br />
 
+JAK POLACZYC FUTURE VDM I RUNTIME
 
 # NAME #
 
@@ -29,4 +30,5 @@ XXX: add description here.
 
 # SEE ALSO #
 
-**miniasync_future**(3), **miniasync_runtime**(3), **miniasync_vdm**(3) and **<https://pmem.io>**
+**miniasync_future**(3), **miniasync_runtime**(3),
+**miniasync_vdm**(3) and **<https://pmem.io>**

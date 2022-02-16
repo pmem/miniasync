@@ -22,7 +22,7 @@ secondary_title: miniasync_dml
 
 # NAME #
 
-**miniasync_vdm_dml** - Virtual data mover API for miniasync-dml library
+**miniasync_vdm_dml** - **DML** implementation of **miniasync**(7) virtual data mover
 
 
 # SYNOPSIS #
@@ -30,11 +30,9 @@ secondary_title: miniasync_dml
 ```c
 #include <libminiasync.h>
 #include <libminiasync-dml.h>
-
-struct vdm_descriptor *vdm_descriptor_dml(void);
 ```
 
-For general description of miniasync see **miniasync**(7).
+For general description of virtual data mover API, see **miniasync**(7).
 
 
 # DESCRIPTION #
@@ -53,14 +51,32 @@ implementation of Data Mover Library (**DML**).
 
 XXX: add description how to use flags
 
-**libminiasync-dml** provides following flags:
+For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file
+in miniasync repository <https://github.com/pmem/miniasync>.
+
+**DML** data mover is an implementation of the virtual data mover based on
+the *Data Mover Library*(**DML**). Every **DML** data mover operation
+executes under the control of **DML**.
+
+When the future is polled for the first time the data mover operation will be executed
+asynchronously under the control of **DML** library. **DML** data mover does not
+block the calling thread
+
+To create a new **DML** data mover instance, use **data_mover_dml_new**(3) function.
+
+**DML** data mover provides the following flags:
 
 * **MINIASYNC_DML_F_MEM_DURABLE** - write to destination is identified as write to durable memory
 
-* **MINIASYNC_DML_F_PATH_HW** - operation executes using hardware path
+* **MINIASYNC_DML_F_PATH_HW** - operation execution is offloaded to the hardware accelerator
 
-For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file
-on miniasync repository <https://github.com/pmem/miniasync>.
+**DML** data mover supports following operations:
+
+* **vdm_memcpy**(3) - memory copy operation
+
+**DML** data mover does not support notifier feature.
+
+For more information about **DML**, see **<https://github.com/intel/DML>**.
 
 
 # EXAMPLE #
