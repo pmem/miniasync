@@ -32,7 +32,7 @@ secondary_title: miniasync
 struct vdm_descriptor *vdm_descriptor_synchronous(void);
 ```
 
-For general description of miniasync see **miniasync**(7).
+For general description of miniasync, see **miniasync**(7).
 
 
 # DESCRIPTION #
@@ -49,8 +49,8 @@ struct vdm *vdm = vdm_new(vdm_descriptor_synchronous);
 struct vdm_memcpy_future fut = vdm_memcpy(vdm, dst, src, size, flags);
 ```
 
-Now, when the future is polled for the first time in **runtime_wait**(3) 
-the memcpy operation will be performed synchronously on the same thread as 
+Now, when the future is polled for the first time in **runtime_wait**(3)
+the memcpy operation will be performed synchronously on the same thread as
 **runtime_wait**(3).
 
 # RETURN VALUE #

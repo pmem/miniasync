@@ -34,7 +34,7 @@ secondary_title: miniasync_dml
 struct vdm_descriptor *vdm_descriptor_dml(void);
 ```
 
-For general description of miniasync see **miniasync**(7).
+For general description of miniasync, see **miniasync**(7).
 
 
 # DESCRIPTION #
@@ -60,7 +60,7 @@ XXX: add description how to use flags
 * **MINIASYNC_DML_F_PATH_HW** - operation executes using hardware path
 
 For more information about **miniasync-dml** compilation options, see *extras/dml/README.md* file
-on miniasync repository <https://github.com/pmem/miniasync>.
+in miniasync repository <https://github.com/pmem/miniasync>.
 
 
 # EXAMPLE #
