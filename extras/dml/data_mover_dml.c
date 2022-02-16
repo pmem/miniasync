@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "core/membuf.h"
-#include "libminiasync-dml.h"
+#include "libminiasync-vdm-dml.h"
 #include "core/out.h"
 #include "core/util.h"
 
@@ -18,7 +18,7 @@ struct data_mover_dml {
 };
 
 /*
- * data_mover_dml_translate_flags -- translate miniasync-dml flags
+ * data_mover_dml_translate_flags -- translate miniasync-vdm-dml flags
  */
 static void
 data_mover_dml_translate_flags(uint64_t flags, uint64_t *dml_flags,
