@@ -40,22 +40,25 @@ For general description of miniasync see **miniasync**(7).
 # DESCRIPTION #
 
 API for miniasync library forming the basis of various virtual data movers.
-```c
-struct vdm *vdm_new(struct vdm_descriptor *descriptor);
-```
-Creates a new instance of virtual data mover defined by the `descriptor` and performs
+
+For more information about the usage of virtual data mover API, see *examples* directory
+on miniasync repository <https://github.com/pmem/miniasync>.
+
+`struct vdm *vdm_new(struct vdm_descriptor *descriptor);`
+
+:	Creates a new instance of virtual data mover defined by the `descriptor` and performs
 additional initialization if specified in the descriptor. For example,
 creating instance of vdm with **vdm_descriptor_threads**(3) also calls a procedure that creates
 necessary threads and data associated with them.
-```c
-void vdm_delete(struct vdm *vdm);
-```
-Cleans up all memory allocated by **vdm_new** of the `vdm` instance and performs additional finalization
+
+`void vdm_delete(struct vdm *vdm);`
+
+:	Cleans up all memory allocated by **vdm_new** of the `vdm` instance and performs additional finalization
 if specified in the descriptor of the vdm instance.
-```c
-struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);
-```
-Initializes and returns a new memcpy future based on the virtual data mover instance `vdm`.
+
+`struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags);`
+
+:	Initializes and returns a new memcpy future based on the virtual data mover instance `vdm`.
 The parameters: `dest`, `src`, `n` are standard memcpy parameters. The `flags`
 represents mover specific flags. For example, flags for dml mover that describe how
 the memcpy will be performed by the mover.
