@@ -3,19 +3,18 @@ layout: manual
 Content-Style: 'text/css'
 title: _MP(MINIASYNC_RUNTIME, 3)
 collection: miniasync
-header: MINIASYNC_FUTURE
+header: MINIASYNC_RUNTIME
 secondary_title: miniasync
 ...
 
 [comment]: <> (SPDX-License-Identifier: BSD-3-Clause)
-[comment]: <> (Copyright 2021, Intel Corporation)
+[comment]: <> (Copyright 2021-2022, Intel Corporation)
 
 [comment]: <> (miniasync_runtime.3 -- man page for miniasync runtime API)
 
 [NAME](#name)<br />
 [SYNOPSIS](#synopsis)<br />
 [DESCRIPTION](#description)<br />
-[ERRORS](#errors)<br />
 [SEE ALSO](#see-also)<br />
 
 
@@ -43,29 +42,37 @@ For general description of miniasync see **miniasync**(7).
 
 # DESCRIPTION #
 
-XXX: add description here.
+A runtime is used for polling the future abstract type implementations.
+When runtime waits for multiple futures it will context switch if no future can
+make progress.
+
+**miniasync**(7) runtime provides a simple waker for the futures that support it.
+Waker can be used to signal the runtime that the progress can be made and the future
+should be polled.
+
+There's no support for multi-threaded task scheduling.
+
+For more information about the usage of runtime API, see *examples* directory
+in miniasync repository <https://github.com/pmem/miniasync>.
 
 `struct runtime *runtime_new(void);`
 
-:	XXX add description here.
+:	Creates and initializes a new runtime. Returns a pointer to new runtime.
 
 `void runtime_delete(struct runtime *runtime);`
 
-:	XXX add description here.
+:	Deletes a runtime *runtime* and finalizes the metadata associated with it.
+Value of the *runtime* is set to *NULL*.
 
 `void runtime_wait_multiple(struct runtime *runtime,
         struct future *futs[], size_t nfuts);`
 
-:	XXX add description here.
+:	Polls the futures in the array at the address *futs* by multiplexing
+until all futures complete.
 
 `void runtime_wait(struct runtime *runtime, struct future *fut);`
 
-:	XXX add description here.
-
-
-## ERRORS ##
-
-XXX add description here.
+:	Polls the future at the address *fut* until it becomes complete.
 
 
 # SEE ALSO #
