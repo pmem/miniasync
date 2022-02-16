@@ -11,7 +11,7 @@ set(LIBS_BASIC
 	${CMAKE_THREAD_LIBS_INIT})
 
 set(LIBS_DML
-	miniasync-dml
+	miniasync-vdm-dml
 	dl
 	dml
 	${LIBS_BASIC})
@@ -77,7 +77,7 @@ test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
 test("membuf" "membuf" test_membuf none)
 
-# add miniasync-dml test only if the sources in extras/dml were compiled
+# add miniasync-vdm-dml test only if the sources in extras/dml were compiled
 if (COMPILE_DML)
 	add_link_executable(data_mover_dml
 			"${SOURCES_DATA_MOVER_DML_TEST}"
