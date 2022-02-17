@@ -30,51 +30,61 @@ extern "C" {
 
 struct vdm;
 
-typedef void (*vdm_cb_fn)(struct future_context *context);
-typedef int (*vdm_data_fn)(void **vdm_data);
+enum vdm_operation_type {
+	VDM_OPERATION_MEMCPY,
+};
 
-struct vdm_memcpy_data {
-	struct future_notifier notifier;
-	int32_t started;
-	int32_t complete;
-	struct vdm *vdm;
+struct vdm_operation_data_memcpy {
 	void *dest;
 	void *src;
 	size_t n;
-	vdm_cb_fn vdm_cb;
 	uint64_t flags;
-	void *extra;
 };
 
-struct vdm_memcpy_output {
+struct vdm_operation {
+	enum vdm_operation_type type;
+	union {
+		struct vdm_operation_data_memcpy memcpy;
+	};
+};
+
+struct vdm_operation_data {
+	void *op;
+};
+
+struct vdm_operation_output_memcpy {
 	void *dest;
 };
 
-FUTURE(vdm_memcpy_future,
-	struct vdm_memcpy_data, struct vdm_memcpy_output);
-
-struct vdm_memcpy_future vdm_memcpy(struct vdm *vdm, void *dest, void *src,
-		size_t n, uint64_t flags);
-
-typedef void (*async_memcpy_fn)(void *descriptor,
-	struct future_notifier *notifier, struct future_context *context);
-
-typedef enum future_state (*async_check_fn)(struct future_context *context);
-
-struct vdm_descriptor {
-	vdm_data_fn vdm_data_init;
-	vdm_data_fn vdm_data_fini;
-	async_memcpy_fn memcpy;
-	async_check_fn check;
+struct vdm_operation_output {
+	enum vdm_operation_type type; /* XXX: determine if needed */
+	union {
+		struct vdm_operation_output_memcpy memcpy;
+	};
 };
 
-struct vdm_descriptor *vdm_descriptor_synchronous(void);
+FUTURE(vdm_operation_future,
+	struct vdm_operation_data, struct vdm_operation_output);
 
-struct vdm *vdm_new(struct vdm_descriptor *descriptor);
-void vdm_delete(struct vdm *vdm);
-void *vdm_get_data(struct vdm *vdm);
-enum future_state vdm_check(struct future_context *context);
-enum future_state vdm_check_async_start(struct future_context *context);
+struct vdm_operation_future vdm_memcpy(struct vdm *vdm, void *dest, void *src,
+		size_t n, uint64_t flags);
+
+typedef void *(*vdm_operation_new)
+	(struct vdm *vdm, const struct vdm_operation *operation);
+typedef int (*vdm_operation_start)(void *op, struct future_notifier *n);
+typedef enum future_state (*vdm_operation_check)(void *op);
+typedef void (*vdm_operation_delete)(void *op,
+	struct vdm_operation_output *output);
+
+struct vdm {
+	vdm_operation_new op_new;
+	vdm_operation_delete op_delete;
+	vdm_operation_start op_start;
+	vdm_operation_check op_check;
+};
+
+struct vdm *vdm_synchronous_new(void);
+void vdm_synchronous_delete(struct vdm *vdm);
 
 #ifdef __cplusplus
 }

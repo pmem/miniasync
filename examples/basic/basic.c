@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "libminiasync.h"
+#include "libminiasync/data_mover_threads.h"
 
 /* Definitions of futures, their data and output structs */
 
@@ -32,9 +33,7 @@ FUTURE(async_print_fut, struct async_print_data, struct async_print_output);
 static enum future_state
 async_print_impl(struct future_context *ctx, struct future_notifier *notifier)
 {
-	if (notifier != NULL) {
-		notifier->notifier_used = FUTURE_NOTIFIER_NONE;
-	}
+	if (notifier) notifier->notifier_used = FUTURE_NOTIFIER_NONE;
 
 	struct async_print_data *data = future_context_get_data(ctx);
 	printf("async print: %p\n", data->value);
@@ -61,7 +60,7 @@ async_print(void *value)
  * BEGIN of async_memcpy_print future
  */
 struct async_memcpy_print_data {
-	FUTURE_CHAIN_ENTRY(struct vdm_memcpy_future, memcpy);
+	FUTURE_CHAIN_ENTRY(struct vdm_operation_future, memcpy);
 	FUTURE_CHAIN_ENTRY(struct async_print_fut, print);
 };
 
@@ -77,11 +76,12 @@ static void
 memcpy_to_print_map(struct future_context *memcpy_ctx,
 		    struct future_context *print_ctx, void *arg)
 {
-	struct vdm_memcpy_output *output =
+	struct vdm_operation_output *output =
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
-	print->value = output->dest;
+	assert(output->type == VDM_OPERATION_MEMCPY);
+	print->value = output->memcpy.dest;
 	assert(arg == (void *)0xd);
 }
 
@@ -120,13 +120,14 @@ main(void)
 
 	struct runtime *r = runtime_new();
 
-	struct vdm *thread_mover = vdm_new(vdm_descriptor_threads_polled());
+	struct data_mover_threads *dmt = data_mover_threads_default();
+	struct vdm *thread_mover = data_mover_threads_get_vdm(dmt);
 
 	/*
 	 * Create first future for memcpy based on the given 'thread_mover'
 	 * and waits for its execution (in the runtime).
 	 */
-	struct vdm_memcpy_future a_to_b =
+	struct vdm_operation_future a_to_b =
 		vdm_memcpy(thread_mover, buf_b, buf_a, testbuf_size, 0);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
@@ -159,7 +160,7 @@ main(void)
 	FUTURE_BUSY_POLL(&memcpy_print_busy);
 
 	/* At the end we require cleanup and we just print the buffers */
-	vdm_delete(thread_mover);
+	data_mover_threads_delete(dmt);
 
 	printf("%s %s %d\n", buf_a, buf_b, memcmp(buf_a, buf_b, testbuf_size));
 

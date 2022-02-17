@@ -11,7 +11,11 @@
 extern "C" {
 #endif
 
-struct vdm_descriptor *vdm_descriptor_dml(void);
+struct data_mover_dml;
+
+struct data_mover_dml *data_mover_dml_new(void);
+struct vdm *data_mover_dml_get_vdm(struct data_mover_dml *dmd);
+void data_mover_dml_delete(struct data_mover_dml *dmd);
 
 #ifdef __cplusplus
 }

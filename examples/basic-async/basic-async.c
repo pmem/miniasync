@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libminiasync.h"
+#include "libminiasync/data_mover_threads.h"
 
 #define TEST_SIZE 1024
 
@@ -17,8 +18,8 @@ main(void)
 	 */
 	struct runtime *r = runtime_new();
 
-	struct vdm_descriptor *vdm_async_descriptor = vdm_descriptor_threads();
-	struct vdm *vdm = vdm_new(vdm_async_descriptor);
+	struct data_mover_threads *dmt = data_mover_threads_default();
+	struct vdm *vdm = data_mover_threads_get_vdm(dmt);
 
 	/*
 	 * Asynchronous memcpy operations can be performed by a runtime one
@@ -37,9 +38,9 @@ main(void)
 		/*
 		 * Create futures to be performed asynchronously.
 		 */
-		struct vdm_memcpy_future fut = vdm_memcpy(
+		struct vdm_operation_future fut = vdm_memcpy(
 			vdm, dst1, src1, TEST_SIZE, 0);
-		struct vdm_memcpy_future fut2 = vdm_memcpy(
+		struct vdm_operation_future fut2 = vdm_memcpy(
 			vdm, dst2, src2, TEST_SIZE * 2, 0);
 
 		struct future *futs[] = {FUTURE_AS_RUNNABLE(&fut),
@@ -67,7 +68,7 @@ main(void)
 	 * which is freed only by vdm_delete or at end of execution of a process
 	 * that called vdm_new.
 	 */
-	vdm_delete(vdm);
+	data_mover_threads_delete(dmt);
 	runtime_delete(r);
 	return 0;
 }

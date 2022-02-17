@@ -20,15 +20,18 @@ dml_memcpy(unsigned flags)
 
 	struct runtime *r = runtime_new();
 
-	struct vdm *dml_mover_async = vdm_new(vdm_descriptor_dml());
-	struct vdm_memcpy_future a_to_b = vdm_memcpy(dml_mover_async, buf_b,
+	struct data_mover_dml *dmd = data_mover_dml_new();
+	struct vdm *dml_mover_async = data_mover_dml_get_vdm(dmd);
+
+	struct vdm_operation_future a_to_b = vdm_memcpy(dml_mover_async, buf_b,
 			buf_a, copy_size, flags);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
 
 	assert(memcmp(buf_a, buf_b, copy_size) == 0);
 
-	vdm_delete(dml_mover_async);
+	data_mover_dml_delete(dmd);
+
 	runtime_delete(r);
 	free(buf_a);
 	free(buf_b);
