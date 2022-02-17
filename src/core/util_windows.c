@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2015-2021, Intel Corporation */
+/* Copyright 2015-2022, Intel Corporation */
 
 /*
  * util_windows.c -- misc utilities with OS-specific implementation
@@ -130,7 +130,7 @@ util_tmpfile(const char *dir, const char *templ, int flags)
 	}
 
 	int ret = _snprintf(fullname, len, "%s%s", dir, templ);
-	if (ret < 0 || ret >= len) {
+	if (ret < 0 || (size_t)ret >= len) {
 		ERR("snprintf: %d", ret);
 		goto err;
 	}
@@ -273,7 +273,7 @@ util_toUTF16_buff(const char *in, wchar_t *out, size_t out_size)
 
 	int size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, in,
 		-1, NULL, 0);
-	if (size == 0 || out_size < size)
+	if (size == 0 || out_size < (size_t)size)
 		goto err;
 
 	if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, in, -1,
@@ -298,7 +298,7 @@ util_toUTF8_buff(const wchar_t *in, char *out, size_t out_size)
 
 	int size = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, in, -1,
 		NULL, 0, NULL, NULL);
-	if (size == 0 || out_size < size)
+	if (size == 0 || out_size < (size_t)size)
 		goto err;
 
 	if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, in, -1,
