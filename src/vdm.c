@@ -54,6 +54,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 
 	struct vdm_operation_future future = {0};
 	future.data.op = vdm->op_new(vdm, &op);
+
 	FUTURE_INIT(&future, vdm_operation_impl);
 
 	return future;
