@@ -19,9 +19,7 @@ add_check_whitespace(src
 	${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 
 set(SOURCES
-    future.c
     runtime.c
-    vdm.c
     data_mover_threads.c
     data_mover_sync.c
 )
