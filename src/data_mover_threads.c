@@ -18,6 +18,7 @@
 struct data_mover_threads {
 	struct vdm base; /* must be first */
 
+	struct data_mover_threads_op_fns *op_fns;
 	struct ringbuf *buf;
 	size_t nthreads;
 	os_thread_t *threads;
@@ -29,8 +30,24 @@ struct data_mover_threads_op {
 	struct vdm_operation op;
 	enum future_notifier_type desired_notifier;
 	struct future_notifier notifier;
+	/*
+	 * Pointer to a struct containing functions that can be
+	 * used by the mover operation.
+	 */
+	struct data_mover_threads_op_fns *fns;
 	uint64_t complete;
 	uint64_t started;
+};
+
+/*
+ * Standard implementation of memcpy used if none was specified by the user.
+ */
+void *std_memcpy(void *dst, const void *src, size_t n, unsigned flags) {
+	return memcpy(dst, src, n);
+}
+
+static struct data_mover_threads_op_fns op_fns_default = {
+	.op_memcpy = std_memcpy
 };
 
 /*
@@ -44,11 +61,14 @@ data_mover_threads_do_operation(struct data_mover_threads_op *op)
 		case VDM_OPERATION_MEMCPY: {
 			struct vdm_operation_data_memcpy *mdata
 				= &op->op.memcpy;
-			memcpy(mdata->dest, mdata->src, mdata->n);
+				memcpy_fn op_memcpy = op->fns->op_memcpy;
+				op_memcpy(mdata->dest,
+					mdata->src, mdata->n, mdata->flags);
+
 		} break;
 		default:
-		ASSERT(0); /* unreachable */
-		break;
+			ASSERT(0); /* unreachable */
+			break;
 	}
 
 	if (op->desired_notifier == FUTURE_NOTIFIER_WAKER) {
@@ -147,6 +167,7 @@ data_mover_threads_operation_new(struct vdm *vdm,
 		membuf_alloc(dmt_threads->membuf,
 		sizeof(struct data_mover_threads_op));
 
+	op->fns = dmt_threads->op_fns;
 	op->complete = 0;
 	op->started = 0;
 	op->desired_notifier = dmt_threads->desired_notifier;
@@ -215,8 +236,26 @@ static struct vdm data_mover_threads_vdm = {
  */
 struct data_mover_threads *
 data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
+	struct data_mover_threads_op_fns *op_fns, size_t ops_size,
 	enum future_notifier_type desired_notifier)
 {
+	if (sizeof(struct data_mover_threads_op) < ops_size) {
+		/*
+		 * The caller was compiled using a newer version of
+		 * libminiasync than the lib in shared object used in
+		 * runtime, so the caller could expect handling of
+		 * op_fns that are not present in the shared object's struct.
+		 */
+		return NULL;
+	}
+	/*
+	 * If the sizeof(struct data_mover_threads_op) is greater or equal
+	 * to ops_size means that the version of libminiasync in the shared
+	 * object is newer or same as the one used by caller, so we can
+	 * proceed further, but we must keep in mind that only the range
+	 * of <op_fns, op_fns+ops_size> is valid.
+	 */
+
 	struct data_mover_threads *dmt_threads =
 		malloc(sizeof(struct data_mover_threads));
 	if (dmt_threads == NULL)
@@ -224,6 +263,10 @@ data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
 
 	dmt_threads->desired_notifier = desired_notifier;
 	dmt_threads->base = data_mover_threads_vdm;
+	if (op_fns == NULL)
+		dmt_threads->op_fns = &op_fns_default;
+	else
+		dmt_threads->op_fns = op_fns;
 
 	dmt_threads->buf = ringbuf_new(ringbuf_size);
 	if (dmt_threads->buf == NULL)
@@ -269,7 +312,8 @@ struct data_mover_threads *
 data_mover_threads_default()
 {
 	return data_mover_threads_new(DATA_MOVER_THREADS_DEFAULT_NTHREADS,
-		DATA_MOVER_THREADS_DEFAULT_RINGBUF_SIZE,
+		DATA_MOVER_THREADS_DEFAULT_RINGBUF_SIZE, NULL,
+		sizeof(struct data_mover_threads_op_fns),
 		FUTURE_NOTIFIER_WAKER);
 }
 
