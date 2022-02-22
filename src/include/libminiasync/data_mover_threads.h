@@ -10,14 +10,15 @@
 extern "C" {
 #endif
 
+typedef void *(*memcpy_fn)(void *dst, const void *src,
+				size_t n, unsigned flags);
+
 struct data_mover_threads;
-
 struct data_mover_threads *data_mover_threads_new(size_t nthreads,
-	size_t ringbuf_size, enum future_notifier_type desired_notifier);
+	size_t ringbuf_size, memcpy_fn memcpy,
+	enum future_notifier_type desired_notifier);
 struct data_mover_threads *data_mover_threads_default();
-
 struct vdm *data_mover_threads_get_vdm(struct data_mover_threads *dmt);
-
 void data_mover_threads_delete(struct data_mover_threads *dmt);
 
 #ifdef __cplusplus

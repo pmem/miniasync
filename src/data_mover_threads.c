@@ -15,9 +15,14 @@
 #define DATA_MOVER_THREADS_DEFAULT_NTHREADS 12
 #define DATA_MOVER_THREADS_DEFAULT_RINGBUF_SIZE 128
 
+struct data_mover_threads_op_fns {
+	memcpy_fn op_memcpy;
+};
+
 struct data_mover_threads {
 	struct vdm base; /* must be first */
 
+	struct data_mover_threads_op_fns op_fns;
 	struct ringbuf *buf;
 	size_t nthreads;
 	os_thread_t *threads;
@@ -29,9 +34,21 @@ struct data_mover_threads_op {
 	struct vdm_operation op;
 	enum future_notifier_type desired_notifier;
 	struct future_notifier notifier;
+	/*
+	 * Pointer to a struct containing functions that can be
+	 * used by the mover operation.
+	 */
+	struct data_mover_threads_op_fns *fns;
 	uint64_t complete;
 	uint64_t started;
 };
+
+/*
+ * Standard implementation of memcpy used if none was specified by the user.
+ */
+void *std_memcpy(void *dst, const void *src, size_t n, unsigned flags) {
+	return memcpy(dst, src, n);
+}
 
 /*
  * data_mover_threads_do_operation -- implementation of the various
@@ -44,11 +61,14 @@ data_mover_threads_do_operation(struct data_mover_threads_op *op)
 		case VDM_OPERATION_MEMCPY: {
 			struct vdm_operation_data_memcpy *mdata
 				= &op->op.memcpy;
-			memcpy(mdata->dest, mdata->src, mdata->n);
+				memcpy_fn op_memcpy = op->fns->op_memcpy;
+				op_memcpy(mdata->dest,
+					mdata->src, mdata->n, mdata->flags);
+
 		} break;
 		default:
-		ASSERT(0); /* unreachable */
-		break;
+			ASSERT(0); /* unreachable */
+			break;
 	}
 
 	if (op->desired_notifier == FUTURE_NOTIFIER_WAKER) {
@@ -147,6 +167,7 @@ data_mover_threads_operation_new(struct vdm *vdm,
 		membuf_alloc(dmt_threads->membuf,
 		sizeof(struct data_mover_threads_op));
 
+	op->fns = &dmt_threads->op_fns;
 	op->complete = 0;
 	op->started = 0;
 	op->desired_notifier = dmt_threads->desired_notifier;
@@ -215,7 +236,7 @@ static struct vdm data_mover_threads_vdm = {
  */
 struct data_mover_threads *
 data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
-	enum future_notifier_type desired_notifier)
+	memcpy_fn op_memcpy, enum future_notifier_type desired_notifier)
 {
 	struct data_mover_threads *dmt_threads =
 		malloc(sizeof(struct data_mover_threads));
@@ -224,6 +245,10 @@ data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
 
 	dmt_threads->desired_notifier = desired_notifier;
 	dmt_threads->base = data_mover_threads_vdm;
+	if (op_memcpy == NULL)
+		dmt_threads->op_fns.op_memcpy = std_memcpy;
+	else
+		dmt_threads->op_fns.op_memcpy = op_memcpy;
 
 	dmt_threads->buf = ringbuf_new(ringbuf_size);
 	if (dmt_threads->buf == NULL)
@@ -269,7 +294,7 @@ struct data_mover_threads *
 data_mover_threads_default()
 {
 	return data_mover_threads_new(DATA_MOVER_THREADS_DEFAULT_NTHREADS,
-		DATA_MOVER_THREADS_DEFAULT_RINGBUF_SIZE,
+		DATA_MOVER_THREADS_DEFAULT_RINGBUF_SIZE, NULL,
 		FUTURE_NOTIFIER_WAKER);
 }
 
