@@ -81,7 +81,7 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 	struct async_print_data *print = future_context_get_data(print_ctx);
 
 	assert(output->type == VDM_OPERATION_MEMCPY);
-	print->value = output->memcpy.dest;
+	print->value = output->vdm_memcpy.memcpy.dest;
 	assert(arg == (void *)0xd);
 }
 

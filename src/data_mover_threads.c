@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2022, Intel Corporation */
 
+/* disable conditional expression is const warning */
+#ifdef _WIN32
+#pragma warning(disable : 4127)
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include "core/membuf.h"
@@ -43,7 +48,7 @@ data_mover_threads_do_operation(struct data_mover_threads_op *op)
 	switch (op->op.type) {
 		case VDM_OPERATION_MEMCPY: {
 			struct vdm_operation_data_memcpy *mdata
-				= &op->op.memcpy;
+				= &op->op.vdm_memcpy.memcpy;
 			memcpy(mdata->dest, mdata->src, mdata->n);
 		} break;
 		default:
@@ -169,7 +174,8 @@ data_mover_threads_operation_delete(void *op,
 	switch (opt->op.type) {
 		case VDM_OPERATION_MEMCPY:
 			output->type = VDM_OPERATION_MEMCPY;
-			output->memcpy.dest = opt->op.memcpy.dest;
+			output->vdm_memcpy.memcpy.dest =
+				opt->op.vdm_memcpy.memcpy.dest;
 			break;
 		default:
 			ASSERT(0);

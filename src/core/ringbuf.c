@@ -31,7 +31,7 @@
 
 /* avoid false sharing by padding the variable */
 #define CACHELINE_PADDING(type, name)\
-union { type name; uint64_t name##_padding[8]; }
+union { type name; uint64_t name##_padding[8]; } name##_padded
 
 struct ringbuf {
 	CACHELINE_PADDING(uint64_t, read_pos);
@@ -64,19 +64,19 @@ ringbuf_new(unsigned length)
 	if (rbuf == NULL)
 		return NULL;
 
-	if (os_semaphore_init(&rbuf->nfree, length)) {
+	if (os_semaphore_init(&rbuf->nfree_padded.nfree, length)) {
 		free(rbuf);
 		return NULL;
 	}
 
-	if (os_semaphore_init(&rbuf->nused, 0)) {
-		util_semaphore_destroy(&rbuf->nfree);
+	if (os_semaphore_init(&rbuf->nused_padded.nused, 0)) {
+		util_semaphore_destroy(&rbuf->nfree_padded.nfree);
 		free(rbuf);
 		return NULL;
 	}
 
-	rbuf->read_pos = 0;
-	rbuf->write_pos = 0;
+	rbuf->read_pos_padded.read_pos = 0;
+	rbuf->write_pos_padded.write_pos = 0;
 
 	rbuf->len = length;
 	rbuf->len_mask = length - 1;
@@ -107,7 +107,8 @@ ringbuf_stop(struct ringbuf *rbuf)
 	LOG(4, NULL);
 
 	/* wait for the buffer to become empty */
-	while (rbuf->read_pos != rbuf->write_pos)
+	while (rbuf->read_pos_padded.read_pos !=
+		rbuf->write_pos_padded.write_pos)
 		__sync_synchronize();
 
 	int ret = util_bool_compare_and_swap64(&rbuf->running, 1, 0);
@@ -115,7 +116,7 @@ ringbuf_stop(struct ringbuf *rbuf)
 
 	/* XXX just unlock all waiting threads somehow... */
 	for (int64_t i = 0; i < RINGBUF_MAX_CONSUMER_THREADS; ++i)
-		util_semaphore_post(&rbuf->nused);
+		util_semaphore_post(&rbuf->nused_padded.nused);
 }
 #endif
 
@@ -127,9 +128,10 @@ ringbuf_delete(struct ringbuf *rbuf)
 {
 	LOG(4, NULL);
 
-	ASSERTeq(rbuf->read_pos, rbuf->write_pos);
-	util_semaphore_destroy(&rbuf->nfree);
-	util_semaphore_destroy(&rbuf->nused);
+	ASSERTeq(rbuf->read_pos_padded.read_pos,
+		rbuf->write_pos_padded.write_pos);
+	util_semaphore_destroy(&rbuf->nfree_padded.nfree);
+	util_semaphore_destroy(&rbuf->nused_padded.nused);
 	free(rbuf);
 }
 
@@ -142,7 +144,8 @@ ringbuf_enqueue_atomic(struct ringbuf *rbuf, void *data)
 {
 	LOG(4, NULL);
 
-	size_t w = util_fetch_and_add64(&rbuf->write_pos, 1) & rbuf->len_mask;
+	size_t w = util_fetch_and_add64(&rbuf->write_pos_padded.write_pos, 1)
+		& rbuf->len_mask;
 
 	ASSERT(rbuf->running);
 
@@ -168,11 +171,11 @@ ringbuf_enqueue(struct ringbuf *rbuf, void *data)
 {
 	LOG(4, NULL);
 
-	util_semaphore_wait(&rbuf->nfree);
+	util_semaphore_wait(&rbuf->nfree_padded.nfree);
 
 	ringbuf_enqueue_atomic(rbuf, data);
 
-	util_semaphore_post(&rbuf->nused);
+	util_semaphore_post(&rbuf->nused_padded.nused);
 
 	return 0;
 }
@@ -188,12 +191,12 @@ ringbuf_tryenqueue(struct ringbuf *rbuf, void *data)
 {
 	LOG(4, NULL);
 
-	if (util_semaphore_trywait(&rbuf->nfree) != 0)
+	if (util_semaphore_trywait(&rbuf->nfree_padded.nfree) != 0)
 		return -1;
 
 	ringbuf_enqueue_atomic(rbuf, data);
 
-	util_semaphore_post(&rbuf->nused);
+	util_semaphore_post(&rbuf->nused_padded.nused);
 
 	return 0;
 }
@@ -206,7 +209,8 @@ ringbuf_dequeue_atomic(struct ringbuf *rbuf)
 {
 	LOG(4, NULL);
 
-	size_t r = util_fetch_and_add64(&rbuf->read_pos, 1) & rbuf->len_mask;
+	size_t r = util_fetch_and_add64(&rbuf->read_pos_padded.read_pos, 1)
+		& rbuf->len_mask;
 	/*
 	 * Again, in most cases, there won't be even a single loop, but if one
 	 * thread stalls while others perform work, it might happen that two
@@ -234,14 +238,14 @@ ringbuf_dequeue(struct ringbuf *rbuf)
 {
 	LOG(4, NULL);
 
-	util_semaphore_wait(&rbuf->nused);
+	util_semaphore_wait(&rbuf->nused_padded.nused);
 
 	if (!rbuf->running)
 		return NULL;
 
 	void *data = ringbuf_dequeue_atomic(rbuf);
 
-	util_semaphore_post(&rbuf->nfree);
+	util_semaphore_post(&rbuf->nfree_padded.nfree);
 
 	return data;
 }
@@ -257,7 +261,7 @@ ringbuf_trydequeue(struct ringbuf *rbuf)
 {
 	LOG(4, NULL);
 
-	if (util_semaphore_trywait(&rbuf->nused) != 0)
+	if (util_semaphore_trywait(&rbuf->nused_padded.nused) != 0)
 		return NULL;
 
 	if (!rbuf->running)
@@ -265,7 +269,7 @@ ringbuf_trydequeue(struct ringbuf *rbuf)
 
 	void *data = ringbuf_dequeue_atomic(rbuf);
 
-	util_semaphore_post(&rbuf->nfree);
+	util_semaphore_post(&rbuf->nfree_padded.nfree);
 
 	return data;
 }
