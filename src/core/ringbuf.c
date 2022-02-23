@@ -7,6 +7,11 @@
  * waiting.
  */
 
+/* disable conditional expression is const warning */
+#ifdef _WIN32
+#pragma warning(disable : 4127)
+#endif
+
 #include "core/valgrind_internal.h"
 
 #include "ringbuf.h"
