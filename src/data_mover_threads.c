@@ -48,7 +48,7 @@ data_mover_threads_do_operation(struct data_mover_threads_op *op)
 	switch (op->op.type) {
 		case VDM_OPERATION_MEMCPY: {
 			struct vdm_operation_data_memcpy *mdata
-				= &op->op.vdm_memcpy.memcpy;
+				= &op->op.data.memcpy;
 			memcpy(mdata->dest, mdata->src, mdata->n);
 		} break;
 		default:
@@ -174,8 +174,8 @@ data_mover_threads_operation_delete(void *op,
 	switch (opt->op.type) {
 		case VDM_OPERATION_MEMCPY:
 			output->type = VDM_OPERATION_MEMCPY;
-			output->vdm_memcpy.memcpy.dest =
-				opt->op.vdm_memcpy.memcpy.dest;
+			output->output.memcpy.dest =
+				opt->op.data.memcpy.dest;
 			break;
 		default:
 			ASSERT(0);

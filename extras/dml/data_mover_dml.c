@@ -120,10 +120,10 @@ data_mover_dml_operation_new(struct vdm *vdm,
 	switch (operation->type) {
 		case VDM_OPERATION_MEMCPY:
 		return data_mover_dml_memcpy_job_new(vdm_dml,
-			operation->vdm_memcpy.memcpy.dest,
-			operation->vdm_memcpy.memcpy.src,
-			operation->vdm_memcpy.memcpy.n,
-			operation->vdm_memcpy.memcpy.flags);
+			operation->data.memcpy.dest,
+			operation->data.memcpy.src,
+			operation->data.memcpy.n,
+			operation->data.memcpy.flags);
 		default:
 		ASSERT(0); /* unreachable */
 	}
@@ -141,7 +141,7 @@ data_mover_dml_operation_delete(void *op, struct vdm_operation_output *output)
 	switch (job->operation) {
 		case DML_OP_MEM_MOVE:
 			output->type = VDM_OPERATION_MEMCPY;
-			output->vdm_memcpy.memcpy.dest =
+			output->output.memcpy.dest =
 				job->destination_first_ptr;
 			break;
 		default:
