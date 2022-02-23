@@ -245,9 +245,3 @@ os_strsignal(int sig)
 {
 	return strsignal(sig);
 }
-
-int
-os_execv(const char *path, char *const argv[])
-{
-	return execv(path, argv);
-}

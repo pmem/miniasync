@@ -11,6 +11,7 @@
 int
 main(void)
 {
+	int ret = 0;
 	/*
 	 * First, we have to create a runner instance, get descriptor for
 	 * asynchronous memcpy which is vdm_descriptor_threads and
@@ -33,15 +34,30 @@ main(void)
 	 */
 	for (int i = 0; i < 2; i++) {
 		char *src1 = malloc(TEST_SIZE * sizeof(char));
+		if (src1 == NULL) {
+			ret = 1;
+			goto end;
+		}
 		char *dst1 = malloc(TEST_SIZE * sizeof(char));
+		if (dst1 == NULL) {
+			free(src1);
+			ret = 1;
+			goto end;
+		}
 		char *src2 = malloc(TEST_SIZE * 2 * sizeof(char));
+		if (src2 == NULL) {
+			free(src1);
+			free(dst1);
+			ret = 1;
+			goto end;
+		}
 		char *dst2 = malloc(TEST_SIZE * 2 * sizeof(char));
-		if (src1 == NULL || dst1 == NULL ||
-			src2 == NULL || dst2 == NULL) {
-			fprintf(stderr, "Failed to allocate memory.\n");
-			runtime_delete(r);
-			data_mover_threads_delete(dmt);
-			return 1;
+		if (dst2 == NULL) {
+			free(src1);
+			free(dst1);
+			free(src2);
+			ret = 1;
+			goto end;
 		}
 
 		memset(src1, 7, TEST_SIZE);
@@ -80,7 +96,8 @@ main(void)
 	 * which is freed only by vdm_delete or at end of execution of a process
 	 * that called vdm_new.
 	 */
+end:
 	data_mover_threads_delete(dmt);
 	runtime_delete(r);
-	return 0;
+	return ret;
 }
