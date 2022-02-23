@@ -120,6 +120,7 @@ main(void)
 	char *buf_b = malloc(otherbuf_size + 1);
 	if (buf_b == NULL) {
 		fprintf(stderr, "Failed to create buf_b\n");
+		free(buf_a);
 		return 1;
 	}
 
@@ -131,6 +132,8 @@ main(void)
 	struct data_mover_threads *dmt = data_mover_threads_default();
 	if (dmt == NULL) {
 		fprintf(stderr, "Failed to allocate data mover.\n");
+		free(buf_a);
+		free(buf_b);
 		runtime_delete(r);
 		return 1;
 	}
