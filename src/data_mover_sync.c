@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2022, Intel Corporation */
 
+/* disable conditional expression is const warning */
+#ifdef _WIN32
+#pragma warning(disable : 4127)
+#endif
+
 #include "libminiasync/vdm.h"
 #include "core/membuf.h"
 #include "core/out.h"
@@ -79,7 +84,8 @@ sync_operation_delete(void *op, struct vdm_operation_output *output)
 	switch (sync_op->op.type) {
 		case VDM_OPERATION_MEMCPY:
 			output->type = VDM_OPERATION_MEMCPY;
-			output->memcpy.dest = sync_op->op.memcpy.dest;
+			output->output.memcpy.dest =
+				sync_op->op.data.memcpy.dest;
 			break;
 		default:
 			ASSERT(0);
@@ -95,8 +101,9 @@ sync_operation_start(void *op, struct future_notifier *n)
 	struct data_mover_sync_op *sync_op = (struct data_mover_sync_op *)op;
 	if (n)
 		n->notifier_used = FUTURE_NOTIFIER_NONE;
-	memcpy(sync_op->op.memcpy.dest, sync_op->op.memcpy.src,
-		sync_op->op.memcpy.n);
+	memcpy(sync_op->op.data.memcpy.dest,
+		sync_op->op.data.memcpy.src,
+		sync_op->op.data.memcpy.n);
 
 	util_atomic_store_explicit32(&sync_op->complete,
 		1, memory_order_release);

@@ -35,6 +35,11 @@
  * os_windows.c -- windows abstraction layer
  */
 
+/* disable conditional expression is const warning */
+#ifdef _WIN32
+#pragma warning(disable : 4127)
+#endif
+
 #define _CRT_RAND_S
 
 #include <windows.h>
