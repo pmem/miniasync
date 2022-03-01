@@ -29,11 +29,11 @@ int src_dst_new(char **src1, char **dst1, char **src2, char **dst2) {
 	return 0;
 
 end_3:
-	free(src2);
+	free(*src2);
 end_2:
-	free(dst1);
+	free(*dst1);
 end_1:
-	free(src1);
+	free(*src1);
 
 	return 1;
 }
