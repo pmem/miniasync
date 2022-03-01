@@ -96,57 +96,6 @@ os_open(const char *pathname, int flags, ...)
 }
 
 /*
- * os_fsync -- fsync abstraction layer
- */
-int
-os_fsync(int fd)
-{
-	HANDLE handle = (HANDLE) _get_osfhandle(fd);
-
-	if (handle == INVALID_HANDLE_VALUE) {
-		errno = EBADF;
-		return -1;
-	}
-
-	if (!FlushFileBuffers(handle)) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	return 0;
-}
-
-/*
- * os_fsync_dir -- fsync the directory
- */
-int
-os_fsync_dir(const char *dir_name)
-{
-	/* to avoid unused formal parameter warning */
-	SUPPRESS_UNUSED(dir_name);
-
-	/* XXX not used and not implemented */
-	ASSERT(0);
-	return -1;
-}
-
-/*
- * os_stat -- stat abstraction layer
- */
-int
-os_stat(const char *pathname, os_stat_t *buf)
-{
-	wchar_t *path = util_toUTF16(pathname);
-	if (path == NULL)
-		return -1;
-
-	int ret = _wstat64(path, buf);
-
-	util_free_UTF16(path);
-	return ret;
-}
-
-/*
  * os_unlink -- unlink abstraction layer
  */
 int
@@ -157,21 +106,6 @@ os_unlink(const char *pathname)
 		return -1;
 
 	int ret = _wunlink(path);
-	util_free_UTF16(path);
-	return ret;
-}
-
-/*
- * os_access -- access abstraction layer
- */
-int
-os_access(const char *pathname, int mode)
-{
-	wchar_t *path = util_toUTF16(pathname);
-	if (path == NULL)
-		return -1;
-
-	int ret = _waccess(path, mode);
 	util_free_UTF16(path);
 	return ret;
 }
@@ -226,32 +160,6 @@ os_fopen(const char *pathname, const char *mode)
 	util_free_UTF16(wmode);
 
 	os_skipBOM(ret);
-	return ret;
-}
-
-/*
- * os_fdopen -- fdopen abstraction layer
- */
-FILE *
-os_fdopen(int fd, const char *mode)
-{
-	FILE *ret = fdopen(fd, mode);
-	os_skipBOM(ret);
-	return ret;
-}
-
-/*
- * os_chmod -- chmod abstraction layer
- */
-int
-os_chmod(const char *pathname, mode_t mode)
-{
-	wchar_t *path = util_toUTF16(pathname);
-	if (path == NULL)
-		return -1;
-
-	int ret = _wchmod(path, mode);
-	util_free_UTF16(path);
 	return ret;
 }
 
