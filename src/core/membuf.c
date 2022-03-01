@@ -236,7 +236,7 @@ membuf_alloc(struct membuf *membuf, size_t size)
 	tbuf->available -= real_size;
 
 	struct membuf_entry *entry = (struct membuf_entry *)&tbuf->buf[pos];
-	entry->size = real_size;
+	entry->size = (uint32_t)real_size;
 	entry->allocated = 1;
 
 	return &entry->data;

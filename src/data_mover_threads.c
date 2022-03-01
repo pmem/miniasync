@@ -73,7 +73,7 @@ data_mover_threads_do_operation(struct data_mover_threads_op *op,
 				= &op->op.data.memcpy;
 			memcpy_fn op_memcpy = dmt->op_fns.op_memcpy;
 			op_memcpy(mdata->dest,
-				mdata->src, mdata->n, mdata->flags);
+				mdata->src, mdata->n, (unsigned)mdata->flags);
 		} break;
 		default:
 			ASSERT(0); /* unreachable */
@@ -232,7 +232,7 @@ data_mover_threads_new(size_t nthreads, size_t ringbuf_size,
 	dmt_threads->base = data_mover_threads_vdm;
 	dmt_threads->op_fns = op_fns_default;
 
-	dmt_threads->buf = ringbuf_new(ringbuf_size);
+	dmt_threads->buf = ringbuf_new((unsigned)ringbuf_size);
 	if (dmt_threads->buf == NULL)
 		goto ringbuf_failed;
 
