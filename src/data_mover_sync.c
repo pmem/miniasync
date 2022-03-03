@@ -38,25 +38,6 @@ sync_operation_check(void *op)
 }
 
 /*
- * sync_membuf_check -- checks the status of a sync job
- */
-static enum membuf_check_result
-sync_membuf_check(void *ptr, void *data)
-{
-	return sync_operation_check(ptr) == FUTURE_STATE_COMPLETE ?
-		MEMBUF_PTR_CAN_REUSE : MEMBUF_PTR_IN_USE;
-}
-
-/*
- * sync_membuf_size -- returns the size of a sync operation
- */
-static size_t
-sync_membuf_size(void *ptr, void *data)
-{
-	return sizeof(struct data_mover_sync_op);
-}
-
-/*
  * sync_operation_new -- creates a new sync operation
  */
 static void *
@@ -90,6 +71,8 @@ sync_operation_delete(void *op, struct vdm_operation_output *output)
 		default:
 			ASSERT(0);
 	}
+
+	membuf_free(op);
 }
 
 /*
@@ -129,8 +112,7 @@ data_mover_sync_new(void)
 		return NULL;
 
 	dms->base = data_mover_sync_vdm;
-	dms->membuf = membuf_new(sync_membuf_check, sync_membuf_size,
-		NULL, dms);
+	dms->membuf = membuf_new(dms);
 	if (dms->membuf == NULL)
 		goto membuf_failed;
 
