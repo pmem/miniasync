@@ -27,10 +27,14 @@ secondary_title: miniasync
 #include <libminiasync.h>
 
 typedef void *(*vdm_operation_new)
-	(struct vdm *vdm, const struct vdm_operation *operation);
-typedef int (*vdm_operation_start)(void *op, struct future_notifier *n);
-typedef enum future_state (*vdm_operation_check)(void *op);
-typedef void (*vdm_operation_delete)(void *op,
+	(struct vdm *vdm, const enum vdm_operation_type type);
+typedef int (*vdm_operation_start)(void *data,
+	const struct vdm_operation *operation,
+	struct future_notifier *n);
+typedef enum future_state (*vdm_operation_check)(void *data,
+	const struct vdm_operation *operation);
+typedef void (*vdm_operation_delete)(void *data,
+	const struct vdm_operation *operation,
 	struct vdm_operation_output *output);
 
 struct vdm {
@@ -56,11 +60,11 @@ compatibility with the **miniasync_future**(7) feature.
 *struct vdm* is a structure required by every virtual data mover operation, for
 example **vdm_memcpy**(3). *struct vdm* has following members:
 
-* *op_new* - allocations and initializations needed by operation
+* *op_new* - allocations needed for the specified operation type
 
 * *op_delete* - deallocations and finalizations of operation
 
-* *op_start* - data mover task that should be executed
+* *op_start* - populates operation data and starts the execution of the task
 
 * *op_check* - data mover task status check
 
