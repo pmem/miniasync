@@ -57,9 +57,6 @@ To create a new **DML** data mover instance, use **data_mover_dml_new**(3) funct
 
 * **MINIASYNC_DML_F_MEM_DURABLE** - write to destination is identified as write to durable memory
 
-* **MINIASYNC_DML_F_PATH_HW** - use hardware accelerators (e.g. Intel® Data Streaming Accelerator)
-for operation execution
-
 **DML** data mover supports following operations:
 
 * **vdm_memcpy**(3) - memory copy operation
