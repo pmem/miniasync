@@ -30,7 +30,13 @@ data mover structure
 
 struct data_mover_dml;
 
-struct data_mover_dml *data_mover_dml_new(void);
+enum data_mover_dml_type {
+	DATA_MOVER_DML_SOFTWARE,
+	DATA_MOVER_DML_HARDWARE,
+	DATA_MOVER_DML_AUTO,
+};
+
+struct data_mover_dml *data_mover_dml_new(enum data_mover_dml_type type);
 void data_mover_dml_delete(struct data_mover_dml *dmd);
 ```
 
@@ -39,6 +45,7 @@ For general description of **DML** data mover API, see **miniasync_vdm_dml**(7).
 # DESCRIPTION #
 
 The **data_mover_dml_new**() function allocates and initializes a new **DML** data mover structure.
+The DML path is chosen based on the **type** argument.
 
 The **data_mover_dml_delete**() function frees and finalizes the **DML** data mover structure
 pointed by *dmd*.
