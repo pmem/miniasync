@@ -35,6 +35,9 @@ set(SOURCES_DATA_MOVER_DML_TEST
 set(SOURCES_MEMBUF_TEST
 	membuf/membuf_simple.c)
 
+set(SOURCES_VDM_TEST
+	vdm/test_vdm.c)
+
 add_custom_target(tests)
 
 add_flag(-Wall)
@@ -73,6 +76,10 @@ add_link_executable(membuf
 		"${SOURCES_MEMBUF_TEST}"
 		"${LIBS_BASIC}")
 
+add_link_executable(vdm
+		"${SOURCES_VDM_TEST}"
+		"${LIBS_BASIC}")
+
 # add test using test function defined in the ctest_helpers.cmake file
 test("dummy" "dummy" test_dummy none)
 test("dummy_drd" "dummy" test_dummy drd)
@@ -83,6 +90,7 @@ test("future" "future" test_future none)
 test("future_memcheck" "future" test_future memcheck)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
 test("membuf" "membuf" test_membuf none)
+test("vdm" "vdm" test_vdm none)
 
 # add tests running examples only if they are built
 if(BUILD_EXAMPLES)
