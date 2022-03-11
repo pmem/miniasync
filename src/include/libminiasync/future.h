@@ -158,26 +158,67 @@ do {\
 
 typedef void (*future_map_fn)(struct future_context *lhs,
 			struct future_context *rhs, void *arg);
+typedef void (*future_init_fn)(void *future,
+			struct future_context *chain_fut, void *arg);
 
 struct future_chain_entry {
 	future_map_fn map;
-	void *arg;
+	void *map_arg;
+	future_init_fn init;
+	void *init_arg;
+	size_t type;
 	struct future future;
 };
+
+enum future_chain_entry_type {
+	FUTURE_CHAIN_ENTRY_REGULAR = 1,
+	FUTURE_CHAIN_ENTRY_LAST = 2,
+};
+
+typedef uint8_t _future_entry_type_regular[FUTURE_CHAIN_ENTRY_REGULAR];
+typedef uint8_t _future_entry_type_last[FUTURE_CHAIN_ENTRY_LAST];
 
 #define FUTURE_CHAIN_ENTRY(_future_type, _name)\
 struct {\
 	future_map_fn map;\
-	void *arg;\
+	void *map_arg;\
+	future_init_fn init;\
+	void *init_arg;\
+	_future_entry_type_regular *type;\
+	_future_type fut;\
+} _name
+
+#define FUTURE_CHAIN_ENTRY_LAST(_future_type, _name)\
+struct {\
+	future_map_fn map;\
+	void *map_arg;\
+	future_init_fn init;\
+	void *init_arg;\
+	_future_entry_type_last *type;\
 	_future_type fut;\
 } _name
 
 #define FUTURE_CHAIN_ENTRY_INIT(_entry, _fut, _map, _map_arg)\
 do {\
 	(_entry)->fut = (_fut);\
-	(_entry)->map = _map;\
-	(_entry)->arg = _map_arg;\
+	(_entry)->map = (_map);\
+	(_entry)->map_arg = (_map_arg);\
+	(_entry)->init = NULL;\
+	(_entry)->init_arg = NULL;\
+	(_entry)->type = (void *)sizeof(*(_entry)->type);\
 } while (0)
+
+#define FUTURE_CHAIN_ENTRY_LAZY_INIT(_entry, _init, _init_arg, _map, _map_arg)\
+do {\
+	(_entry)->map = (_map);\
+	(_entry)->map_arg = (_map_arg);\
+	(_entry)->init = (_init);\
+	(_entry)->init_arg = (_init_arg);\
+	(_entry)->type = (void *)sizeof(*(_entry)->type);\
+} while (0)
+
+#define FUTURE_CHAIN_ENTRY_GET_TYPE(_entry)\
+((enum future_chain_entry_type)(uint64_t)(_entry)->type)
 
 /*
  * TODO: Notifiers have to be copied into the state of the future, so we might
@@ -224,24 +265,28 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 		used_data += _MINIASYNC_ALIGN_UP(
 			sizeof(struct future_chain_entry) +
 			future_context_get_size(&entry->future.context));
-		struct future_chain_entry *next = used_data != ctx->data_size
-			? (struct future_chain_entry *)(data + used_data)
-			: NULL;
+		struct future_chain_entry *next = NULL;
+		if (entry->type == FUTURE_CHAIN_ENTRY_REGULAR &&
+		    used_data != ctx->data_size) {
+			next = (struct future_chain_entry *)(data + used_data);
+		}
 		if (entry->future.context.state != FUTURE_STATE_COMPLETE) {
 			future_poll(&entry->future, notifier);
 			if (entry->future.context.state ==
-				    FUTURE_STATE_COMPLETE &&
-			    entry->map) {
+			    FUTURE_STATE_COMPLETE && entry->map) {
 				entry->map(&entry->future.context,
 							next ?
 							&next->future.context
 							: ctx,
-							entry->arg);
+							entry->map_arg);
 			} else {
 				return FUTURE_STATE_RUNNING;
 			}
 		}
 		entry = next;
+		if (entry && entry->init) {
+			entry->init(&entry->future, ctx, entry->init_arg);
+		}
 	}
 #undef _MINIASYNC_PTRSIZE
 #undef _MINIASYNC_ALIGN_UP
