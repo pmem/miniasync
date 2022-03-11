@@ -2,10 +2,12 @@
 /* Copyright 2022, Intel Corporation */
 
 #include "libminiasync/future.h"
+#include "out.h"
 #include "test_helpers.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <libminiasync.h>
 
 #define TEST_MAX_COUNT 10
@@ -195,11 +197,115 @@ test_chained_future()
 	UT_ASSERTeq(output->result_sum, 2);
 }
 
+struct multiply_data {
+	int a;
+	int b;
+};
+
+struct multiply_output {
+	int result;
+};
+
+FUTURE(multiply_fut, struct multiply_data, struct multiply_output);
+
+struct multiply_fut
+async_multiply(int a, int b)
+{
+	struct multiply_fut fut = {0};
+	FUTURE_INIT_COMPLETE(&fut);
+	fut.data.a = a;
+	fut.data.b = b;
+	fut.output.result = a * b;
+
+	return fut;
+}
+
+void
+test_completed_future()
+{
+	struct multiply_fut fut = async_multiply(2, 3);
+	UT_ASSERTeq(FUTURE_STATE(&fut), FUTURE_STATE_COMPLETE);
+	FUTURE_BUSY_POLL(&fut);
+	UT_ASSERTeq(FUTURE_STATE(&fut), FUTURE_STATE_COMPLETE);
+}
+
+struct multiply_up_down_data {
+	FUTURE_CHAIN_ENTRY(struct multiply_fut, mul);
+	FUTURE_CHAIN_ENTRY_LAST(struct up_down_fut, up_down);
+	int num;
+	int count;
+};
+
+struct multiply_up_down_output {
+	int result_sum;
+};
+
+FUTURE(multiply_up_down_fut,
+	struct multiply_up_down_data, struct multiply_up_down_output);
+
+void
+multiply_init(void *future, struct future_context *chain_fut, void *arg)
+{
+	struct multiply_up_down_data *data = future_context_get_data(chain_fut);
+	struct multiply_fut fut = async_multiply(data->count, data->num);
+	memcpy(future, &fut, sizeof(fut));
+}
+
+void
+up_down_init(void *future, struct future_context *chain_fut, void *arg)
+{
+	struct multiply_up_down_data *data = future_context_get_data(chain_fut);
+	struct up_down_fut fut = async_up_down(data->mul.fut.output.result);
+	memcpy(future, &fut, sizeof(fut));
+}
+
+void
+up_down_to_output(struct future_context *lhs,
+	struct future_context *rhs, void *arg)
+{
+	struct up_down_output *ud_output =
+		future_context_get_output(lhs);
+	struct multiply_up_down_output *mud_output =
+		future_context_get_output(rhs);
+	mud_output->result_sum = ud_output->result_sum;
+}
+
+struct multiply_up_down_fut
+async_multiply_up_down(int count, int num)
+{
+	struct multiply_up_down_fut fut = {0};
+	fut.data.count = count;
+	fut.data.num = num;
+	FUTURE_CHAIN_ENTRY_LAZY_INIT(&fut.data.mul,
+		multiply_init, NULL,
+		NULL, NULL);
+	FUTURE_CHAIN_ENTRY_LAZY_INIT(&fut.data.up_down,
+		up_down_init, NULL,
+		up_down_to_output, NULL);
+	FUTURE_CHAIN_INIT(&fut);
+
+	return fut;
+}
+
+void
+test_lazy_init()
+{
+	struct multiply_up_down_fut fut = async_multiply_up_down(5, 5);
+	while (future_poll(FUTURE_AS_RUNNABLE(&fut), FAKE_NOTIFIER) !=
+		FUTURE_STATE_COMPLETE) { _mm_pause(); }
+	struct multiply_up_down_output *mud_output = FUTURE_OUTPUT(&fut);
+	ASSERTeq(mud_output->result_sum, 2);
+	struct multiply_up_down_data *mud_data = FUTURE_DATA(&fut);
+	ASSERTeq(mud_data->up_down.fut.data.up.fut.data.counter, 5 * 5);
+}
+
 int
 main(void)
 {
 	test_single_future();
 	test_chained_future();
+	test_completed_future();
+	test_lazy_init();
 
 	return 0;
 }
