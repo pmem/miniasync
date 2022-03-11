@@ -35,6 +35,9 @@ set(SOURCES_DATA_MOVER_DML_TEST
 set(SOURCES_MEMBUF_TEST
 	membuf/membuf_simple.c)
 
+set(SOURCES_MEMMOVE_SYNC_TEST
+	memmove_sync/memmove_sync.c)
+
 add_custom_target(tests)
 
 add_flag(-Wall)
@@ -73,6 +76,10 @@ add_link_executable(membuf
 		"${SOURCES_MEMBUF_TEST}"
 		"${LIBS_BASIC}")
 
+add_link_executable(memmove_sync
+		"${SOURCES_MEMMOVE_SYNC_TEST}"
+		"${LIBS_BASIC}")
+
 # add test using test function defined in the ctest_helpers.cmake file
 test("dummy" "dummy" test_dummy none)
 test("dummy_drd" "dummy" test_dummy drd)
@@ -85,6 +92,7 @@ test("ex_basic" "ex_basic" test_ex_basic none)
 test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
 test("membuf" "membuf" test_membuf none)
+test("memmove_sync" "memmove_sync" test_memmove_sync none)
 
 # add miniasync-vdm-dml test only if the sources in extras/dml were compiled
 if (COMPILE_DML)

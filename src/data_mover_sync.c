@@ -68,6 +68,11 @@ sync_operation_delete(void *op, struct vdm_operation_output *output)
 			output->output.memcpy.dest =
 				sync_op->op.data.memcpy.dest;
 			break;
+		case VDM_OPERATION_MEMMOVE:
+			output->type = VDM_OPERATION_MEMMOVE;
+			output->output.memmove.dest =
+				sync_op->op.data.memmove.dest;
+			break;
 		default:
 			ASSERT(0);
 	}
