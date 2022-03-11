@@ -89,9 +89,21 @@ sync_operation_start(void *op, struct future_notifier *n)
 	struct data_mover_sync_op *sync_op = (struct data_mover_sync_op *)op;
 	if (n)
 		n->notifier_used = FUTURE_NOTIFIER_NONE;
-	memcpy(sync_op->op.data.memcpy.dest,
-		sync_op->op.data.memcpy.src,
-		sync_op->op.data.memcpy.n);
+
+	switch (sync_op->op.type) {
+		case VDM_OPERATION_MEMCPY:
+			memcpy(sync_op->op.data.memcpy.dest,
+				sync_op->op.data.memcpy.src,
+				sync_op->op.data.memcpy.n);
+			break;
+		case VDM_OPERATION_MEMMOVE:
+			memmove(sync_op->op.data.memmove.dest,
+				sync_op->op.data.memmove.src,
+				sync_op->op.data.memmove.n);
+			break;
+		default:
+			ASSERT(0);
+	}
 
 	util_atomic_store_explicit32(&sync_op->complete,
 		1, memory_order_release);
