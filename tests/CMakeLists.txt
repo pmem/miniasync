@@ -104,6 +104,7 @@ test("vdm" "vdm" test_vdm none)
 if(BUILD_EXAMPLES)
 	test("ex_basic" "ex_basic" test_ex_basic none)
 	test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
+	test("ex_hashmap" "ex_hashmap" test_ex_hashmap none)
 endif()
 
 # add miniasync-vdm-dml test only if the sources in extras/dml were compiled
