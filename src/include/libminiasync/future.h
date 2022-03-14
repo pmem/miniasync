@@ -153,6 +153,8 @@ do {\
 
 #define FUTURE_AS_RUNNABLE(futurep) (&(futurep)->base)
 #define FUTURE_OUTPUT(futurep) (&(futurep)->output)
+#define FUTURE_DATA(futurep) (&(futurep)->data)
+#define FUTURE_STATE(futurep) ((futurep)->base.context.state)
 
 typedef void (*future_map_fn)(struct future_context *lhs,
 			struct future_context *rhs, void *arg);
@@ -185,7 +187,11 @@ do {\
 static inline enum future_state
 future_poll(struct future *fut, struct future_notifier *notifier)
 {
-	return (fut->context.state = fut->task(&fut->context, notifier));
+	if (fut->context.state != FUTURE_STATE_COMPLETE) {
+		fut->context.state = fut->task(&fut->context, notifier);
+	}
+
+	return fut->context.state;
 }
 
 #define FUTURE_BUSY_POLL(_futurep)\
