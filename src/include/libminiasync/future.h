@@ -217,11 +217,10 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 		struct future_chain_entry *next = used_data != ctx->data_size
 			? (struct future_chain_entry *)(data + used_data)
 			: NULL;
-		if (entry->future.context.state != FUTURE_STATE_COMPLETE) {
-			future_poll(&entry->future, notifier);
+		if (future_poll(&entry->future, notifier) !=
+		    FUTURE_STATE_COMPLETE) {
 			if (entry->future.context.state ==
-				    FUTURE_STATE_COMPLETE &&
-			    entry->map) {
+			    FUTURE_STATE_COMPLETE && entry->map) {
 				entry->map(&entry->future.context,
 							next ?
 							&next->future.context
