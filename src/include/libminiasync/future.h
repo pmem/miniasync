@@ -63,6 +63,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <emmintrin.h>
 
 #ifdef __cplusplus
@@ -217,6 +218,10 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 		struct future_chain_entry *next = used_data != ctx->data_size
 			? (struct future_chain_entry *)(data + used_data)
 			: NULL;
+		if (next) {
+			size_t nxt_sz = sizeof(struct future_chain_entry) + future_context_get_size(&next->future.context);
+			printf("used: %ld, ctx->data_size: %ld, next size: %ld\n", used_data, ctx->data_size, nxt_sz);
+		}
 		if (entry->future.context.state != FUTURE_STATE_COMPLETE) {
 			future_poll(&entry->future, notifier);
 			if (entry->future.context.state ==
