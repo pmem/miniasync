@@ -81,10 +81,14 @@ test("dummy_memcheck" "dummy" test_dummy memcheck)
 test("dummy_negative" "dummy_negative" test_dummy_negative none)
 test("future" "future" test_future none)
 test("future_memcheck" "future" test_future memcheck)
-test("ex_basic" "ex_basic" test_ex_basic none)
-test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
 test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
 test("membuf" "membuf" test_membuf none)
+
+# add tests running examples only if they are built
+if(BUILD_EXAMPLES)
+	test("ex_basic" "ex_basic" test_ex_basic none)
+	test("ex_basic_async" "ex_basic_async" test_ex_basic_async none)
+endif()
 
 # add miniasync-vdm-dml test only if the sources in extras/dml were compiled
 if (COMPILE_DML)
