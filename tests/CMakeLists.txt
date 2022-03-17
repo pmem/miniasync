@@ -40,6 +40,8 @@ set(SOURCES_MEMMOVE_SYNC_TEST
 
 set(SOURCES_VDM_TEST
 	vdm/test_vdm.c)
+set(SOURCES_MEMSET_SYNC_TEST
+	memset_sync/memset_sync.c)
 
 add_custom_target(tests)
 
@@ -85,6 +87,8 @@ add_link_executable(memmove_sync
 
 add_link_executable(vdm
 		"${SOURCES_VDM_TEST}"
+add_link_executable(memset_sync
+		"${SOURCES_MEMSET_SYNC_TEST}"
 		"${LIBS_BASIC}")
 
 # add test using test function defined in the ctest_helpers.cmake file
@@ -99,6 +103,7 @@ test("memcpy_threads" "memcpy_threads" test_memcpy_threads none)
 test("membuf" "membuf" test_membuf none)
 test("memmove_sync" "memmove_sync" test_memmove_sync none)
 test("vdm" "vdm" test_vdm none)
+test("memset_sync" "memset_sync" test_memset_sync none)
 
 # add tests running examples only if they are built
 if(BUILD_EXAMPLES)

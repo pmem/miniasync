@@ -76,6 +76,11 @@ sync_operation_delete(void *data, const struct vdm_operation *operation,
 			output->output.memmove.dest =
 				operation->data.memcpy.dest;
 			break;
+		case VDM_OPERATION_MEMSET:
+			output->type = VDM_OPERATION_MEMMOVE;
+			output->output.memset.str =
+				operation->data.memset.str;
+			break;
 		default:
 			ASSERT(0);
 	}
@@ -106,6 +111,11 @@ sync_operation_start(void *data, const struct vdm_operation *operation,
 			memmove(operation->data.memcpy.dest,
 				operation->data.memcpy.src,
 				operation->data.memcpy.n);
+			break;
+		case VDM_OPERATION_MEMSET:
+			memset(operation->data.memset.str,
+				operation->data.memset.c,
+				operation->data.memset.n);
 			break;
 		default:
 			ASSERT(0);

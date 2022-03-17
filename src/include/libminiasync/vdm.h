@@ -33,6 +33,7 @@ struct vdm;
 enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 	VDM_OPERATION_MEMMOVE,
+	VDM_OPERATION_MEMSET,
 };
 
 struct vdm_operation_data_memcpy {
@@ -49,6 +50,13 @@ struct vdm_operation_data_memmove {
 	uint64_t flags;
 };
 
+struct vdm_operation_data_memset {
+	void *str;
+	int c;
+	size_t n;
+	uint64_t flags;
+};
+
 /* sized so that sizeof(vdm_operation_data) is 64 */
 #define VDM_OPERATION_DATA_MAX_SIZE (40)
 
@@ -56,6 +64,7 @@ struct vdm_operation {
 	union {
 		struct vdm_operation_data_memcpy memcpy;
 		struct vdm_operation_data_memmove memmove;
+		struct vdm_operation_data_memset memset;
 		uint8_t data[VDM_OPERATION_DATA_MAX_SIZE];
 	} data;
 	enum vdm_operation_type type;
@@ -76,11 +85,16 @@ struct vdm_operation_output_memmove {
 	void *dest;
 };
 
+struct vdm_operation_output_memset {
+	void *str;
+};
+
 struct vdm_operation_output {
 	enum vdm_operation_type type; /* XXX: determine if needed */
 	union {
 		struct vdm_operation_output_memcpy memcpy;
 		struct vdm_operation_output_memmove memmove;
+		struct vdm_operation_output_memset memset;
 	} output;
 };
 
@@ -182,6 +196,30 @@ vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	}};
 
 	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMMOVE);
+	future.data.vdm = vdm;
+	FUTURE_INIT(&future, vdm_operation_impl);
+
+	return future;
+}
+
+/*
+ * vdm_memset -- instantiates a new memset vdm operation and returns a new
+ * future to represent that operation
+ */
+static inline struct vdm_operation_future
+vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
+{
+	struct vdm_operation_future future = {.data.operation = {
+		.type = VDM_OPERATION_MEMSET,
+		.data = {
+			.memset.str = str,
+			.memset.flags = flags,
+			.memset.n = n,
+			.memset.c = c,
+		}
+	}};
+
+	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMSET);
 	future.data.vdm = vdm;
 	FUTURE_INIT(&future, vdm_operation_impl);
 
