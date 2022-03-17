@@ -53,6 +53,7 @@ Thread data mover supports following operations:
 
 * **vdm_memcpy**(3) - memory copy operation
 * **vdm_memmove**(3) - memory move operation
+* **vdm_memset**(3) - memory set operation
 
 Thread data mover supports following notifer types:
 
@@ -78,5 +79,5 @@ struct vdm_memcpy_future memcpy_fut =
 
 **data_mover_threads_default**(3), **data_mover_threads_get_vdm**(3),
 **data_mover_threads_new**(3), **vdm_memcpy**(3), **vdm_memmove**(3),
-**miniasync**(7), **miniasync_future**(7),
+**vdm_memset**(3), **miniasync**(7), **miniasync_future**(7),
 **miniasync_vdm**(7) and **<https://pmem.io>**
