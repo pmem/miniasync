@@ -79,7 +79,11 @@ sync_operation_delete(void *data, const struct vdm_operation *operation,
 				operation->data.memcpy.dest;
 			break;
 		case VDM_OPERATION_MEMSET:
+<<<<<<< HEAD
 			output->type = VDM_OPERATION_MEMSET;
+=======
+			output->type = VDM_OPERATION_MEMMOVE;
+>>>>>>> cf3fa24... masync: add memset operation for synchronous data mover
 			output->output.memset.str =
 				operation->data.memset.str;
 			break;
