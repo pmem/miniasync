@@ -259,12 +259,7 @@ vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
 			.memset.c = c,
 		}
 	}};
-
-	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMSET);
-	future.data.vdm = vdm;
-	FUTURE_INIT(&future, vdm_operation_impl);
-
-	return future;
+	return vdm_generic_operation(vdm, &future.data.operation);
 }
 
 #ifdef __cplusplus
