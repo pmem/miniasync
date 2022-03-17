@@ -46,6 +46,7 @@ Synchronous data mover implementation supports following operations:
 
 * **vdm_memcpy**(3) - memory copy operation
 * **vdm_memmove**(3) - memory move operation
+* **vdm_memset**(3) - memory set operation
 
 # RETURN VALUE #
 

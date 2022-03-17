@@ -37,6 +37,7 @@ struct vdm {
 enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 	VDM_OPERATION_MEMMOVE,
+	VDM_OPERATION_MEMSET,
 };
 
 struct vdm_operation_output_memcpy {
@@ -53,6 +54,7 @@ struct vdm_operation_output {
 	union {
 		struct vdm_operation_output_memcpy memcpy;
 		struct vdm_operation_output_memmove memmove;
+		struct vdm_operation_output_memset memset;
 	} output;
 };
 
@@ -83,5 +85,5 @@ The **vdm_memcpy**() function returns an initialized *struct vdm_operation_futur
 
 # SEE ALSO #
 
-**vdm_memmove**(3), **miniasync**(7), **miniasync_vdm**(7),
+**vdm_memmove**(3), **vdm_memset**(3), **miniasync**(7), **miniasync_vdm**(7),
 **miniasync_vdm_dml**(7) and **<https://pmem.io>**

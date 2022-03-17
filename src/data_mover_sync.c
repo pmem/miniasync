@@ -77,7 +77,7 @@ sync_operation_delete(void *data, const struct vdm_operation *operation,
 				operation->data.memcpy.dest;
 			break;
 		case VDM_OPERATION_MEMSET:
-			output->type = VDM_OPERATION_MEMMOVE;
+			output->type = VDM_OPERATION_MEMSET;
 			output->output.memset.str =
 				operation->data.memset.str;
 			break;

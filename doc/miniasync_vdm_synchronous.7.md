@@ -45,6 +45,7 @@ Synchronous data mover supports following operations:
 
 * **vdm_memcpy**(3) - memory copy operation
 * **vdm_memmove**(3) - memory move operation
+* **vdm_memset**(3) - memory set operation
 
 Synchronous data mover does not support notifier feature. For more information about
 notifiers, see **miniasync_future**(7).
