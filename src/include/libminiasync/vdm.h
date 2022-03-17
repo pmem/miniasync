@@ -217,6 +217,7 @@ vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.output.type = VDM_OPERATION_MEMMOVE;
 	future.output.result = VDM_SUCCESS;
 	future.output.output.memmove.dest = NULL;
+
 	vdm_generic_operation(vdm, &future);
 	return future;
 }
@@ -228,20 +229,17 @@ vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 static inline struct vdm_operation_future
 vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
 {
-	struct vdm_operation_future future = {.data.operation = {
-		.type = VDM_OPERATION_MEMSET,
-		.data = {
-			.memset.str = str,
-			.memset.flags = flags,
-			.memset.n = n,
-			.memset.c = c,
-		}
-	}};
+	struct vdm_operation_future future;
+	future.data.operation.type = VDM_OPERATION_MEMSET;
+	future.data.operation.data.memset.str = str;
+	future.data.operation.data.memset.flags = flags;
+	future.data.operation.data.memset.n = n;
+	future.data.operation.data.memset.c = c;
+	future.output.type = VDM_OPERATION_MEMSET;
+	future.output.result = VDM_SUCCESS;
+	future.output.output.memset.str = NULL;
 
-	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMSET);
-	future.data.vdm = vdm;
-	FUTURE_INIT(&future, vdm_operation_impl);
-
+	vdm_generic_operation(vdm, &future);
 	return future;
 }
 
