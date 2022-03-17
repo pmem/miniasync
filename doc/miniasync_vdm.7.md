@@ -47,6 +47,7 @@ struct vdm {
 enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 	VDM_OPERATION_MEMMOVE,
+	VDM_OPERATION_MEMSET,
 };
 
 enum vdm_operation_result {
@@ -93,6 +94,7 @@ Currently, virtual data mover API supports following operation types:
 
 * **VDM_OPERATION_MEMCPY** - a memory copy operation
 * **VDM_OPERATION_MEMMOVE** - a memory move operation
+* **VDM_OPERATION_MEMSET** - a memory set operation
 
 For more information about concrete data mover implementations, see **miniasync_vdm_threads**(7),
 **miniasync_vdm_synchronous**(7) and **miniasync_vdm_dml**(7).

@@ -87,6 +87,8 @@ add_link_executable(memmove_sync
 
 add_link_executable(vdm
 		"${SOURCES_VDM_TEST}"
+		"${LIBS_BASIC}")
+
 add_link_executable(memset_sync
 		"${SOURCES_MEMSET_SYNC_TEST}"
 		"${LIBS_BASIC}")
