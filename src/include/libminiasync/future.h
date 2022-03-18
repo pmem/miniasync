@@ -205,7 +205,7 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 #define _MINIASYNC_ALIGN_UP(size)\
 	(((size) + _MINIASYNC_PTRSIZE - 1) & ~(_MINIASYNC_PTRSIZE - 1))
 
-	uint8_t *data = future_context_get_data(ctx);
+	uint8_t *data = (uint8_t *)future_context_get_data(ctx);
 
 	struct future_chain_entry *entry = (struct future_chain_entry *)(data);
 	size_t used_data = 0;

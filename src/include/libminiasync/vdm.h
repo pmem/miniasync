@@ -94,7 +94,8 @@ void vdm_synchronous_delete(struct vdm *vdm);
 static inline enum future_state
 vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 {
-	struct vdm_operation_data *data = future_context_get_data(context);
+	struct vdm_operation_data *data =
+		(struct vdm_operation_data *)future_context_get_data(context);
 	struct vdm *vdm = data->vdm;
 
 	if (context->state == FUTURE_STATE_IDLE) {
@@ -107,7 +108,8 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 
 	if (state == FUTURE_STATE_COMPLETE) {
 		struct vdm_operation_output *output =
-			future_context_get_output(context);
+			(struct vdm_operation_output *)
+				future_context_get_output(context);
 		vdm->op_delete(data->op, output);
 		/* variable data is no longer valid! */
 	}
