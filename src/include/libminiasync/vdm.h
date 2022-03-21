@@ -35,6 +35,12 @@ enum vdm_operation_type {
 	VDM_OPERATION_MEMMOVE,
 };
 
+enum vdm_operation_result {
+	VDM_SUCCESS,
+	VDM_ERROR_OUT_OF_MEMORY,
+	VDM_ERROR_JOB_CORRUPTED,
+};
+
 struct vdm_operation_data_memcpy {
 	void *dest;
 	void *src;
@@ -77,7 +83,8 @@ struct vdm_operation_output_memmove {
 };
 
 struct vdm_operation_output {
-	enum vdm_operation_type type; /* XXX: determine if needed */
+	enum vdm_operation_type type;
+	enum vdm_operation_result result;
 	union {
 		struct vdm_operation_output_memcpy memcpy;
 		struct vdm_operation_output_memmove memmove;
@@ -142,6 +149,26 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 }
 
 /*
+ * vdm_generic_operation -- creates a new vdm future for a given generic
+ * operation
+ */
+static inline struct vdm_operation_future
+vdm_generic_operation(struct vdm *vdm, struct vdm_operation *op)
+{
+	struct vdm_operation_future future = {0};
+	future.data.vdm = vdm;
+	future.data.operation = *op;
+	if ((future.data.data = vdm->op_new(vdm, op->type)) == NULL) {
+		future.output.result = VDM_ERROR_OUT_OF_MEMORY;
+		FUTURE_INIT_COMPLETE(&future);
+	} else {
+		FUTURE_INIT(&future, vdm_operation_impl);
+	}
+
+	return future;
+}
+
+/*
  * vdm_memcpy -- instantiates a new memcpy vdm operation and returns a new
  * future to represent that operation
  */
@@ -157,11 +184,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 			.memcpy.src = src,
 		}
 	}};
-	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMCPY);
-	future.data.vdm = vdm;
-	FUTURE_INIT(&future, vdm_operation_impl);
-
-	return future;
+	return vdm_generic_operation(vdm, &future.data.operation);
 }
 
 /*
@@ -180,12 +203,7 @@ vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 			.memcpy.src = src,
 		}
 	}};
-
-	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMMOVE);
-	future.data.vdm = vdm;
-	FUTURE_INIT(&future, vdm_operation_impl);
-
-	return future;
+	return vdm_generic_operation(vdm, &future.data.operation);
 }
 
 #ifdef __cplusplus

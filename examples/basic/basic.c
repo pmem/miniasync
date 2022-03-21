@@ -13,6 +13,7 @@
 
 #include "libminiasync.h"
 #include "libminiasync/data_mover_threads.h"
+#include "libminiasync/vdm.h"
 
 /* Definitions of futures, their data and output structs */
 
@@ -80,9 +81,14 @@ memcpy_to_print_map(struct future_context *memcpy_ctx,
 	struct vdm_operation_output *output =
 		future_context_get_output(memcpy_ctx);
 	struct async_print_data *print = future_context_get_data(print_ctx);
-
 	assert(output->type == VDM_OPERATION_MEMCPY);
-	print->value = output->output.memcpy.dest;
+
+	if (output->result != VDM_SUCCESS) {
+		fprintf(stderr, "vdm memcpy operation failed\n");
+		print->value = 0;
+	} else {
+		print->value = output->output.memcpy.dest;
+	}
 	assert(arg == (void *)0xd);
 }
 
@@ -159,6 +165,9 @@ main(void)
 		vdm_memcpy(thread_mover, buf_b, buf_a, testbuf_size, 0);
 
 	runtime_wait(r, FUTURE_AS_RUNNABLE(&a_to_b));
+	if (FUTURE_OUTPUT(&a_to_b)->result != VDM_SUCCESS) {
+		fprintf(stderr, "vdm memcpy operation failed\n");
+	}
 
 	/*
 	 * Second future is delivered by custom 'async_print' function
