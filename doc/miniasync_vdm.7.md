@@ -48,6 +48,26 @@ enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 	VDM_OPERATION_MEMMOVE,
 };
+
+enum vdm_operation_result {
+	VDM_SUCCESS,
+	VDM_ERROR_OUT_OF_MEMORY,
+	VDM_ERROR_JOB_CORRUPTED,
+};
+
+struct vdm_operation_data {
+	void *op;
+	struct vdm *vdm;
+};
+
+struct vdm_operation_output {
+	enum vdm_operation_type type;
+	enum vdm_operation_result result;
+	union {
+		struct vdm_operation_output_memcpy memcpy;
+		struct vdm_operation_output_memmove memmove;
+	} output;
+};
 ```
 
 For general description of miniasync, see **miniasync**(7).
@@ -79,6 +99,23 @@ For more information about concrete data mover implementations, see **miniasync_
 
 For more information about the usage of virtual data mover API, see *examples* directory
 in miniasync repository <https://github.com/pmem/miniasync>.
+
+## RETURN VALUE ##
+
+The vdm operations always return a new instance of a `vdm_operation_future`
+structure. If initialization successful, this future is idle and can be normally
+polled. Otherwise, the future is immediately complete and the specific error
+can be read from the *result* field of the *vdm_operation_output* structure.
+Depending on the vdm implementation, the operation's processing can also fail.
+In which case the error can be similarly found in the same location.
+
+The *result* field can be set to one of the following values:
+
+* **VDM_ERROR_OUT_OF_MEMORY** - data mover has insufficient memory to create a
+	a new operation. This usefully indicates that there are too many pending
+	operations.
+* **VDM_ERROR_JOB_CORRUPTED** - data mover encountered an error during internal
+	job processing. The specific cause depends on the implementation.
 
 # SEE ALSO #
 

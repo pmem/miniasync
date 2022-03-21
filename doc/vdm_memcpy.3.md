@@ -43,19 +43,6 @@ struct vdm_operation_output_memcpy {
 	void *dest;
 };
 
-struct vdm_operation_data {
-	void *op;
-	struct vdm *vdm;
-};
-
-struct vdm_operation_output {
-	enum vdm_operation_type type;
-	union {
-		struct vdm_operation_output_memcpy memcpy;
-		struct vdm_operation_output_memmove memmove;
-	} output;
-};
-
 FUTURE(vdm_operation_future,
 	struct vdm_operation_data, struct vdm_operation_output);
 
