@@ -42,6 +42,7 @@ struct vdm {
 
 enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
+	VDM_OPERATION_MEMMOVE,
 };
 ```
 
@@ -67,6 +68,7 @@ example **vdm_memcpy**(3). *struct vdm* has following members:
 Currently, virtual data mover API supports following operation types:
 
 * **VDM_OPERATION_MEMCPY** - a memory copy operation
+* **VDM_OPERATION_MEMMOVE** - a memory move operation
 
 For more information about concrete data mover implementations, see **miniasync_vdm_threads**(7),
 **miniasync_vdm_synchronous**(7) and **miniasync_vdm_dml**(7).

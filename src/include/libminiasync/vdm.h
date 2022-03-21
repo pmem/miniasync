@@ -32,9 +32,17 @@ struct vdm;
 
 enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
+	VDM_OPERATION_MEMMOVE,
 };
 
 struct vdm_operation_data_memcpy {
+	void *dest;
+	void *src;
+	size_t n;
+	uint64_t flags;
+};
+
+struct vdm_operation_data_memmove {
 	void *dest;
 	void *src;
 	size_t n;
@@ -45,6 +53,7 @@ struct vdm_operation {
 	enum vdm_operation_type type;
 	union {
 		struct vdm_operation_data_memcpy memcpy;
+		struct vdm_operation_data_memmove memmove;
 	} data;
 };
 
@@ -57,10 +66,15 @@ struct vdm_operation_output_memcpy {
 	void *dest;
 };
 
+struct vdm_operation_output_memmove {
+	void *dest;
+};
+
 struct vdm_operation_output {
 	enum vdm_operation_type type; /* XXX: determine if needed */
 	union {
 		struct vdm_operation_output_memcpy memcpy;
+		struct vdm_operation_output_memmove memmove;
 	} output;
 };
 
@@ -130,6 +144,28 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	op.data.memcpy.flags = flags;
 	op.data.memcpy.n = n;
 	op.data.memcpy.src = src;
+
+	struct vdm_operation_future future = {0};
+	future.data.op = vdm->op_new(vdm, &op);
+	future.data.vdm = vdm;
+	FUTURE_INIT(&future, vdm_operation_impl);
+
+	return future;
+}
+
+/*
+ * vdm_memmove -- instantiates a new memmove vdm operation and returns a new
+ * future to represent that operation
+ */
+static inline struct vdm_operation_future
+vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
+{
+	struct vdm_operation op;
+	op.type = VDM_OPERATION_MEMMOVE;
+	op.data.memmove.dest = dest;
+	op.data.memmove.flags = flags;
+	op.data.memmove.n = n;
+	op.data.memmove.src = src;
 
 	struct vdm_operation_future future = {0};
 	future.data.op = vdm->op_new(vdm, &op);
