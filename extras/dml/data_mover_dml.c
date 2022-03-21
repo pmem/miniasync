@@ -10,6 +10,8 @@
 #include "libminiasync-vdm-dml.h"
 #include "core/out.h"
 #include "core/util.h"
+#include "libminiasync/future.h"
+#include "libminiasync/vdm.h"
 
 struct data_mover_dml {
 	struct vdm base; /* must be first */
@@ -84,9 +86,8 @@ data_mover_dml_memcpy_job_submit(dml_job_t *dml_job)
 {
 	dml_status_t status;
 	status = dml_submit_job(dml_job);
-	ASSERTeq(status, DML_STATUS_OK);
 
-	return dml_job->destination_first_ptr;
+	return status == DML_STATUS_OK ? dml_job->destination_first_ptr : NULL;
 }
 
 /*
@@ -104,12 +105,19 @@ data_mover_dml_operation_new(struct vdm *vdm,
 	switch (type) {
 		case VDM_OPERATION_MEMCPY: {
 			status = dml_get_job_size(vdm_dml->path, &job_size);
-			ASSERTeq(status, DML_STATUS_OK);
+			if (status != DML_STATUS_OK)
+				return NULL;
 
 			dml_job = membuf_alloc(vdm_dml->membuf, job_size);
+			if (dml_job == NULL)
+				return NULL;
+
 			dml_status_t status =
 				dml_init_job(vdm_dml->path, dml_job);
-			ASSERTeq(status, DML_STATUS_OK);
+			if (status != DML_STATUS_OK) {
+				membuf_free(dml_job);
+				return NULL;
+			}
 
 			return dml_job;
 		}
@@ -128,6 +136,19 @@ data_mover_dml_operation_delete(void *data,
 	struct vdm_operation_output *output)
 {
 	dml_job_t *job = (dml_job_t *)data;
+	dml_status_t status = dml_check_job(job);
+	switch (status) {
+		case DML_STATUS_BEING_PROCESSED:
+			ASSERT(0 && "dml job being deleted during processing");
+		case DML_STATUS_JOB_CORRUPTED:
+			output->result = VDM_ERROR_JOB_CORRUPTED;
+			break;
+		case DML_STATUS_OK:
+			output->result = VDM_SUCCESS;
+			break;
+		default:
+			ASSERT(0);
+	}
 
 	switch (job->operation) {
 		case DML_OP_MEM_MOVE:
@@ -156,10 +177,15 @@ data_mover_dml_operation_check(void *data,
 	dml_job_t *job = (dml_job_t *)data;
 
 	dml_status_t status = dml_check_job(job);
-	ASSERTne(status, DML_STATUS_JOB_CORRUPTED);
-
-	return (status == DML_STATUS_OK) ?
-		FUTURE_STATE_COMPLETE : FUTURE_STATE_RUNNING;
+	switch (status) {
+		case DML_STATUS_BEING_PROCESSED:
+			return FUTURE_STATE_RUNNING;
+		case DML_STATUS_JOB_CORRUPTED:
+		case DML_STATUS_OK:
+			return FUTURE_STATE_COMPLETE;
+		default:
+			ASSERT(0);
+	}
 }
 
 /*
