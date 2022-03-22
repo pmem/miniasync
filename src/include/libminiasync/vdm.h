@@ -49,17 +49,23 @@ struct vdm_operation_data_memmove {
 	uint64_t flags;
 };
 
+/* sized so that sizeof(vdm_operation_data) is 64 */
+#define VDM_OPERATION_DATA_MAX_SIZE (40)
+
 struct vdm_operation {
-	enum vdm_operation_type type;
 	union {
 		struct vdm_operation_data_memcpy memcpy;
 		struct vdm_operation_data_memmove memmove;
+		uint8_t data[VDM_OPERATION_DATA_MAX_SIZE];
 	} data;
+	enum vdm_operation_type type;
+	uint32_t padding;
 };
 
 struct vdm_operation_data {
-	void *op;
+	void *data;
 	struct vdm *vdm;
+	struct vdm_operation operation;
 };
 
 struct vdm_operation_output_memcpy {
@@ -82,10 +88,14 @@ FUTURE(vdm_operation_future,
 	struct vdm_operation_data, struct vdm_operation_output);
 
 typedef void *(*vdm_operation_new)
-	(struct vdm *vdm, const struct vdm_operation *operation);
-typedef int (*vdm_operation_start)(void *op, struct future_notifier *n);
-typedef enum future_state (*vdm_operation_check)(void *op);
-typedef void (*vdm_operation_delete)(void *op,
+	(struct vdm *vdm, const enum vdm_operation_type type);
+typedef int (*vdm_operation_start)(void *data,
+	const struct vdm_operation *operation,
+	struct future_notifier *n);
+typedef enum future_state (*vdm_operation_check)(void *data,
+	const struct vdm_operation *operation);
+typedef void (*vdm_operation_delete)(void *data,
+	const struct vdm_operation *operation,
 	struct vdm_operation_output *output);
 
 struct vdm {
@@ -108,23 +118,23 @@ void vdm_synchronous_delete(struct vdm *vdm);
 static inline enum future_state
 vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 {
-	struct vdm_operation_data *data =
+	struct vdm_operation_data *fdata =
 		(struct vdm_operation_data *)future_context_get_data(context);
-	struct vdm *vdm = data->vdm;
+	struct vdm *vdm = fdata->vdm;
 
 	if (context->state == FUTURE_STATE_IDLE) {
-		if (vdm->op_start(data->op, n) != 0) {
+		if (vdm->op_start(fdata->data, &fdata->operation, n) != 0) {
 			return FUTURE_STATE_IDLE;
 		}
 	}
 
-	enum future_state state = vdm->op_check(data->op);
+	enum future_state state = vdm->op_check(fdata->data, &fdata->operation);
 
 	if (state == FUTURE_STATE_COMPLETE) {
 		struct vdm_operation_output *output =
 			(struct vdm_operation_output *)
 				future_context_get_output(context);
-		vdm->op_delete(data->op, output);
+		vdm->op_delete(fdata->data, &fdata->operation, output);
 		/* variable data is no longer valid! */
 	}
 
@@ -138,15 +148,16 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 static inline struct vdm_operation_future
 vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_operation op;
-	op.type = VDM_OPERATION_MEMCPY;
-	op.data.memcpy.dest = dest;
-	op.data.memcpy.flags = flags;
-	op.data.memcpy.n = n;
-	op.data.memcpy.src = src;
-
-	struct vdm_operation_future future = {0};
-	future.data.op = vdm->op_new(vdm, &op);
+	struct vdm_operation_future future = {.data.operation = {
+		.type = VDM_OPERATION_MEMCPY,
+		.data = {
+			.memcpy.dest = dest,
+			.memcpy.flags = flags,
+			.memcpy.n = n,
+			.memcpy.src = src,
+		}
+	}};
+	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMCPY);
 	future.data.vdm = vdm;
 	FUTURE_INIT(&future, vdm_operation_impl);
 
@@ -160,15 +171,17 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 static inline struct vdm_operation_future
 vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_operation op;
-	op.type = VDM_OPERATION_MEMMOVE;
-	op.data.memmove.dest = dest;
-	op.data.memmove.flags = flags;
-	op.data.memmove.n = n;
-	op.data.memmove.src = src;
+	struct vdm_operation_future future = {.data.operation = {
+		.type = VDM_OPERATION_MEMMOVE,
+		.data = {
+			.memcpy.dest = dest,
+			.memcpy.flags = flags,
+			.memcpy.n = n,
+			.memcpy.src = src,
+		}
+	}};
 
-	struct vdm_operation_future future = {0};
-	future.data.op = vdm->op_new(vdm, &op);
+	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMMOVE);
 	future.data.vdm = vdm;
 	FUTURE_INIT(&future, vdm_operation_impl);
 
