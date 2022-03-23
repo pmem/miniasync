@@ -10,7 +10,8 @@
  * Test if future created by vdm_memcpy and instance of a mover is
  * safe to poll with simple future_poll without any notifier
  */
-int test_vdm_future_poll(struct vdm *vdm, size_t n)
+int
+test_vdm_future_poll(struct vdm *vdm, size_t n)
 {
 	char *src = malloc(n);
 	char *dst = malloc(n);
@@ -33,24 +34,21 @@ main(void)
 	struct data_mover_sync *dms = data_mover_sync_new();
 	ret = test_vdm_future_poll(data_mover_sync_get_vdm(dms), size);
 	data_mover_sync_delete(dms);
-	if(ret != 0)
-	{
+	if (ret != 0) {
 		return ret;
 	}
 
 	struct data_mover_threads *dmt = data_mover_threads_default();
 	ret = test_vdm_future_poll(data_mover_threads_get_vdm(dmt), size);
 	data_mover_threads_delete(dmt);
-	if(ret != 0)
-	{
+	if (ret != 0) {
 		return ret;
 	}
 
 	struct data_mover_dml *dmd = data_mover_dml_new(DATA_MOVER_DML_AUTO);
 	ret = test_vdm_future_poll(data_mover_dml_get_vdm(dmd), size);
 	data_mover_dml_delete(dmd);
-	if(ret != 0)
-	{
+	if (ret != 0) {
 		return ret;
 	}
 
