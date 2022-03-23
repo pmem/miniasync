@@ -68,6 +68,9 @@ strdup_map_copy_to_output(struct future_context *lhs,
 	struct future_context *rhs, void *arg)
 {
 	struct vdm_operation_data *copy = future_context_get_data(lhs);
+	struct vdm_operation_output *copy_output =
+		future_context_get_output(lhs);
+	UT_ASSERTeq(copy_output->result, VDM_SUCCESS);
 	struct strdup_output *strdup = future_context_get_output(rhs);
 	strdup->ptr = copy->operation.data.memcpy.dest;
 	strdup->length = copy->operation.data.memcpy.n;
@@ -133,6 +136,37 @@ test_strdup_fut(struct strdup_fut fut)
 	free(output->ptr);
 }
 
+void
+test_too_many_ops(struct vdm *vdm)
+{
+	struct vdm_operation_future first_op;
+	int assigned = 0;
+
+	enum future_state state;
+	char dest = 0;
+	char src = 1;
+	do {
+		struct vdm_operation_future f =
+			vdm_memcpy(vdm, &dest, &src, 1, 0);
+		if (!assigned) {
+			assigned = 1;
+			first_op = f;
+		}
+		state = FUTURE_STATE(&f);
+		if (state == FUTURE_STATE_COMPLETE) {
+			struct vdm_operation_output *output = FUTURE_OUTPUT(&f);
+			UT_ASSERTeq(output->result, VDM_ERROR_OUT_OF_MEMORY);
+		}
+	} while (state != FUTURE_STATE_COMPLETE);
+	FUTURE_BUSY_POLL(&first_op);
+	UT_ASSERTeq(dest, src);
+
+	struct vdm_operation_future f = vdm_memcpy(vdm, &dest, &src, 1, 0);
+	UT_ASSERTeq(FUTURE_STATE(&f), FUTURE_STATE_IDLE);
+	FUTURE_BUSY_POLL(&f);
+	UT_ASSERTeq(FUTURE_OUTPUT(&f)->result, VDM_SUCCESS);
+}
+
 int
 main(void)
 {
@@ -143,6 +177,7 @@ main(void)
 
 	test_strdup_fut(async_strdup(vdm, hello_world));
 	test_strdup_fut(async_lazy_strdup(vdm, hello_world));
+	test_too_many_ops(vdm);
 
 	data_mover_sync_delete(sync);
 

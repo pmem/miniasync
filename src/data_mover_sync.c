@@ -65,6 +65,8 @@ static void
 sync_operation_delete(void *data, const struct vdm_operation *operation,
 	struct vdm_operation_output *output)
 {
+	output->result = VDM_SUCCESS;
+
 	switch (operation->type) {
 		case VDM_OPERATION_MEMCPY:
 			output->type = VDM_OPERATION_MEMCPY;
