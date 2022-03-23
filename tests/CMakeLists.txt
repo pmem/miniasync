@@ -41,6 +41,10 @@ set(SOURCES_MEMMOVE_SYNC_TEST
 set(SOURCES_VDM_TEST
 	vdm/test_vdm.c)
 
+set(SOURCES_VDM_OPERATION_FUTURE_POLL
+	vdm_operation_future_poll/vdm_operation_future_poll.c
+	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+
 add_custom_target(tests)
 
 add_flag(-Wall)
@@ -112,5 +116,10 @@ if (COMPILE_DML)
 			"${SOURCES_DATA_MOVER_DML_TEST}"
 			"${LIBS_DML}")
 
+	add_link_executable(vdm_operation_future_poll
+			"${SOURCES_VDM_OPERATION_FUTURE_POLL}"
+			"${LIBS_DML}")
+
 	test("data_mover_dml" "data_mover_dml" test_data_mover_dml none)
+	test("vdm_operation_future_poll" "vdm_operation_future_poll" test_vdm_operation_future_poll none)
 endif()
