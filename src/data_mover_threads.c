@@ -10,8 +10,6 @@
 #include <string.h>
 #include "core/membuf.h"
 #include "core/out.h"
-#include "libminiasync/future.h"
-#include "libminiasync/vdm.h"
 #include "libminiasync/data_mover_threads.h"
 #include "core/util.h"
 #include "core/os_thread.h"

@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libminiasync.h"
-#include "test_helpers.h"
 
 /*
  * test_basic_memmove -- tests memmove vdm operation

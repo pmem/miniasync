@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libminiasync.h>
 
 #define TEST_MAX_COUNT 10
 #define FAKE_NOTIFIER ((void *)((uintptr_t)(0xDEADBEEF)))
