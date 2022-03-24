@@ -3,12 +3,10 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <libminiasync.h>
 #include <libminiasync-vdm-dml.h>
-#include "libminiasync-vdm-dml/data_mover_dml.h"
 #include "util_dml.h"
 
 static int

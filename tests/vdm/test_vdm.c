@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2022, Intel Corporation */
 
-#include "libminiasync/future.h"
-#include "libminiasync/vdm.h"
 #include "test_helpers.h"
 #include <stdio.h>
 #include <stdlib.h>

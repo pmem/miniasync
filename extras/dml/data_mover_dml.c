@@ -7,11 +7,9 @@
 #include <stdlib.h>
 
 #include "core/membuf.h"
-#include "libminiasync-vdm-dml.h"
 #include "core/out.h"
 #include "core/util.h"
-#include "libminiasync/future.h"
-#include "libminiasync/vdm.h"
+#include "libminiasync-vdm-dml.h"
 
 struct data_mover_dml {
 	struct vdm base; /* must be first */

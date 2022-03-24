@@ -12,8 +12,6 @@
 #include <string.h>
 
 #include "libminiasync.h"
-#include "libminiasync/data_mover_threads.h"
-#include "libminiasync/vdm.h"
 
 /* Definitions of futures, their data and output structs */
 

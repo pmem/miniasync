@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libminiasync.h"
-#include "libminiasync/data_mover_threads.h"
-#include "libminiasync/vdm.h"
 
 #define TEST_SIZE 1024
 
