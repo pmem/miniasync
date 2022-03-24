@@ -20,6 +20,7 @@
 
 struct data_mover_threads_op_fns {
 	memcpy_fn op_memcpy;
+	memmove_fn op_memmove;
 };
 
 struct data_mover_threads {
@@ -49,14 +50,27 @@ void *std_memcpy(void *dst, const void *src, size_t n, unsigned flags) {
 	return memcpy(dst, src, n);
 }
 
-static struct data_mover_threads_op_fns op_fns_default = {
-	.op_memcpy = std_memcpy
-};
-
 void data_mover_threads_set_memcpy_fn(struct data_mover_threads *dmt,
 				memcpy_fn op_memcpy) {
 	dmt->op_fns.op_memcpy = op_memcpy;
 }
+
+/*
+ * Standard implementation of memmove used if none was specified by the user.
+ */
+void *std_memmove(void *dst, const void *src, size_t n, unsigned flags) {
+	return memmove(dst, src, n);
+}
+
+void data_mover_threads_set_memmove_fn(struct data_mover_threads *dmt,
+				memmove_fn op_memmove) {
+	dmt->op_fns.op_memmove = op_memmove;
+}
+
+static struct data_mover_threads_op_fns op_fns_default = {
+	.op_memcpy = std_memcpy,
+	.op_memmove = std_memmove
+};
 
 /*
  * data_mover_threads_do_operation -- implementation of the various
@@ -72,6 +86,13 @@ data_mover_threads_do_operation(struct data_mover_threads_data *data,
 				= &data->op.data.memcpy;
 			memcpy_fn op_memcpy = dmt->op_fns.op_memcpy;
 			op_memcpy(mdata->dest,
+				mdata->src, mdata->n, (unsigned)mdata->flags);
+		} break;
+		case VDM_OPERATION_MEMMOVE: {
+			struct vdm_operation_data_memmove *mdata
+				= &data->op.data.memmove;
+			memmove_fn op_memmove = dmt->op_fns.op_memmove;
+			op_memmove(mdata->dest,
 				mdata->src, mdata->n, (unsigned)mdata->flags);
 		} break;
 		default:
@@ -175,6 +196,11 @@ data_mover_threads_operation_delete(void *data,
 			output->type = VDM_OPERATION_MEMCPY;
 			output->output.memcpy.dest =
 				operation->data.memcpy.dest;
+			break;
+		case VDM_OPERATION_MEMMOVE:
+			output->type = VDM_OPERATION_MEMMOVE;
+			output->output.memmove.dest =
+				operation->data.memmove.dest;
 			break;
 		default:
 			ASSERT(0);
