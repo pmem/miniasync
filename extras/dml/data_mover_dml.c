@@ -193,7 +193,9 @@ int
 data_mover_dml_operation_start(void *data,
 	const struct vdm_operation *operation, struct future_notifier *n)
 {
-	n->notifier_used = FUTURE_NOTIFIER_NONE;
+	if (n) {
+		n->notifier_used = FUTURE_NOTIFIER_NONE;
+	}
 
 	dml_job_t *job = (dml_job_t *)data;
 	data_mover_dml_memcpy_job_init(job,
