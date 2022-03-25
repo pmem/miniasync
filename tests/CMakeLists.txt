@@ -101,8 +101,8 @@ add_link_executable(memset_sync
 		"${SOURCES_MEMSET_SYNC_TEST}"
 		"${LIBS_BASIC}")
 
-add_link_executable(memset_sync
-		"${SOURCES_MEMSET_SYNC_TEST}"
+add_link_executable(memmove_threads
+		"${SOURCES_MEMMOVE_PTHREADS_TEST}"
 		"${LIBS_BASIC}")
 
 # add test using test function defined in the ctest_helpers.cmake file
