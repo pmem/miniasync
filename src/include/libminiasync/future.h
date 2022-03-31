@@ -149,6 +149,7 @@ do {\
 	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
+	(_futurep)->base.context.padding = 0;\
 } while (0)
 
 #define FUTURE_INIT_COMPLETE(_futurep)\
@@ -158,6 +159,7 @@ do {\
 	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
+	(_futurep)->base.context.padding = 0;\
 } while (0)
 
 #define FUTURE_AS_RUNNABLE(futurep) (&(futurep)->base)

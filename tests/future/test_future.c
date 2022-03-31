@@ -44,7 +44,7 @@ countup_task(struct future_context *context,
 struct countup_fut
 async_countup(int max_count)
 {
-	struct countup_fut fut = {0};
+	struct countup_fut fut = {.output.result = 0};
 	FUTURE_INIT(&fut, countup_task);
 	fut.data.counter = 0;
 	fut.data.max_count = max_count;
@@ -119,7 +119,7 @@ countdown_task(struct future_context *context,
 struct countdown_fut
 async_countdown(int count)
 {
-	struct countdown_fut fut = {0};
+	struct countdown_fut fut = {.output.result = 0};
 	FUTURE_INIT(&fut, countdown_task);
 	fut.data.counter = count;
 	fut.output.result = 0;
@@ -169,7 +169,7 @@ down_to_result_map(struct future_context *lhs, struct future_context *rhs,
 struct up_down_fut
 async_up_down(int count)
 {
-	struct up_down_fut fut = {0};
+	struct up_down_fut fut = {.output.result_sum = 0};
 	FUTURE_CHAIN_ENTRY_INIT(&fut.data.up, async_countup(count),
 		up_to_down_map, FAKE_MAP_ARG);
 	FUTURE_CHAIN_ENTRY_INIT(&fut.data.down, async_countdown(0),
@@ -209,7 +209,7 @@ FUTURE(multiply_fut, struct multiply_data, struct multiply_output);
 struct multiply_fut
 async_multiply(int a, int b)
 {
-	struct multiply_fut fut = {0};
+	struct multiply_fut fut;
 	FUTURE_INIT_COMPLETE(&fut);
 	fut.data.a = a;
 	fut.data.b = b;
@@ -271,7 +271,7 @@ up_down_to_output(struct future_context *lhs,
 struct multiply_up_down_fut
 async_multiply_up_down(int count, int num)
 {
-	struct multiply_up_down_fut fut = {0};
+	struct multiply_up_down_fut fut = {.output.result_sum = 0};
 	fut.data.count = count;
 	fut.data.num = num;
 	FUTURE_CHAIN_ENTRY_LAZY_INIT(&fut.data.mul,
