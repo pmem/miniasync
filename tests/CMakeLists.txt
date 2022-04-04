@@ -51,6 +51,9 @@ set(SOURCES_VDM_OPERATION_FUTURE_POLL
 set(SOURCES_MEMMOVE_PTHREADS_TEST
 	memmove_threads/memmove_threads.c)
 
+set(SOURCES_MEMSET_PTHREADS_TEST
+	memset_threads/memset_threads.c)
+
 add_custom_target(tests)
 
 add_flag(-Wall)
@@ -107,6 +110,10 @@ add_link_executable(memmove_threads
 		"${SOURCES_MEMMOVE_PTHREADS_TEST}"
 		"${LIBS_BASIC}")
 
+add_link_executable(memset_threads
+		"${SOURCES_MEMSET_PTHREADS_TEST}"
+		"${LIBS_BASIC}")
+
 # add test using test function defined in the ctest_helpers.cmake file
 test("dummy" "dummy" test_dummy none)
 test("dummy_drd" "dummy" test_dummy drd)
@@ -121,6 +128,7 @@ test("memmove_sync" "memmove_sync" test_memmove_sync none)
 test("vdm" "vdm" test_vdm none)
 test("memset_sync" "memset_sync" test_memset_sync none)
 test("memmove_threads" "memmove_threads" test_memmove_threads none)
+test("memset_threads" "memset_threads" test_memset_threads none)
 
 # add tests running examples only if they are built
 if(BUILD_EXAMPLES)

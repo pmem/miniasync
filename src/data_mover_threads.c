@@ -21,6 +21,7 @@
 struct data_mover_threads_op_fns {
 	memcpy_fn op_memcpy;
 	memmove_fn op_memmove;
+	memset_fn op_memset;
 };
 
 struct data_mover_threads {
@@ -67,9 +68,22 @@ void data_mover_threads_set_memmove_fn(struct data_mover_threads *dmt,
 	dmt->op_fns.op_memmove = op_memmove;
 }
 
+/*
+ * Standard implementation of memset used if none was specified by the user.
+ */
+void *std_memset(void *str, int c, size_t n, unsigned flags) {
+	return memset(str, c, n);
+}
+
+void data_mover_threads_set_memset_fn(struct data_mover_threads *dmt,
+				memset_fn op_memset) {
+	dmt->op_fns.op_memset = op_memset;
+}
+
 static struct data_mover_threads_op_fns op_fns_default = {
 	.op_memcpy = std_memcpy,
-	.op_memmove = std_memmove
+	.op_memmove = std_memmove,
+	.op_memset = std_memset,
 };
 
 /*
@@ -94,6 +108,13 @@ data_mover_threads_do_operation(struct data_mover_threads_data *data,
 			memmove_fn op_memmove = dmt->op_fns.op_memmove;
 			op_memmove(mdata->dest,
 				mdata->src, mdata->n, (unsigned)mdata->flags);
+		} break;
+		case VDM_OPERATION_MEMSET: {
+			struct vdm_operation_data_memset *mdata
+				= &data->op.data.memset;
+			memset_fn op_memset = dmt->op_fns.op_memset;
+			op_memset(mdata->str,
+				mdata->c, mdata->n, (unsigned)mdata->flags);
 		} break;
 		default:
 			ASSERT(0); /* unreachable */
@@ -201,6 +222,11 @@ data_mover_threads_operation_delete(void *data,
 			output->type = VDM_OPERATION_MEMMOVE;
 			output->output.memmove.dest =
 				operation->data.memmove.dest;
+			break;
+		case VDM_OPERATION_MEMSET:
+			output->type = VDM_OPERATION_MEMSET;
+			output->output.memset.str =
+				operation->data.memset.str;
 			break;
 		default:
 			ASSERT(0);
