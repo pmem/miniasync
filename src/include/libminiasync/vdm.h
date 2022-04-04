@@ -152,20 +152,18 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
  * vdm_generic_operation -- creates a new vdm future for a given generic
  * operation
  */
-static inline struct vdm_operation_future
-vdm_generic_operation(struct vdm *vdm, struct vdm_operation *op)
+static inline void
+vdm_generic_operation(struct vdm *vdm, struct vdm_operation_future *future)
 {
-	struct vdm_operation_future future = {0};
-	future.data.vdm = vdm;
-	future.data.operation = *op;
-	if ((future.data.data = vdm->op_new(vdm, op->type)) == NULL) {
-		future.output.result = VDM_ERROR_OUT_OF_MEMORY;
-		FUTURE_INIT_COMPLETE(&future);
+	future->data.vdm = vdm;
+	if ((future->data.data =
+			vdm->op_new(vdm, future->data.operation.type))
+			== NULL) {
+		future->output.result = VDM_ERROR_OUT_OF_MEMORY;
+		FUTURE_INIT_COMPLETE(future);
 	} else {
-		FUTURE_INIT(&future, vdm_operation_impl);
+		FUTURE_INIT(future, vdm_operation_impl);
 	}
-
-	return future;
 }
 
 /*
@@ -175,16 +173,18 @@ vdm_generic_operation(struct vdm *vdm, struct vdm_operation *op)
 static inline struct vdm_operation_future
 vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_operation_future future = {.data.operation = {
-		.type = VDM_OPERATION_MEMCPY,
-		.data = {
-			.memcpy.dest = dest,
-			.memcpy.flags = flags,
-			.memcpy.n = n,
-			.memcpy.src = src,
-		}
-	}};
-	return vdm_generic_operation(vdm, &future.data.operation);
+	struct vdm_operation_future future;
+	future.data.operation.type = VDM_OPERATION_MEMCPY;
+	future.data.operation.data.memcpy.dest = dest;
+	future.data.operation.data.memcpy.flags = flags;
+	future.data.operation.data.memcpy.n = n;
+	future.data.operation.data.memcpy.src = src;
+	future.output.type = VDM_OPERATION_MEMCPY;
+	future.output.result = VDM_SUCCESS;
+	future.output.output.memcpy.dest = NULL;
+
+	vdm_generic_operation(vdm, &future);
+	return future;
 }
 
 /*
@@ -194,16 +194,17 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 static inline struct vdm_operation_future
 vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 {
-	struct vdm_operation_future future = {.data.operation = {
-		.type = VDM_OPERATION_MEMMOVE,
-		.data = {
-			.memcpy.dest = dest,
-			.memcpy.flags = flags,
-			.memcpy.n = n,
-			.memcpy.src = src,
-		}
-	}};
-	return vdm_generic_operation(vdm, &future.data.operation);
+	struct vdm_operation_future future;
+	future.data.operation.type = VDM_OPERATION_MEMMOVE;
+	future.data.operation.data.memmove.dest = dest;
+	future.data.operation.data.memmove.flags = flags;
+	future.data.operation.data.memmove.n = n;
+	future.data.operation.data.memmove.src = src;
+	future.output.type = VDM_OPERATION_MEMMOVE;
+	future.output.result = VDM_SUCCESS;
+	future.output.output.memmove.dest = NULL;
+	vdm_generic_operation(vdm, &future);
+	return future;
 }
 
 #ifdef __cplusplus

@@ -32,7 +32,7 @@ alloc_impl(struct future_context *context, struct future_notifier *notifier)
 struct alloc_fut
 async_alloc(size_t size)
 {
-	struct alloc_fut fut = {0};
+	struct alloc_fut fut = {.output.ptr = NULL};
 	fut.data.n = size;
 	FUTURE_INIT(&fut, alloc_impl);
 	return fut;
@@ -77,7 +77,7 @@ strdup_map_copy_to_output(struct future_context *lhs,
 struct strdup_fut
 async_strdup(struct vdm *vdm, char *s)
 {
-	struct strdup_fut fut = {0};
+	struct strdup_fut fut = {.output = {.length = 0, .ptr = NULL}};
 
 	size_t len = strlen(s) + 1;
 	FUTURE_CHAIN_ENTRY_INIT(&fut.data.alloc, async_alloc(len),
@@ -106,7 +106,7 @@ strdup_init(void *future, struct future_context *chain_fut, void *arg)
 struct strdup_fut
 async_lazy_strdup(struct vdm *vdm, char *s)
 {
-	struct strdup_fut fut = {0};
+	struct strdup_fut fut = {.output = {.length = 0, .ptr = NULL}};
 	fut.data.src = s;
 	fut.data.length = strlen(s) + 1;
 
