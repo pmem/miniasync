@@ -13,6 +13,7 @@ test_thread_memset_single(size_t str_len)
 {
 	int ret = 0;
 	unsigned seed = (unsigned)time(NULL);
+	fprintf(stdout, "seed: %u\n", seed);
 	struct runtime *r = runtime_new();
 	struct data_mover_threads *dmt = data_mover_threads_default();
 
@@ -54,6 +55,7 @@ test_thread_memset_multiple(size_t str_len)
 {
 	int ret = 0;
 	unsigned seed = (unsigned)time(NULL);
+	fprintf(stdout, "seed: %u\n", seed);
 	struct runtime *r = runtime_new();
 	struct data_mover_threads *dmt = data_mover_threads_default();
 

@@ -243,30 +243,6 @@ vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
 	return future;
 }
 
-/*
- * vdm_memset -- instantiates a new memset vdm operation and returns a new
- * future to represent that operation
- */
-static inline struct vdm_operation_future
-vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
-{
-	struct vdm_operation_future future = {.data.operation = {
-		.type = VDM_OPERATION_MEMSET,
-		.data = {
-			.memset.str = str,
-			.memset.flags = flags,
-			.memset.n = n,
-			.memset.c = c,
-		}
-	}};
-
-	future.data.data = vdm->op_new(vdm, VDM_OPERATION_MEMSET);
-	future.data.vdm = vdm;
-	FUTURE_INIT(&future, vdm_operation_impl);
-
-	return future;
-}
-
 #ifdef __cplusplus
 }
 #endif
