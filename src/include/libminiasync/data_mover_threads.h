@@ -12,6 +12,8 @@ extern "C" {
 
 typedef void *(*memcpy_fn)(void *dst, const void *src,
 				size_t n, unsigned flags);
+typedef void *(*memmove_fn)(void *dst, const void *src,
+				size_t n, unsigned flags);
 
 struct data_mover_threads;
 struct data_mover_threads *data_mover_threads_new(size_t nthreads,
@@ -21,6 +23,8 @@ struct vdm *data_mover_threads_get_vdm(struct data_mover_threads *dmt);
 void data_mover_threads_delete(struct data_mover_threads *dmt);
 void data_mover_threads_set_memcpy_fn(struct data_mover_threads *dmt,
 	memcpy_fn op_memcpy);
+void data_mover_threads_set_memmove_fn(struct data_mover_threads *dmt,
+	memmove_fn op_memmove);
 
 #ifdef __cplusplus
 }
