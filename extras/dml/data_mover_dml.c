@@ -11,6 +11,8 @@
 #include "core/util.h"
 #include "libminiasync-vdm-dml.h"
 
+#define SUPPORTED_FLAGS VDM_F_MEM_DURABLE
+
 struct data_mover_dml {
 	struct vdm base; /* must be first */
 	dml_path_t path;
@@ -23,7 +25,7 @@ struct data_mover_dml {
 static void
 data_mover_dml_translate_flags(uint64_t flags, uint64_t *dml_flags)
 {
-	ASSERTeq((flags & ~MINIASYNC_DML_F_VALID_FLAGS), 0);
+	ASSERTeq((flags & ~VDM_F_VALID_FLAGS), 0);
 
 	*dml_flags = 0;
 	for (uint64_t iflag = 1; flags > 0; iflag = iflag << 1) {
@@ -35,7 +37,7 @@ data_mover_dml_translate_flags(uint64_t flags, uint64_t *dml_flags)
 			 * write to destination is identified as write to
 			 * durable memory
 			 */
-			case MINIASYNC_DML_F_MEM_DURABLE:
+			case VDM_F_MEM_DURABLE:
 				*dml_flags |= DML_FLAG_DST1_DURABLE;
 				break;
 			default: /* shouldn't be possible */
@@ -217,6 +219,7 @@ static struct vdm data_mover_dml_vdm = {
 	.op_delete = data_mover_dml_operation_delete,
 	.op_check = data_mover_dml_operation_check,
 	.op_start = data_mover_dml_operation_start,
+	.capabilities = SUPPORTED_FLAGS,
 };
 
 /*
