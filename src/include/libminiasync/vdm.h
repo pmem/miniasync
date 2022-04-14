@@ -124,6 +124,7 @@ struct vdm {
 	vdm_operation_delete op_delete;
 	vdm_operation_start op_start;
 	vdm_operation_check op_check;
+	unsigned capabilities;
 };
 
 struct vdm *vdm_synchronous_new(void);
@@ -160,6 +161,19 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 	}
 
 	return state;
+}
+
+#define VDM_F_MEM_DURABLE		(1U << 0)
+#define VDM_F_VDM_NO_CACHE_HINT		(1U << 1)
+#define VDM_F_VALID_FLAGS	(VDM_F_MEM_DURABLE | VDM_F_VDM_NO_CACHE_HINT)
+
+/*
+ * vdm_is_flag_supported -- returns if the given flag or feature is supported
+ */
+static inline int
+vdm_is_supported(struct vdm *vdm, unsigned capability)
+{
+	return (vdm->capabilities && capability) == capability;
 }
 
 /*
