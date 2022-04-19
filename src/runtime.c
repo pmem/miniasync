@@ -6,7 +6,7 @@
 #include "libminiasync/runtime.h"
 #include "core/os_thread.h"
 #include "core/os.h"
-#include <emmintrin.h>
+#include "core/util.h"
 
 struct runtime_waker_data {
 	os_cond_t *cond;
@@ -107,7 +107,7 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 			if (ndone == nfuts)
 				return;
 
-			_mm_pause();
+			WAIT();
 		}
 		runtime_sleep(runtime);
 	}
