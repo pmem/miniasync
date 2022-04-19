@@ -4,9 +4,14 @@
 #include <stdlib.h>
 
 #include "libminiasync/runtime.h"
+#include "core/cpu.h"
 #include "core/os_thread.h"
 #include "core/os.h"
+
+#if defined(__x86_64__) || defined(__amd64__) || defined(_M_X64) \
+    || defined(_M_AMD64)
 #include <emmintrin.h>
+#endif
 
 struct runtime_waker_data {
 	os_cond_t *cond;
@@ -107,7 +112,7 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 			if (ndone == nfuts)
 				return;
 
-			_mm_pause();
+			PAUSE();
 		}
 		runtime_sleep(runtime);
 	}
