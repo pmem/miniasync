@@ -63,7 +63,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "core/util.h"
+
+#if defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)	\
+  || defined(_M_AMD64)
 #include <emmintrin.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -261,7 +266,7 @@ future_poll(struct future *fut, struct future_notifier *notifier)
 
 #define FUTURE_BUSY_POLL(_futurep)\
 while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
-	FUTURE_STATE_COMPLETE) { _mm_pause(); }
+	FUTURE_STATE_COMPLETE) { WAIT(); }
 
 static inline enum future_state
 async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
