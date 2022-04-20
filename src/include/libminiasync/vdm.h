@@ -193,6 +193,7 @@ vdm_memcpy(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.data.operation.data.memcpy.flags = flags;
 	future.data.operation.data.memcpy.n = n;
 	future.data.operation.data.memcpy.src = src;
+	future.data.operation.padding = 0;
 	future.output.type = VDM_OPERATION_MEMCPY;
 	future.output.result = VDM_SUCCESS;
 	future.output.output.memcpy.dest = NULL;
@@ -214,6 +215,7 @@ vdm_memmove(struct vdm *vdm, void *dest, void *src, size_t n, uint64_t flags)
 	future.data.operation.data.memmove.flags = flags;
 	future.data.operation.data.memmove.n = n;
 	future.data.operation.data.memmove.src = src;
+	future.data.operation.padding = 0;
 	future.output.type = VDM_OPERATION_MEMMOVE;
 	future.output.result = VDM_SUCCESS;
 	future.output.output.memmove.dest = NULL;
@@ -235,6 +237,7 @@ vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
 	future.data.operation.data.memset.flags = flags;
 	future.data.operation.data.memset.n = n;
 	future.data.operation.data.memset.c = c;
+	future.data.operation.padding = 0;
 	future.output.type = VDM_OPERATION_MEMSET;
 	future.output.result = VDM_SUCCESS;
 	future.output.output.memset.str = NULL;
