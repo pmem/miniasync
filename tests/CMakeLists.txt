@@ -28,8 +28,12 @@ set(SOURCES_FUTURE_TEST
 set(SOURCES_MEMCPY_PTHREADS_TEST
 	memcpy_threads/memcpy_threads.c)
 
-set(SOURCES_DATA_MOVER_DML_TEST
-	data_mover_dml/data_mover_dml.c
+set(SOURCES_DATA_MOVER_DML_TEST_MEMCPY
+	data_mover_dml_memcpy/data_mover_dml_memcpy.c
+	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+
+set(SOURCES_DATA_MOVER_DML_TEST_MEMMOVE
+	data_mover_dml_memmove/data_mover_dml_memmove.c
 	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
 
 set(SOURCES_MEMBUF_TEST
@@ -136,14 +140,19 @@ endif()
 
 # add miniasync-vdm-dml test only if the sources in extras/dml were compiled
 if (COMPILE_DML)
-	add_link_executable(data_mover_dml
-			"${SOURCES_DATA_MOVER_DML_TEST}"
+	add_link_executable(data_mover_dml_memcpy
+			"${SOURCES_DATA_MOVER_DML_TEST_MEMCPY}"
+			"${LIBS_DML}")
+
+	add_link_executable(data_mover_dml_memmove
+			"${SOURCES_DATA_MOVER_DML_TEST_MEMMOVE}"
 			"${LIBS_DML}")
 
 	add_link_executable(vdm_operation_future_poll
 			"${SOURCES_VDM_OPERATION_FUTURE_POLL}"
 			"${LIBS_DML}")
 
-	test("data_mover_dml" "data_mover_dml" test_data_mover_dml none)
+	test("data_mover_dml_memcpy" "data_mover_dml_memcpy" test_data_mover_dml_memcpy none)
+	test("data_mover_dml_memmove" "data_mover_dml_memmove" test_data_mover_dml_memmove none)
 	test("vdm_operation_future_poll" "vdm_operation_future_poll" test_vdm_operation_future_poll none)
 endif()
