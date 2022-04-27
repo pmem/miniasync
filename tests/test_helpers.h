@@ -46,7 +46,6 @@
 		(unsigned long long)(min), (unsigned long long)(max));\
 } while (/*CONSTCOND*/0)
 
-
 static inline int
 test_flag(struct vdm *vdm, unsigned flag, int expected_value)
 {
