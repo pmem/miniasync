@@ -54,7 +54,7 @@ test_flag(struct vdm *vdm, unsigned flag, int expected_value)
 	if (ret) {
 		fprintf(stderr,
 			"vdm_is_flag_supported(%u) returned: %u, when expected: %u\n",
-			flag, ret, expected_value );
+			flag, ret, expected_value);
 	}
 	return ret;
 }
