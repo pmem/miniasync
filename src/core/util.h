@@ -578,7 +578,7 @@ static
 #define SUPPRESS_ARG_9(X, ...) SUPPRESS_ARG_1(X); SUPPRESS_ARG_8(__VA_ARGS__)
 
 #if defined(__x86_64__) || defined(__amd64__) || defined(_M_X64) || \
-	defined(_M_AMD64)
+	defined(_M_AMD64) || !defined(_MSC_VER)
 
 #include <emmintrin.h>
 #define WAIT() _mm_pause()
