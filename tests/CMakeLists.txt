@@ -36,6 +36,10 @@ set(SOURCES_DATA_MOVER_DML_TEST_MEMMOVE
 	data_mover_dml_memmove/data_mover_dml_memmove.c
 	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
 
+set(SOURCES_DATA_MOVER_DML_TEST_MEMSET
+	data_mover_dml_memset/data_mover_dml_memset.c
+	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+
 set(SOURCES_MEMBUF_TEST
 	membuf/membuf_simple.c)
 
@@ -150,11 +154,16 @@ if (COMPILE_DML)
 			"${SOURCES_DATA_MOVER_DML_TEST_MEMMOVE}"
 			"${LIBS_DML}")
 
+	add_link_executable(data_mover_dml_memset
+			"${SOURCES_DATA_MOVER_DML_TEST_MEMSET}"
+			"${LIBS_DML}")
+
 	add_link_executable(vdm_operation_future_poll
 			"${SOURCES_VDM_OPERATION_FUTURE_POLL}"
 			"${LIBS_DML}")
 
 	test("data_mover_dml_memcpy" "data_mover_dml_memcpy" test_data_mover_dml_memcpy none)
 	test("data_mover_dml_memmove" "data_mover_dml_memmove" test_data_mover_dml_memmove none)
+	test("data_mover_dml_memset" "data_mover_dml_memset" test_data_mover_dml_memset none)
 	test("vdm_operation_future_poll" "vdm_operation_future_poll" test_vdm_operation_future_poll none)
 endif()

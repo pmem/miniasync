@@ -92,6 +92,30 @@ data_mover_dml_memmove_job_init(dml_job_t *dml_job,
 }
 
 /*
+ * data_mover_dml_memset_job_init -- initializes new memset dml job
+ */
+static dml_job_t *
+data_mover_dml_memset_job_init(dml_job_t *dml_job,
+	void *ptr, int value, size_t n, uint64_t flags)
+{
+	uint64_t dml_flags = 0;
+	data_mover_dml_translate_flags(flags, &dml_flags);
+
+	dml_job->operation = DML_OP_FILL;
+	dml_job->destination_first_ptr = (uint8_t *)ptr;
+	dml_job->destination_length = n;
+	dml_job->flags = dml_flags;
+
+	size_t ptrn_idx = 0;
+	while (value != 0) {
+		dml_job->pattern[ptrn_idx] = value & 0xff;
+		value = value >> 8;
+	}
+
+	return dml_job;
+}
+
+/*
  * data_mover_dml_job_delete -- delete job struct
  */
 static void
@@ -128,6 +152,7 @@ data_mover_dml_operation_new(struct vdm *vdm,
 	switch (type) {
 		case VDM_OPERATION_MEMCPY:
 		case VDM_OPERATION_MEMMOVE:
+		case VDM_OPERATION_MEMSET:
 			break;
 		default:
 			ASSERT(0); /* unreachable */
@@ -248,6 +273,13 @@ data_mover_dml_operation_start(void *data,
 					operation->data.memmove.flags);
 				data_mover_dml_memory_op_job_submit(job);
 			break;
+		case VDM_OPERATION_MEMSET:
+				data_mover_dml_memset_job_init(job,
+					operation->data.memset.str,
+					operation->data.memset.c,
+					operation->data.memset.n,
+					operation->data.memset.flags);
+				data_mover_dml_memory_op_job_submit(job);
 		default:
 			ASSERT(0);
 	}
