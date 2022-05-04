@@ -12,8 +12,8 @@ set(LIBS_BASIC
 
 set(LIBS_DML
 	miniasync-vdm-dml
-	dl
 	dml
+	dl
 	${LIBS_BASIC})
 
 set(SOURCES_DUMMY_TEST
