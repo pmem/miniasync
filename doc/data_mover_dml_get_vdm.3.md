@@ -46,6 +46,7 @@ structure *struct vdm* is needed by every **miniasync**(7) data mover operation.
 
 * **vdm_memcpy**(3) - memory copy operation
 * **vdm_memmove**(3) - memory move operation
+* **vdm_memset**(3) - memory set operation
 
 # RETURN VALUE #
 
@@ -53,5 +54,5 @@ The **data_mover_dml_get_vdm**() function returns a pointer to *struct vdm* stru
 
 # SEE ALSO #
 
-**vdm_memcpy**(3), **vdm_memmove**(3), **miniasync**(7),
-**miniasync_vdm_dml**(7) and **<https://pmem.io>**
+**vdm_memcpy**(3), **vdm_memmove**(3), **vdm_memset**(3),
+ **miniasync**(7), **miniasync_vdm_dml**(7) and **<https://pmem.io>**
