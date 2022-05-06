@@ -10,9 +10,13 @@ setup()
 # check for MOVDIR64B instruction
 check_movdir64b()
 
-# execute DML tests only if MOVDIR64B instruction is available
-if (MOVDIR64B EQUAL 1)
-	execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memcpy)
+# inform that some test cases involving 'mvodir64b' instruction will be skipped
+if (MOVDIR64B EQUAL 0)
+	message(STATUS "movdir64b instruction not available, some test cases will be skkipped!")
 endif()
+
+execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memcpy)
+
+execute_assert_pass(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memcpy)
 
 cleanup()
