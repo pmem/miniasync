@@ -12,9 +12,11 @@ set(LIBS_BASIC
 
 set(LIBS_DML
 	miniasync-vdm-dml
-	dml
-	dl
 	${LIBS_BASIC})
+
+set(SOURCES_UTIL_DML
+	${CORE_SOURCE_DIR}/cpu.c
+	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
 
 set(SOURCES_DUMMY_TEST
 	dummy/dummy.c)
@@ -30,15 +32,15 @@ set(SOURCES_MEMCPY_PTHREADS_TEST
 
 set(SOURCES_DATA_MOVER_DML_TEST_MEMCPY
 	data_mover_dml_memcpy/data_mover_dml_memcpy.c
-	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+	${SOURCES_UTIL_DML})
 
 set(SOURCES_DATA_MOVER_DML_TEST_MEMMOVE
 	data_mover_dml_memmove/data_mover_dml_memmove.c
-	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+	${SOURCES_UTIL_DML})
 
 set(SOURCES_DATA_MOVER_DML_TEST_MEMSET
 	data_mover_dml_memset/data_mover_dml_memset.c
-	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+	${SOURCES_UTIL_DML})
 
 set(SOURCES_MEMBUF_TEST
 	membuf/membuf_simple.c)
@@ -54,7 +56,7 @@ set(SOURCES_MEMSET_SYNC_TEST
 
 set(SOURCES_VDM_OPERATION_FUTURE_POLL
 	vdm_operation_future_poll/vdm_operation_future_poll.c
-	${MINIASYNC_DML_SOURCE_DIR}/utils/util_dml.c)
+	${SOURCES_UTIL_DML})
 
 set(SOURCES_MEMMOVE_THREADS_TEST
 	memmove_threads/memmove_threads.c)
