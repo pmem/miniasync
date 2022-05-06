@@ -8,7 +8,6 @@
 
 #include "core/membuf.h"
 #include "core/out.h"
-#include "core/util.h"
 #include "libminiasync-vdm-dml.h"
 
 #define SUPPORTED_FLAGS VDM_F_MEM_DURABLE | VDM_F_NO_CACHE_HINT
