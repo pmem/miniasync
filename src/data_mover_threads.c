@@ -118,6 +118,10 @@ data_mover_threads_do_operation(struct data_mover_threads_data *data,
 			op_memset(mdata->str,
 				mdata->c, mdata->n, (unsigned)mdata->flags);
 		} break;
+		case VDM_OPERATION_FLUSH:
+			printf("flush operation not implemented "
+					"for threads data mover");
+			exit(1); /* abort? */
 		default:
 			ASSERT(0); /* unreachable */
 			break;
