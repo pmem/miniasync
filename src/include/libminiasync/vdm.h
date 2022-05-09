@@ -34,6 +34,7 @@ enum vdm_operation_type {
 	VDM_OPERATION_MEMCPY,
 	VDM_OPERATION_MEMMOVE,
 	VDM_OPERATION_MEMSET,
+	VDM_OPERATION_FLUSH,
 };
 
 enum vdm_operation_result {
@@ -63,6 +64,12 @@ struct vdm_operation_data_memset {
 	uint64_t flags;
 };
 
+struct vdm_operation_data_flush {
+	void *dest;
+	size_t n;
+	uint64_t flags;
+};
+
 /* sized so that sizeof(vdm_operation_data) is 64 */
 #define VDM_OPERATION_DATA_MAX_SIZE (40)
 
@@ -71,6 +78,7 @@ struct vdm_operation {
 		struct vdm_operation_data_memcpy memcpy;
 		struct vdm_operation_data_memmove memmove;
 		struct vdm_operation_data_memset memset;
+		struct vdm_operation_data_flush flush;
 		uint8_t data[VDM_OPERATION_DATA_MAX_SIZE];
 	} data;
 	enum vdm_operation_type type;
@@ -95,6 +103,11 @@ struct vdm_operation_output_memset {
 	void *str;
 };
 
+/* I'm not sure what the output of this op should be */
+struct vdm_operation_output_flush {
+	void *dest;
+};
+
 struct vdm_operation_output {
 	enum vdm_operation_type type;
 	enum vdm_operation_result result;
@@ -102,6 +115,7 @@ struct vdm_operation_output {
 		struct vdm_operation_output_memcpy memcpy;
 		struct vdm_operation_output_memmove memmove;
 		struct vdm_operation_output_memset memset;
+		struct vdm_operation_output_flush flush;
 	} output;
 };
 
@@ -165,7 +179,9 @@ vdm_operation_impl(struct future_context *context, struct future_notifier *n)
 
 #define VDM_F_MEM_DURABLE		(1U << 0)
 #define VDM_F_NO_CACHE_HINT		(1U << 1)
-#define VDM_F_VALID_FLAGS	(VDM_F_MEM_DURABLE | VDM_F_NO_CACHE_HINT)
+#define VDM_F_DONT_INVALIDATE_CACHE		(1U << 2)
+#define VDM_F_VALID_FLAGS	(VDM_F_MEM_DURABLE | VDM_F_NO_CACHE_HINT \
+						| VDM_F_DONT_INVALIDATE_CACHE)
 
 /*
  * vdm_is_supported -- returns if the given flag or feature is supported
@@ -255,6 +271,27 @@ vdm_memset(struct vdm *vdm, void *str, int c, size_t n, uint64_t flags)
 	future.output.type = VDM_OPERATION_MEMSET;
 	future.output.result = VDM_SUCCESS;
 	future.output.output.memset.str = NULL;
+
+	vdm_generic_operation(vdm, &future);
+	return future;
+}
+
+/*
+ * vdm_flush -- instantiates a new flush vdm operation and returns a new
+ * future to represent that operation
+ */
+static inline struct vdm_operation_future
+vdm_flush(struct vdm *vdm, void *dest, size_t n, uint64_t flags)
+{
+	struct vdm_operation_future future;
+	future.data.operation.type = VDM_OPERATION_FLUSH;
+	future.data.operation.data.flush.dest = dest;
+	future.data.operation.data.flush.flags = flags;
+	future.data.operation.data.flush.n = n;
+	future.data.operation.padding = 0;
+	future.output.type = VDM_OPERATION_FLUSH;
+	future.output.result = VDM_SUCCESS;
+	future.output.output.flush.dest = NULL;
 
 	vdm_generic_operation(vdm, &future);
 	return future;
