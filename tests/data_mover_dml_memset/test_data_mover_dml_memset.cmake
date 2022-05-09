@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# Copyright 2021-2022, Intel Corporation
+# Copyright 2022, Intel Corporation
 
 # an example for the data_mover_dml test case
 
@@ -15,8 +15,8 @@ if (MOVDIR64B EQUAL 0)
 	message(STATUS "movdir64b instruction not available, some test cases will be skipped!")
 endif()
 
-execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memcpy)
+execute(0 ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memset)
 
-execute_assert_pass(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memcpy)
+execute_assert_pass(${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD}/data_mover_dml_memset)
 
 cleanup()

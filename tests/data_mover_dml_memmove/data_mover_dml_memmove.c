@@ -108,6 +108,8 @@ main(void)
 		ret = test_dml_hw_path_flag_memmove();
 		if (ret)
 			return ret;
+	} else {
+		UT_LOG_SKIP("test_dml_hw_path_flag_memmove");
 	}
 
 	return 0;
