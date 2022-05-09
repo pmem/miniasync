@@ -55,13 +55,16 @@ To create a new **DML** data mover instance, use **data_mover_dml_new**(3) funct
 
 **DML** data mover provides the following flags:
 
-* **MINIASYNC_DML_F_MEM_DURABLE** - write to destination is identified as write to durable memory
+* **VDM_F_MEM_DURABLE** - write to destination is identified as write to durable memory
+* **VDM_F_DONT_INVALIDATE_CACHE** - if possible, do not evict affected cache lines from caches during
+the flush operation
 
 **DML** data mover supports following operations:
 
 * **vdm_memcpy**(3) - memory copy operation
 * **vdm_memmove**(3) - memory move operation
 * **vdm_memset**(3) - memory set operation
+* **vdm_flush**(3) - cache flush operation
 
 **DML** data mover does not support notifier feature. For more information about
 notifiers, see **miniasync_future**(7).
@@ -80,6 +83,6 @@ struct vdm_memcpy_future memcpy_fut = vdm_memcpy(dml_mover, dest, src,
 # SEE ALSO #
 
 **data_mover_dml_new**(3), **data_mover_dml_get_vdm**(3),
-**vdm_memcpy**(3), **vdm_memmove**(3), **vdm_memset**(3),
+**vdm_flush**(3), **vdm_memcpy**(3), **vdm_memmove**(3), **vdm_memset**(3),
 **miniasync**(7), **miniasync_future**(7), **miniasync_vdm**(7),
 **<https://github.com/intel/DML>** and **<https://pmem.io>**
