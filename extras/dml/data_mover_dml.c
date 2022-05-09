@@ -10,7 +10,9 @@
 #include "core/out.h"
 #include "libminiasync-vdm-dml.h"
 
-#define SUPPORTED_FLAGS VDM_F_MEM_DURABLE | VDM_F_NO_CACHE_HINT
+#define SUPPORTED_FLAGS VDM_F_MEM_DURABLE \
+						| VDM_F_NO_CACHE_HINT \
+						| VDM_F_DONT_INVALIDATE_CACHE
 
 struct data_mover_dml {
 	struct vdm base; /* must be first */
@@ -41,6 +43,10 @@ data_mover_dml_translate_flags(uint64_t flags, uint64_t *dml_flags)
 				break;
 			case VDM_F_NO_CACHE_HINT:
 				*dml_flags &= ~DML_FLAG_PREFETCH_CACHE;
+				break;
+			case VDM_F_DONT_INVALIDATE_CACHE:
+				*dml_flags |= DML_FLAG_DONT_INVALIDATE_CACHE;
+				break;
 			default: /* shouldn't be possible */
 				ASSERT(0);
 		}
@@ -120,6 +126,24 @@ data_mover_dml_memset_job_init(dml_job_t *dml_job,
 }
 
 /*
+ * data_mover_dml_flush_job_init -- initializes new flush dml job
+ */
+static dml_job_t *
+data_mover_dml_flush_job_init(dml_job_t *dml_job,
+	void *dest, size_t n, uint64_t flags)
+{
+	uint64_t dml_flags = 0;
+	data_mover_dml_translate_flags(flags, &dml_flags);
+
+	dml_job->operation = DML_OP_CACHE_FLUSH;
+	dml_job->destination_first_ptr = (uint8_t *)dest;
+	dml_job->destination_length = n;
+	dml_job->flags = dml_flags;
+
+	return dml_job;
+}
+
+/*
  * data_mover_dml_job_delete -- delete job struct
  */
 static void
@@ -157,6 +181,7 @@ data_mover_dml_operation_new(struct vdm *vdm,
 		case VDM_OPERATION_MEMCPY:
 		case VDM_OPERATION_MEMMOVE:
 		case VDM_OPERATION_MEMSET:
+		case VDM_OPERATION_FLUSH:
 			break;
 		default:
 			ASSERT(0); /* unreachable */
@@ -218,6 +243,9 @@ data_mover_dml_operation_delete(void *data,
 		case DML_OP_FILL:
 			output->type = VDM_OPERATION_MEMSET;
 			output->output.memset.str = job->destination_first_ptr;
+			break;
+		case DML_OP_CACHE_FLUSH:
+			output->type = VDM_OPERATION_FLUSH;
 			break;
 		default:
 			ASSERT(0);
@@ -287,6 +315,13 @@ data_mover_dml_operation_start(void *data,
 					operation->data.memset.c,
 					operation->data.memset.n,
 					operation->data.memset.flags);
+				data_mover_dml_memory_op_job_submit(job);
+			break;
+		case VDM_OPERATION_FLUSH:
+				data_mover_dml_flush_job_init(job,
+					operation->data.flush.dest,
+					operation->data.flush.n,
+					operation->data.flush.flags);
 				data_mover_dml_memory_op_job_submit(job);
 			break;
 		default:
