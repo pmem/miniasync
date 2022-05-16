@@ -80,6 +80,7 @@ FUTURE_CHAIN_ENTRY(_future_type, _name)
 FUTURE_CHAIN_ENTRY_LAST(_future_type, _name)
 FUTURE_CHAIN_ENTRY_INIT(_entry, _fut, _map, _map_arg)
 FUTURE_CHAIN_ENTRY_LAZY_INIT(_entry, _init, _init_arg, _map, _map_arg)
+FUTURE_CHAIN_ENTRY_IS_INITIALIZED(_entry)
 FUTURE_CHAIN_INIT(_futurep)
 FUTURE_AS_RUNNABLE(_futurep)
 FUTURE_OUTPUT(_futurep)
@@ -174,12 +175,16 @@ data mover future. *\_map* function must be of the *future_map_fn* type and is a
 future entry *\_entry* that has finished and the chained future entry that is about to start its execution.
 Chained future instance must initialize all of its future chain entries using this macro.
 
-**FUTURE_CHAIN_ENTRY_LAZY_INIT(_entry, _init, _init_arg, _map, _map_arg)** macro intializes the
+**FUTURE_CHAIN_ENTRY_LAZY_INIT(_entry, _init, _init_arg, _map, _map_arg)** macro initializes the
 future chain entry pointed by *\_entry* but it does not initialize its underlying future. Instead
 it uses function *\_init* and its argument *\init_arg* to instantiate the future right before
-its needed. This lets software instantiate futures with arguments derived from the results of
+it's needed. This lets software instantiate futures with arguments derived from the results of
 previous entries in the chain. The *\map* and *\map_arg* variables behave the
 same as in **FUTURE_CHAIN_ENTRY_INIT**.
+
+**FUTURE_CHAIN_ENTRY_IS_INITIALIZED(_entry)** macro checks if the future chain entry, pointed by *\_entry*,
+is already initialized (either lazily or regularly). If it is initialized, its structure can be safely
+accessed and used.
 
 **FUTURE_CHAIN_INIT(_futurep)** macro initializes the chained future at the address *\_futurep*.
 

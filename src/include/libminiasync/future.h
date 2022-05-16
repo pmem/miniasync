@@ -253,6 +253,9 @@ FUTURE_CHAIN_ENTRY_HAS_FLAG(_entry, FUTURE_CHAIN_FLAG_ENTRY_LAST)
 #define FUTURE_CHAIN_ENTRY_IS_PROCESSED(_entry)\
 FUTURE_CHAIN_ENTRY_HAS_FLAG(_entry, FUTURE_CHAIN_FLAG_ENTRY_PROCESSED)
 
+#define FUTURE_CHAIN_ENTRY_IS_INITIALIZED(_entry)\
+((_entry)->init == NULL)
+
 /*
  * TODO: Notifiers have to be copied into the state of the future, so we might
  * consider just passing it by copy here... Needs to be evaluated for
