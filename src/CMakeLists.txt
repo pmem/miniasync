@@ -58,8 +58,9 @@ if(WIN32)
 	target_include_directories(cores PRIVATE ${MINIASYNC_INCLUDE_DIR_WIN})
 endif()
 
+# SOVERSION is an ABI version
 set_target_properties(miniasync PROPERTIES
-	SOVERSION 0.1.0-rc1
+	SOVERSION 0
 	PUBLIC_HEADER ${MINIASYNC_INCLUDE_DIR}/libminiasync.h
 )
 
