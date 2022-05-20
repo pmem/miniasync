@@ -79,10 +79,26 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 	notifier.waker = (struct future_waker){&waker_data, runtime_waker_wake};
 	notifier.poller.ptr_to_monitor = NULL;
 	size_t ndone = 0;
+
+	/* put async futures first */
+	uint64_t async_fut_idx = 0;
+	uint64_t non_async_fut_idx = nfuts - 1;
+	struct future **ordered_futs = malloc(nfuts * sizeof(struct future));
+	for (uint64_t i = 0; i < nfuts; ++i) {
+		if ((futs[i]->flags & FUTURE_IS_ASYNC)
+				== FUTURE_IS_ASYNC) {
+			ordered_futs[async_fut_idx] = futs[i];
+			async_fut_idx++;
+		} else {
+			ordered_futs[non_async_fut_idx] = futs[i];
+			non_async_fut_idx--;
+		}
+	}
+
 	for (;;) {
 		for (uint64_t i = 0; i < runtime->spins_before_sleep; ++i) {
 			for (uint64_t f = 0; f < nfuts; ++f) {
-				struct future *fut = futs[f];
+				struct future *fut = ordered_futs[f];
 				if (fut->context.state == FUTURE_STATE_COMPLETE)
 					continue;
 
@@ -104,8 +120,10 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 					break;
 				};
 			}
-			if (ndone == nfuts)
+			if (ndone == nfuts) {
+				free(ordered_futs);
 				return;
+			}
 
 			WAIT();
 		}

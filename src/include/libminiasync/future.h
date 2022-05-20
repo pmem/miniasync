@@ -140,9 +140,16 @@ typedef enum future_state (*future_task_fn)(struct future_context *context,
 			struct future_notifier *notifier);
 
 struct future {
+	uint64_t flags;
 	future_task_fn task;
 	struct future_context context;
 };
+
+#define FUTURE_IS_ASYNC		(((uint64_t)1) << 0)
+#define FUTURE_VALID_FLAGS (FUTURE_IS_ASYNC)
+
+#define SET_FUTURE_FLAG(_futurerep, _flag)\
+	_futurerep->base.flags |= _flag
 
 #define FUTURE(_name, _data_type, _output_type)\
 	struct _name {\
@@ -159,6 +166,7 @@ do {\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
 	(_futurep)->base.context.padding = 0;\
+	(_futurep)->base.flags = 0;\
 } while (0)
 
 #define FUTURE_INIT_COMPLETE(_futurep)\
@@ -169,6 +177,7 @@ do {\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
 	(_futurep)->base.context.padding = 0;\
+	(_futurep)->base.flags = 0;\
 } while (0)
 
 #define FUTURE_AS_RUNNABLE(futurep) (&(futurep)->base)

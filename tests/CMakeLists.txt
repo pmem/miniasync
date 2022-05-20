@@ -64,6 +64,9 @@ set(SOURCES_MEMMOVE_THREADS_TEST
 set(SOURCES_MEMSET_THREADS_TEST
 	memset_threads/memset_threads.c)
 
+set(SOURCES_RUNTIME_TEST
+	runtime_test/runtime_test.c)
+
 add_custom_target(tests)
 
 add_flag(-Wall)
@@ -164,8 +167,13 @@ if (COMPILE_DML)
 			"${SOURCES_VDM_OPERATION_FUTURE_POLL}"
 			"${LIBS_DML}")
 
+	add_link_executable(runtime_test
+			"${SOURCES_RUNTIME_TEST}"
+			"${LIBS_DML}")
+
 	test("data_mover_dml_memcpy" "data_mover_dml_memcpy" test_data_mover_dml_memcpy none)
 	test("data_mover_dml_memmove" "data_mover_dml_memmove" test_data_mover_dml_memmove none)
 	test("data_mover_dml_memset" "data_mover_dml_memset" test_data_mover_dml_memset none)
 	test("vdm_operation_future_poll" "vdm_operation_future_poll" test_vdm_operation_future_poll none)
+	test("runtime_test" "runtime_test" test_runtime none)
 endif()

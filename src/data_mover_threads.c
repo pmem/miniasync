@@ -274,6 +274,7 @@ static struct vdm data_mover_threads_vdm = {
 	.op_check = data_mover_threads_operation_check,
 	.op_start = data_mover_threads_operation_start,
 	.capabilities = SUPPORTED_FLAGS,
+	.async_flag = FUTURE_IS_ASYNC,
 };
 
 /*
