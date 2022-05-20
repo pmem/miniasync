@@ -68,6 +68,40 @@ runtime_sleep(struct runtime *runtime)
 }
 
 void
+quicksort_futs_async_property(struct future *futs[],
+		int first_index, int last_index)
+{
+	enum FUTURE_PROPERTY property = FUTURE_PROPERTY_ASYNC;
+	int i, j, pivot;
+	if (first_index < last_index) {
+		pivot = first_index;
+		i = first_index;
+		j = last_index;
+
+		while (i < j) {
+			while (fut_has_property(futs[i], property) >=
+					fut_has_property(futs[pivot],
+						property) && i < last_index)
+				i++;
+			while (fut_has_property(futs[j], property) <
+					fut_has_property(futs[pivot], property))
+				j--;
+			if (i < j) {
+				struct future *fut = futs[i];
+				futs[i] = futs[j];
+				futs[j] = fut;
+			}
+		}
+
+		struct future *fut = futs[pivot];
+		futs[pivot] = futs[j];
+		futs[j] = fut;
+		quicksort_futs_async_property(futs, first_index, j - 1);
+		quicksort_futs_async_property(futs, j + 1, last_index);
+	}
+}
+
+void
 runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 						size_t nfuts)
 {
@@ -79,8 +113,10 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 	notifier.waker = (struct future_waker){&waker_data, runtime_waker_wake};
 	notifier.poller.ptr_to_monitor = NULL;
 	size_t ndone = 0;
+
 	for (;;) {
 		for (uint64_t i = 0; i < runtime->spins_before_sleep; ++i) {
+			quicksort_futs_async_property(futs, 0, (int)nfuts - 1);
 			for (uint64_t f = 0; f < nfuts; ++f) {
 				struct future *fut = futs[f];
 				if (fut->context.state == FUTURE_STATE_COMPLETE)
@@ -104,6 +140,7 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 					break;
 				};
 			}
+
 			if (ndone == nfuts)
 				return;
 
