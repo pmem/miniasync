@@ -125,6 +125,7 @@ struct vdm {
 	vdm_operation_start op_start;
 	vdm_operation_check op_check;
 	unsigned capabilities;
+	unsigned async_flag;
 };
 
 struct vdm *vdm_synchronous_new(void);
@@ -192,6 +193,8 @@ vdm_generic_operation(struct vdm *vdm, struct vdm_operation_future *future)
 	} else {
 		FUTURE_INIT(future, vdm_operation_impl);
 	}
+
+	FUTURE_SET_FLAG(future, vdm->async_flag);
 }
 
 /*

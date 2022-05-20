@@ -79,11 +79,43 @@ runtime_wait_multiple(struct runtime *runtime, struct future *futs[],
 	notifier.waker = (struct future_waker){&waker_data, runtime_waker_wake};
 	notifier.poller.ptr_to_monitor = NULL;
 	size_t ndone = 0;
+
 	for (;;) {
 		for (uint64_t i = 0; i < runtime->spins_before_sleep; ++i) {
 			for (uint64_t f = 0; f < nfuts; ++f) {
 				struct future *fut = futs[f];
+
 				if (fut->context.state == FUTURE_STATE_COMPLETE)
+					continue;
+
+				if (!future_async_flag(fut))
+					continue;
+
+				if (future_poll(fut, &notifier) ==
+				    FUTURE_STATE_COMPLETE) {
+					ndone++;
+				}
+				switch (notifier.notifier_used) {
+					case FUTURE_NOTIFIER_POLLER:
+					/*
+					 * TODO: if this is the only future
+					 * being polled, use umwait/umonitor
+					 * for power-optimized polling.
+					 */
+					break;
+					case FUTURE_NOTIFIER_WAKER:
+					case FUTURE_NOTIFIER_NONE:
+					/* nothing to do for wakers or none */
+					break;
+				};
+			}
+			for (uint64_t f = 0; f < nfuts; ++f) {
+				struct future *fut = futs[f];
+
+				if (fut->context.state == FUTURE_STATE_COMPLETE)
+					continue;
+
+				if (future_async_flag(fut))
 					continue;
 
 				if (future_poll(fut, &notifier) ==

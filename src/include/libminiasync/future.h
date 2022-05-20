@@ -138,11 +138,23 @@ future_context_get_size(struct future_context *context)
 
 typedef enum future_state (*future_task_fn)(struct future_context *context,
 			struct future_notifier *notifier);
+typedef int (*has_flag_fn)(void *future);
 
 struct future {
+	uint64_t flags;
 	future_task_fn task;
+	has_flag_fn has_flag;
 	struct future_context context;
 };
+
+#define FUTURE_IS_ASYNC		(((uint64_t)1) << 0)
+#define FUTURE_VALID_FLAGS (FUTURE_IS_ASYNC)
+
+#define FUTURE_SET_FLAG(_futurerep, _flag)\
+	(_futurerep)->base.flags |= _flag
+
+#define FUTURE_HAS_FLAG(_futurerep, _flag)\
+(((_futurerep)->base.flags & (_flag)) == (_flag))
 
 #define FUTURE(_name, _data_type, _output_type)\
 	struct _name {\
@@ -154,21 +166,25 @@ struct future {
 #define FUTURE_INIT(_futurep, _taskfn)\
 do {\
 	(_futurep)->base.task = (_taskfn);\
+	(_futurep)->base.has_flag = (basic_has_flag);\
 	(_futurep)->base.context.state = (FUTURE_STATE_IDLE);\
 	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
 	(_futurep)->base.context.padding = 0;\
+	(_futurep)->base.flags = 0;\
 } while (0)
 
 #define FUTURE_INIT_COMPLETE(_futurep)\
 do {\
 	(_futurep)->base.task = NULL;\
+	(_futurep)->base.has_flag = NULL;\
 	(_futurep)->base.context.state = (FUTURE_STATE_COMPLETE);\
 	(_futurep)->base.context.data_size = sizeof((_futurep)->data);\
 	(_futurep)->base.context.output_size =\
 		sizeof((_futurep)->output);\
 	(_futurep)->base.context.padding = 0;\
+	(_futurep)->base.flags = 0;\
 } while (0)
 
 #define FUTURE_AS_RUNNABLE(futurep) (&(futurep)->base)
@@ -268,6 +284,16 @@ future_poll(struct future *fut, struct future_notifier *notifier)
 	return fut->context.state;
 }
 
+/*
+ * future_async_flag -- returns 1 if async flag is set and 0 otherwise.
+ * It's an abstract implementation, which works for both regular and
+ * chained futures.
+ */
+static inline int future_async_flag(struct future *fut)
+{
+	return fut->has_flag(fut);
+}
+
 #define FUTURE_BUSY_POLL(_futurep)\
 while (future_poll(FUTURE_AS_RUNNABLE((_futurep)), NULL) !=\
 	FUTURE_STATE_COMPLETE) { __FUTURE_WAIT(); }
@@ -336,8 +362,57 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 	return FUTURE_STATE_COMPLETE;
 }
 
+static inline int basic_has_flag(void *future)
+{
+	struct future * fut = future;
+	if ((fut->flags & FUTURE_IS_ASYNC) != FUTURE_IS_ASYNC)
+		return 0;
+	return 1;
+}
+
+static inline int chained_has_flag(void *future)
+{
+#define _MINIASYNC_PTRSIZE sizeof(void *)
+#define _MINIASYNC_ALIGN_UP(size)\
+	(((size) + _MINIASYNC_PTRSIZE - 1) & ~(_MINIASYNC_PTRSIZE - 1))
+
+	struct future * fut = future;
+	struct future_context *ctx = &fut->context;
+	uint8_t *data = (uint8_t *)future_context_get_data(ctx);
+	struct future_chain_entry *entry = (struct future_chain_entry *)(data);
+
+	size_t used_data = 0;
+
+	while (entry != NULL) {
+		if (entry->init) {
+			entry->init(&entry->future, ctx, entry->init_arg);
+			entry->init = NULL;
+		}
+		
+		used_data += _MINIASYNC_ALIGN_UP(
+			sizeof(struct future_chain_entry) +
+			future_context_get_size(&entry->future.context));
+		struct future_chain_entry *next = NULL;
+		if (!FUTURE_CHAIN_ENTRY_IS_LAST(entry) &&
+		    used_data != ctx->data_size) {
+			next = (struct future_chain_entry *)(data + used_data);
+		}
+		if (!FUTURE_CHAIN_ENTRY_IS_PROCESSED(entry)) {
+				if ((entry->future.flags & FUTURE_IS_ASYNC) != FUTURE_IS_ASYNC)
+					return 0;
+				return 1;	
+		}
+		entry = next;
+	}
+#undef _MINIASYNC_PTRSIZE
+#undef _MINIASYNC_ALIGN_UP
+
+	return -1;
+}
+
 #define FUTURE_CHAIN_INIT(_futurep)\
-FUTURE_INIT((_futurep), async_chain_impl)
+FUTURE_INIT((_futurep), async_chain_impl);\
+(_futurep)->base.has_flag = (chained_has_flag)\
 
 #ifdef __cplusplus
 }
