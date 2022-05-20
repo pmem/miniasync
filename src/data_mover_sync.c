@@ -141,6 +141,7 @@ static struct vdm data_mover_sync_vdm = {
 	.op_check = sync_operation_check,
 	.op_start = sync_operation_start,
 	.capabilities = SUPPORTED_FLAGS,
+	.has_property = NULL,
 };
 
 /*
