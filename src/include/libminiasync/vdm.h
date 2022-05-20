@@ -125,6 +125,7 @@ struct vdm {
 	vdm_operation_start op_start;
 	vdm_operation_check op_check;
 	unsigned capabilities;
+	future_has_property_fn has_property;
 };
 
 struct vdm *vdm_synchronous_new(void);
@@ -177,6 +178,18 @@ vdm_is_supported(struct vdm *vdm, unsigned capability)
 }
 
 /*
+ * vdm_set_has_property_fn -- set a custom has_property function for
+ * a concrete future
+ */
+static inline void
+vdm_set_has_property_fn(struct vdm_operation_future *future,
+		int(*has_property)(void *future, enum FUTURE_PROPERTY property))
+{
+	if (has_property != NULL)
+		future->base.has_property = has_property;
+}
+
+/*
  * vdm_generic_operation -- creates a new vdm future for a given generic
  * operation
  */
@@ -192,6 +205,12 @@ vdm_generic_operation(struct vdm *vdm, struct vdm_operation_future *future)
 	} else {
 		FUTURE_INIT(future, vdm_operation_impl);
 	}
+
+	/*
+	 * set has_property function for the concrete future based
+	 * on the implementation provided by the concrete data mover
+	 */
+	vdm_set_has_property_fn(future, vdm->has_property);
 }
 
 /*
