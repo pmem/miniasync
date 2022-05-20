@@ -268,12 +268,21 @@ data_mover_threads_operation_start(void *data,
 	return 0;
 }
 
+int
+has_property_dmt(void *fut, enum FUTURE_PROPERTY property)
+{
+	if (property == FUTURE_PROPERTY_ASYNC)
+		return 1;
+	return 0;
+}
+
 static struct vdm data_mover_threads_vdm = {
 	.op_new = data_mover_threads_operation_new,
 	.op_delete = data_mover_threads_operation_delete,
 	.op_check = data_mover_threads_operation_check,
 	.op_start = data_mover_threads_operation_start,
 	.capabilities = SUPPORTED_FLAGS,
+	.has_property = has_property_dmt,
 };
 
 /*
