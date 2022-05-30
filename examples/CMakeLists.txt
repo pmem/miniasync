@@ -43,3 +43,8 @@ endfunction()
 # add all the examples with a use of the add_example function defined above
 add_example(basic basic/basic.c)
 add_example(basic-async basic-async/basic-async.c)
+
+if(BUILD_CPP_EXAMPLES)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fcoroutines")
+	add_example(coroutine_memcpy coroutine_memcpy/coroutine_memcpy.cpp coroutine_memcpy/miniasync_operation.cpp)
+endif()

@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.3)
 
-project(miniasync C)
+project(miniasync C CXX)
 set(MINIASYNC_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out CACHE STRING "")
@@ -42,6 +42,7 @@ option(BUILD_EXAMPLES "build examples" ON)
 option(BUILD_TESTS "build tests" ON)
 option(TESTS_USE_VALGRIND "enable tests with valgrind (if found)" ON)
 option(COMPILE_DML "compile miniasync dml implementation library" OFF)
+option(BUILD_CPP_EXAMPLES "build cpp examples - require c++20 support" OFF)
 
 include(FindPerl)
 include(FindThreads)
@@ -49,6 +50,10 @@ include(CMakePackageConfigHelpers)
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 include(${CMAKE_SOURCE_DIR}/cmake/functions.cmake)
+
+if(BUILD_CPP_EXAMPLES AND "${CMAKE_CXX_STANDARD}" LESS 20)
+	message(FATAL_ERROR "To build cpp example, CMAKE_CXX_STANDARD must be set to 20 or higher")
+endif()
 
 # look for pkg config (use it later for managing valgrind)
 if(NOT WIN32)

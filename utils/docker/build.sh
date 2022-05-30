@@ -114,6 +114,8 @@ docker run --privileged=true --name=$containerName -i $TTY \
 	--env TEST_PACKAGES=${TEST_PACKAGES:-ON} \
 	--env CHECK_CSTYLE=${CHECK_CSTYLE:-ON} \
 	--env FAULT_INJECTION=$FAULT_INJECTION \
+	--env BUILD_CPP_EXAMPLES=${BUILD_CPP_EXAMPLES:-OFF} \
+	--env CXX_STANDARD=${CXX_STANDARD:-20} \
 	--env CC=${CC:-gcc} \
 	--shm-size=4G \
 	-v $HOST_WORKDIR:$WORKDIR \
