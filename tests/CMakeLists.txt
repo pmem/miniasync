@@ -152,7 +152,11 @@ test("memmove_sync" "memmove_sync" test_memmove_sync none)
 test("vdm" "vdm" test_vdm none)
 test("memset_sync" "memset_sync" test_memset_sync none)
 test("memmove_threads" "memmove_threads" test_memmove_threads none)
+test("memmove_threads_drd" "memmove_threads" test_memmove_threads drd)
+test("memmove_threads_helgrind" "memmove_threads" test_memmove_threads helgrind)
 test("memset_threads" "memset_threads" test_memset_threads none)
+test("memset_threads_drd" "memset_threads" test_memset_threads drd)
+test("memset_threads_helgrind" "memset_threads" test_memset_threads helgrind)
 test("future_properties" "future_properties" test_future_properties none)
 
 # add tests running examples only if they are built
