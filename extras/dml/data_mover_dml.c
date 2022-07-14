@@ -11,6 +11,12 @@
 #include "libminiasync-vdm-dml.h"
 
 #define SUPPORTED_FLAGS VDM_F_MEM_DURABLE | VDM_F_NO_CACHE_HINT
+/*
+ * XXX: This flag should be defined in DML header but for some reason isn't
+ * this flag is needed to guarantee that writes to persistent memory
+ * are persistent at the time DSA operation is completed
+ */
+#define DSA_F_DESTINATION_READBACK (1 < 14)
 
 struct data_mover_dml {
 	struct vdm base; /* must be first */
@@ -38,6 +44,7 @@ data_mover_dml_translate_flags(uint64_t flags, uint64_t *dml_flags)
 			 */
 			case VDM_F_MEM_DURABLE:
 				*dml_flags |= DML_FLAG_DST1_DURABLE;
+				*dml_flags |= DSA_F_DESTINATION_READBACK;
 				break;
 			case VDM_F_NO_CACHE_HINT:
 				*dml_flags &= ~DML_FLAG_PREFETCH_CACHE;
