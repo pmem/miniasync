@@ -49,7 +49,7 @@ An example of **DML** data mover API usage with flags can be found in **EXAMPLE*
 
 When the future is polled for the first time the data mover operation will be executed
 asynchronously under the control of **DML** library. **DML** data mover does not
-block the calling thread
+block the calling thread.
 
 To create a new **DML** data mover instance, use **data_mover_dml_new**(3) function.
 
