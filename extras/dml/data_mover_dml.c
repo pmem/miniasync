@@ -333,6 +333,14 @@ data_mover_dml_operation_start(void *data,
 	return 0;
 }
 
+int
+has_property_dmd(void *fut, enum future_property property)
+{
+	if (property == FUTURE_PROPERTY_ASYNC)
+		return 1;
+	return 0;
+}
+
 /*
  * data_mover_dml_vdm -- dml asynchronous memcpy
  */
@@ -342,6 +350,7 @@ static struct vdm data_mover_dml_vdm = {
 	.op_check = data_mover_dml_operation_check,
 	.op_start = data_mover_dml_operation_start,
 	.capabilities = SUPPORTED_FLAGS,
+	.has_property = has_property_dmd,
 };
 
 /*
