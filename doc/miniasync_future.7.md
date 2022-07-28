@@ -38,6 +38,9 @@ typedef void (*future_map_fn)(struct future_context *lhs,
 typedef void (*future_init_fn)(void *future,
 			struct future_context *chain_fut, void *arg);
 
+typedef int (*future_has_property_fn)(void *future,
+			enum future_property property);
+
 enum future_state {
 	FUTURE_STATE_IDLE,
 	FUTURE_STATE_COMPLETE,
@@ -73,6 +76,10 @@ struct future_notifier {
 	uint32_t padding;
 };
 
+enum future_property {
+	FUTURE_PROPERTY_ASYNC,
+};
+
 FUTURE(_name, _data_type, _output_type)
 FUTURE_INIT(_futurep, _taskfn)
 FUTURE_INIT_COMPLETE(_futurep)
@@ -104,6 +111,7 @@ A future contains the following context:
 * structure for data which is the required state needed to perform the task
 * structure for output to store the result of the task
 * the size of the data and output structures (both can be 0)
+* a pointer for the property function which checks if the future has a custom property
 
 A future definition must begin with an instance of the *struct future* type, which
 contains all common metadata for all futures, followed by the structures for
@@ -134,6 +142,14 @@ use a **FUTURE_WAKER_WAKE(_wakerp)** macro to signal the caller that some progre
 can be made and the future should be polled again.
 
 <!-- TODO: Mention **FUTURE_NOTIFIER_POLLER** when it becomes supported. -->
+
+Futures can contain custom properties. Currently, the only supported property is
+**FUTURE_PROPERTY_ASYNC** which indicates that the future is asynchronous. Information,
+whether the future contains the property or not, is returned by the **future_has_property**
+function and set by the concrete implementation of the **future_has_property_fn** function,
+passed by the function pointer. The default implementation sets all the properties as false.
+The concrete future can provide its own implementation of this function to choose which
+properties to set.
 
 For more information about the usage of future API, see *examples* directory
 in miniasync repository <https://github.com/pmem/miniasync>.

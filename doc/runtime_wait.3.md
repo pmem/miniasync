@@ -51,7 +51,9 @@ future with **future_poll**(3) function until completion.
 The **runtime_wait_multiple**() function works similar to the **runtime_wait**() function,
 additionally it facilitates polling of multiple futures in an array.  **runtime_wait_multiple**()
 function uniformly polls the first *nfuts* futures in the array pointed by *futs* until all
-of them complete execution.
+of them complete execution. Futures that contain the asynchronous property have a priority over the
+synchronous ones and, in general, are being polled first.
+For more information about the future properties, see **miniasync_future**(7).
 
 **miniasync**(7) runtime implementation makes use of the waker notifier feature to optimize
 future polling. For more information about the waker feature, see **miniasync_future**(7).
