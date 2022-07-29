@@ -111,7 +111,7 @@ A future contains the following context:
 * structure for data which is the required state needed to perform the task
 * structure for output to store the result of the task
 * the size of the data and output structures (both can be 0)
-* a pointer for the property function which checks if the future has a custom property
+* a pointer for the property checking function which checks if the future has a custom property
 
 A future definition must begin with an instance of the *struct future* type, which
 contains all common metadata for all futures, followed by the structures for
@@ -143,13 +143,15 @@ can be made and the future should be polled again.
 
 <!-- TODO: Mention **FUTURE_NOTIFIER_POLLER** when it becomes supported. -->
 
-Futures can contain custom properties. Currently, the only supported property is
-**FUTURE_PROPERTY_ASYNC** which indicates that the future is asynchronous. Information,
-whether the future contains the property or not, is returned by the **future_has_property**
-function and set by the concrete implementation of the **future_has_property_fn** function,
-passed by the function pointer. The default implementation sets all the properties as false.
-The concrete future can provide its own implementation of this function to choose which
-properties to set.
+Futures can contain custom properties. Information, whether the future contains
+the property or not, is returned by the **future_has_property** function.
+Concrete implementation of the **future_has_property_fn** function should return the
+information, whether given future property applies to the future. Individual futures
+can be initialized using `FUTURE_INIT_EXT(_futurep, _taskfn, _propertyfn)` macro to
+set the property checking function. Futures initialized regularly have no properties applied.
+
+Supported properties:
+* **FUTURE_PROPERTY_ASYNC** property indicates that the future is asynchronous.
 
 For more information about the usage of future API, see *examples* directory
 in miniasync repository <https://github.com/pmem/miniasync>.
@@ -167,6 +169,10 @@ no need for input or output data, *\_data_type* and *\_output_type* can be defin
 
 `FUTURE_INIT(_futurep, _taskfn)` macro assigns task function *\_taskfn* to the future pointed
 by *\_futurep*. Task function must be of the *future_task_fn* type.
+
+`FUTURE_INIT_EXT(_futurep, _taskfn, _propertyfn)` macro assigns task function *\_taskfn* and property
+checking function *\_propertyfn* to the future pointed by *\_futurep*. Task function must be of the
+*future_task_fn* type and the property checking function must be of the type *future_has_property_fn*.
 
 `FUTURE_INIT_COMPLETE(_futurep)` macro instantiates a new already completed future with no assigned
 task. This is helpful for handling initialization errors during future creation or simply for convenience
