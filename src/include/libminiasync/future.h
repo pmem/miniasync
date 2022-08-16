@@ -378,6 +378,9 @@ async_chain_impl(struct future_context *ctx, struct future_notifier *notifier)
 static inline int
 future_has_property_default(void *future, enum future_property property)
 {
+	/* suppres unused parameters */
+	(void)(future);
+	(void)(property);
 	/* by default every property is set to false */
 	return 0;
 }
