@@ -119,7 +119,7 @@ hashmap_new(size_t capacity)
 		return NULL;
 	}
 
-	struct hashmap *hm = malloc(sizeof(struct hashmap) * capacity);
+	struct hashmap *hm = malloc(sizeof(struct hashmap));
 	if (hm == NULL) {
 		return NULL;
 	}
