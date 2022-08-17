@@ -1262,6 +1262,7 @@ main(void)
 	/* Entry with '4' key should store value 'Buzz' */
 	struct hashmap_get_copy_output *get_copy_output =
 			FUTURE_OUTPUT(&get_futs[0]);
+	assert(strcmp(buf, val_4) == 0);
 	assert(get_copy_output->value == buf);
 	assert(get_copy_output->size == strlen(val_4) + 1);
 	/* 'hashmap_get_copy_fut' will not copy more data than buffer can fit */
