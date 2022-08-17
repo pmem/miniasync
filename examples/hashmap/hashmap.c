@@ -1149,9 +1149,19 @@ main(void)
 	char other_val[] = "Coffee";
 
 	struct hashmap *hm = hashmap_new(4);
+	if (hm == NULL) {
+		printf("failed to allocate a new hashmap.\n");
+		return 1;
+	}
 
 	/* Create a runtime instance for efficient future polling */
 	struct runtime *r = runtime_new();
+	if (r == NULL) {
+		hashmap_delete(hm);
+
+		printf("failed to allocate a new runtime.\n");
+		return 1;
+	}
 
 	/* Create a thread mover to be used for data move operations */
 	struct data_mover_threads *dmt = data_mover_threads_default();
