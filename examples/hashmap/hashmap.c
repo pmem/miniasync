@@ -1156,6 +1156,9 @@ main(void)
 	/* Create a thread mover to be used for data move operations */
 	struct data_mover_threads *dmt = data_mover_threads_default();
 	if (dmt == NULL) {
+		runtime_delete(r);
+		hashmap_delete(hm);
+
 		printf("failed to allocate data mover.\n");
 		return 1;
 	}
