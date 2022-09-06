@@ -88,6 +88,8 @@ test_basic_futures(void)
 {
 	struct runtime *r = runtime_new();
 	struct future **futures = malloc(sizeof(struct future *) * 3);
+	UT_ASSERTne(futures, NULL);
+
 	struct countup_fut up1 = countup_async(TEST_MAX_COUNT, 1);
 	UT_ASSERTeq(FUTURE_STATE(&up1), FUTURE_STATE_IDLE);
 
@@ -179,6 +181,8 @@ test_chained_future()
 {
 	struct runtime *r = runtime_new();
 	struct future **futures = malloc(sizeof(struct future *) * 3);
+	UT_ASSERTne(futures, NULL);
+
 	struct chained_up_fut fut1 =
 		countup_chained_sync_async(TEST_MAX_COUNT, 3, 4);
 	struct chained_up_fut fut2 =
@@ -249,6 +253,8 @@ test_change_flag_future()
 {
 	struct runtime *r = runtime_new();
 	struct future **futures = malloc(sizeof(struct future *) * 3);
+	UT_ASSERTne(futures, NULL);
+
 	struct change_flag_fut fut1 = countup_change_flag(TEST_MAX_COUNT, 9);
 	struct countup_fut fut2 = countup_async(TEST_MAX_COUNT, 10);
 	struct countup_fut fut3 = countup_non_async(TEST_MAX_COUNT, 11);
