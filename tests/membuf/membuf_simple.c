@@ -27,6 +27,7 @@ void
 membuf_test_mt_reuse()
 {
 	struct membuf *mbuf = membuf_new(NULL);
+	UT_ASSERTne(mbuf, NULL);
 
 	os_thread_t th1;
 	os_thread_create(&th1, NULL, membuf_alloc_thread, mbuf);

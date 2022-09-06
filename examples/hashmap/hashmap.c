@@ -1253,6 +1253,10 @@ main(void)
 	 */
 	size_t buf_size = 32;
 	char *buf = malloc(buf_size);
+	if (buf == NULL) {
+		printf("failed to allocate a new buffor.\n");
+		return 1;
+	}
 
 	struct hashmap_get_copy_fut get_futs[1];
 	get_futs[0] = hashmap_get_copy(tmover, hm, 4, buf, buf_size);
