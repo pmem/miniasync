@@ -1254,6 +1254,9 @@ main(void)
 	size_t buf_size = 32;
 	char *buf = malloc(buf_size);
 	if (buf == NULL) {
+		runtime_delete(r);
+		hashmap_delete(hm);
+
 		printf("failed to allocate a new buffor.\n");
 		return 1;
 	}
