@@ -5,6 +5,17 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/pmem/miniasync.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/pmem/miniasync/context:cpp)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/24161/badge.svg)](https://scan.coverity.com/projects/pmem-miniasync)
 
+## ⚠️ Discontinuation of the project
+The **miniasync** project will no longer be maintained by Intel.
+- Intel has ceased development and contributions including, but not limited to, maintenance, bug fixes, new releases,
+or updates, to this project.
+- Intel no longer accepts patches to this project.
+- If you have an ongoing need to use this project, are interested in independently developing it, or would like to
+maintain patches for the open source software community, please create your own fork of this project.
+- You will find more information [here](https://pmem.io/blog/2022/11/update-on-pmdk-and-our-long-term-support-strategy/).
+
+## Introduction
+
 The **Mini Library for Asynchronous Programming in C** is a C low-level concurrency library for asynchronous functions.
 For more information, see [pmem.io](https://pmem.io).
 
@@ -78,6 +89,4 @@ CMAKE_INSTALL_PREFIX must be set to a destination where packages will be install
 
 ## Contact Us
 
-For more information on this library, contact
-Piotr Balcer (piotr.balcer@intel.com),
-[Google group](https://groups.google.com/group/pmem).
+If you read the [blog post](https://pmem.io/blog/2022/11/update-on-pmdk-and-our-long-term-support-strategy/) and still have some questions (especially about discontinuation of the project), please contact us using the dedicated e-mail: pmdk_support@intel.com.
